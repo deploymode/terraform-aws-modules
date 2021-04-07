@@ -19,4 +19,5 @@ variable "zone_config" {
 variable "delegated_role_name" {
   type        = string
   description = "Role name in target account to use for setting up delegated DNS zone"
+  default     = "OrganizationAccountAccessRole"
 }
