@@ -7,5 +7,5 @@ output "account_id" {
 }
 
 output "organization_account_access_role" {
-  value = "${local.organization_account_access_role}"
+  value = aws_organizations_account.account.role_name
 }
