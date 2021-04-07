@@ -2,7 +2,6 @@
 locals {
   dns_soa_config = "awsdns-hostmaster.amazon.com. 1 7200 900 1209600 86400"
   domains_set    = toset(var.domains)
-  zone_recs_map  = { for zone in var.record_config : "${zone.name}${zone.root_zone}.${zone.type}" => zone }
 }
 
 resource "aws_route53_zone" "root" {
