@@ -14,6 +14,6 @@ provider "aws" {
   region = var.aws_region
 
   assume_role {
-    role_arn = format("arn:aws:iam::${var.aws_account_id}:role/${var.delegated_role_name}") # coalesce(var.import_role_arn, module.iam_roles.terraform_role_arn)
+    role_arn = format("arn:aws:iam::${var.delegated_aws_account_id}:role/${var.delegated_role_name}") # coalesce(var.import_role_arn, module.iam_roles.terraform_role_arn)
   }
 }

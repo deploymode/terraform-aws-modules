@@ -3,7 +3,7 @@ variable "aws_region" {
   description = "AWS Region"
 }
 
-variable "aws_account_id" {
+variable "delegated_aws_account_id" {
   type        = string
   description = "AWS Account ID of target (delegated) account"
 }
