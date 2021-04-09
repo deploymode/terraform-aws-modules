@@ -1,3 +1,9 @@
+###
+# Optionally creates hosted zone
+# Creates certificate
+#
+###
+
 locals {
   zone_name        = var.hosted_zone_name == "" ? var.cert_domain_name : var.hosted_zone_name
   zone_name_in_use = var.create_hosted_zone ? join("", aws_route53_zone.default.*.name) : join("", data.aws_route53_zone.existing.*.name)
