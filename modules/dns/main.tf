@@ -26,9 +26,9 @@ module "acm_request_certificate" {
   # zone_name                         = join("", aws_route53_zone.default.*.name)
   zone_name = local.zone_name_in_use # var.create_hosted_zone ? join("", aws_route53_zone.default.*.name) : join("", data.aws_route53_zone.existing.*.name)
 
-  depends_on = [
-    aws_route53_zone.default
-  ]
+  # depends_on = [
+  #   aws_route53_zone.default
+  # ]
 }
 
 resource "aws_route53_record" "soa" {
