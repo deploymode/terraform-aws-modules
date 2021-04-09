@@ -1,50 +1,5 @@
-variable "enabled" {
-  type        = bool
-  description = "Set to false to prevent the module from creating any resources"
-  default     = true
-}
-
-variable "aws_account_id" {
-  type = string
-}
-
 variable "aws_region" {
   type = string
-}
-
-variable "delimiter" {
-  type    = string
-  default = "-"
-}
-
-variable "regex_replace_chars" {
-  type    = string
-  default = "/[^a-zA-Z0-9]/"
-}
-
-variable "attributes" {
-  type        = list(string)
-  description = "Additional attributes (_e.g._ \"1\")"
-  default     = []
-}
-
-variable "tags" {
-  type        = map(string)
-  description = "Additional tags (_e.g._ { BusinessUnit : ABC })"
-  default     = {}
-}
-
-variable "namespace" {
-  type = string
-}
-
-variable "stage" {
-  type = string
-}
-
-variable "app" {
-  type    = string
-  default = "network"
 }
 
 // Network
