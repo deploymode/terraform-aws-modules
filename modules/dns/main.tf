@@ -32,6 +32,7 @@ module "acm_request_certificate" {
 }
 
 resource "aws_route53_record" "soa" {
+  count = (module.this.enabled && var.create_hosted_zone) ? 1 : 0
   # for_each = aws_route53_zone.default
 
   allow_overwrite = true
