@@ -1,11 +1,8 @@
 module "label" {
-  source     = "github.com/cloudposse/terraform-null-label.git?ref=0.19.2"
-  namespace  = var.namespace
-  name       = var.app
-  stage      = var.stage
-  delimiter  = var.delimiter
-  attributes = compact(concat(var.attributes, ["endpoint"]))
-  tags       = var.tags
+  source     = "cloudposse/label/null"
+  version    = "0.24.1" # requires Terraform >= 0.13.0
+  context    = module.this.context
+  attributes = ["endpoint"]
 }
 
 // Security Group to associate with Interface endpoints
@@ -44,10 +41,11 @@ resource "aws_security_group" "default" {
 // Allow ECS service to reach CloudWatch Logs via VPC Endpoint
 
 module "logs_endpoint_label" {
-  source     = "github.com/cloudposse/terraform-null-label.git?ref=0.19.2"
+  source     = "cloudposse/label/null"
+  version    = "0.24.1" # requires Terraform >= 0.13.0
   context    = module.label.context
   name       = "network"
-  attributes = compact(concat(var.attributes, ["logs"]))
+  attributes = ["logs"]
 }
 
 resource "aws_vpc_endpoint" "logs" {
@@ -66,10 +64,11 @@ resource "aws_vpc_endpoint" "logs" {
 }
 
 module "ecr_dkr_endpoint_label" {
-  source     = "github.com/cloudposse/terraform-null-label.git?ref=0.19.2"
+  source     = "cloudposse/label/null"
+  version    = "0.24.1" # requires Terraform >= 0.13.0
   context    = module.label.context
   name       = "network"
-  attributes = compact(concat(var.attributes, ["ecr_dkr"]))
+  attributes = ["ecr_dkr"]
 }
 
 resource "aws_vpc_endpoint" "ecr_dkr" {
@@ -88,10 +87,11 @@ resource "aws_vpc_endpoint" "ecr_dkr" {
 }
 
 module "ecr_api_endpoint_label" {
-  source     = "github.com/cloudposse/terraform-null-label.git?ref=0.19.2"
+  source     = "cloudposse/label/null"
+  version    = "0.24.1" # requires Terraform >= 0.13.0
   context    = module.label.context
   name       = "network"
-  attributes = compact(concat(var.attributes, ["ecr_api"]))
+  attributes = ["ecr_api"]
 }
 
 resource "aws_vpc_endpoint" "ecr_api" {
@@ -111,10 +111,11 @@ resource "aws_vpc_endpoint" "ecr_api" {
 
 
 module "ssm_endpoint_label" {
-  source     = "github.com/cloudposse/terraform-null-label.git?ref=0.19.2"
-  context    = module.label.context
-  name       = "ssm"
-  attributes = compact(concat(var.attributes, ["ssm"]))
+  source  = "cloudposse/label/null"
+  version = "0.24.1" # requires Terraform >= 0.13.0
+  context = module.label.context
+  name    = "ssm"
+  # attributes = compact(concat(var.attributes, ["ssm"]))
 }
 
 resource "aws_vpc_endpoint" "ssm" {
