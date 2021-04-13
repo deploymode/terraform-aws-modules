@@ -339,6 +339,7 @@ module "redis" {
   source                       = "cloudposse/elasticache-redis/aws"
   version                      = "0.37.0"
   enabled                      = (module.this.enabled && var.provision_cache)
+  attributes                   = ["cache"]
   availability_zones           = var.redis_availability_zones
   zone_id                      = var.hosted_zone_id
   vpc_id                       = var.vpc_id
