@@ -59,7 +59,8 @@ module "ecr" {
     local.image_names_map.nginx,
     local.image_names_map.php
   ]
-  context = module.this.context
+  image_tag_mutability = "MUTABLE"
+  context              = module.this.context
 }
 
 
