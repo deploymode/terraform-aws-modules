@@ -280,7 +280,7 @@ variable "container_memory_reservation_php" {
 }
 
 variable "container_environment_nginx" {
-  type = set(object({
+  type = list(object({
     name  = string
     value = string
   }))
@@ -289,7 +289,7 @@ variable "container_environment_nginx" {
 }
 
 variable "container_environment_php" {
-  type = set(object({
+  type = list(object({
     name  = string
     value = string
   }))
