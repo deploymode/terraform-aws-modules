@@ -1,38 +1,77 @@
 locals {
   image_names_map = {
-    "nginx"     = format("%s-%s", "nginx", module.this.stage)
-    "php"       = format("%s-%s", "php-fpm", module.this.stage)
-    "int-tests" = format("%s-%s", "int-tests", module.this.stage)
+    "nginx" = format("%s-%s", "nginx", module.this.stage)
+    "php"   = format("%s-%s", "php-fpm", module.this.stage)
   }
   log_groups = {
-    nginx     = "/ecs/${module.container_label.id}/${local.image_names_map.nginx}"
-    php       = "/ecs/${module.container_label.id}/${local.image_names_map.php}"
-    int-tests = "/ecs/${module.container_label.id}/${local.image_names_map.int-tests}"
+    nginx = "/ecs/${module.container_label.id}/${local.image_names_map.nginx}"
+    php   = "/ecs/${module.container_label.id}/${local.image_names_map.php}"
   }
+
+  # db_env_vars = length(var.database_host) > 0 ? [
+  #   {
+  #     name  = "DB_HOST"
+  #     value = var.database_host
+  #   },
+  #   {
+  #     name  = "DB_DATABASE"
+  #     value = var.database_name
+  #   },
+  #   {
+  #     name  = "DB_PORT"
+  #     value = var.database_port
+  #   },
+  #   {
+  #     name  = "DB_USERNAME"
+  #     value = var.database_username
+  #   },
+  #   {
+  #     name  = "DB_PASSWORD"
+  #     value = var.database_password
+  #   }
+  # ] : []
+
+  queue_env_vars = var.provision_sqs ? [
+    {
+      name  = "SQS_QUEUE"
+      value = module.queue.queue_name
+    },
+    {
+      name  = "SQS_PREFIX"
+      value = "https://sqs.${var.aws_region}.amazonaws.com/${var.aws_account_id}"
+    },
+  ] : []
+
+  cache_env_vars = var.provision_cache ? [
+    {
+      name  = "REDIS_HOST"
+      value = module.redis.endpoint
+    }
+  ] : []
 }
 
 // ECR Registry/Repo
 module "ecr" {
-  source       = "git::https://github.com/cloudposse/terraform-aws-ecr.git?ref=tags/0.29.0"
-  context      = module.this.context
+  source       = "cloudposse/ecr/aws"
+  version      = "0.32.2"
   use_fullname = true
   image_names = [
     local.image_names_map.nginx,
-    local.image_names_map.php,
-    local.image_names_map.int-tests
+    local.image_names_map.php
   ]
+  context = module.this.context
 }
 
 
 // Container Defs
 module "container_label" {
-  source     = "git::https://github.com/cloudposse/terraform-null-label.git?ref=tags/0.21.0"
-  context    = module.this.context
+  source     = "git::https://github.com/cloudposse/terraform-null-label.git?ref=tags/0.24.1"
   attributes = compact(concat(module.this.attributes, ["container"]))
+  context    = module.this.context
 }
 
 module "container_nginx" {
-  source                       = "git::https://github.com/cloudposse/terraform-aws-ecs-container-definition.git?ref=tags/0.45.0"
+  source                       = "git::https://github.com/cloudposse/terraform-aws-ecs-container-definition.git?ref=tags/0.56.0"
   container_name               = join("-", [module.container_label.id, "nginx"])
   container_image              = join(":", [module.ecr.repository_url_map[local.image_names_map.nginx], "latest"])
   container_memory             = var.container_memory_nginx
@@ -68,7 +107,7 @@ module "container_nginx" {
 }
 
 module "container_php-fpm" {
-  source                       = "git::https://github.com/cloudposse/terraform-aws-ecs-container-definition.git?ref=tags/0.45.0"
+  source                       = "git::https://github.com/cloudposse/terraform-aws-ecs-container-definition.git?ref=tags/0.56.0"
   container_name               = join("-", [module.container_label.id, "php-fpm"])
   container_image              = join(":", [module.ecr.repository_url_map[local.image_names_map.php], "latest"])
   container_memory             = var.container_memory_php
@@ -79,7 +118,12 @@ module "container_php-fpm" {
   # Task will stop if this container fails
   essential                = true
   readonly_root_filesystem = false
-  environment              = var.container_environment_php
+  environment = compact(concat(
+    var.container_environment_php,
+    local.queue_env_vars,
+    local.cache_env_vars,
+    # local.db_env_vars
+  ))
 
   port_mappings = [
     {
@@ -127,7 +171,7 @@ module "alb" {
   tags                                    = var.tags
 }
 
-module "ecs_alb_service_task" {
+module "ecs_task" {
   source                 = "git::https://github.com/cloudposse/terraform-aws-ecs-alb-service-task.git?ref=tags/0.41.0"
   namespace              = module.this.namespace
   stage                  = module.this.stage
@@ -185,7 +229,9 @@ resource "aws_route53_record" "default" {
 // CodePipeline
 
 module "ecs_codepipeline" {
-  source                  = "git::https://github.com/joe-niland/terraform-aws-ecs-codepipeline.git?ref=tags/0.18.1"
+  # source                  = "git::https://github.com/joe-niland/terraform-aws-ecs-codepipeline.git?ref=tags/0.18.1"
+  source                  = "cloudposse/ecs-codepipeline/aws"
+  version                 = "0.18.3"
   context                 = module.this.context
   region                  = var.aws_region
   codestar_connection_arn = var.codestar_connection_arn
@@ -204,7 +250,7 @@ module "ecs_codepipeline" {
   s3_bucket_force_destroy = true
   environment_variables   = var.codepipeline_environment_variables
   ecs_cluster_name        = var.ecs_cluster_name
-  service_name            = module.ecs_alb_service_task.service_name
+  service_name            = module.ecs_task.service_name
   cache_type              = "LOCAL"
   local_cache_modes       = ["LOCAL_DOCKER_LAYER_CACHE"]
   github_anonymous        = true
@@ -277,18 +323,78 @@ data "aws_iam_policy_document" "codebuild" {
 // VPC Peering with Database VPC
 
 module "vpc_peering" {
-  source                                    = "git::https://github.com/cloudposse/terraform-aws-vpc-peering.git?ref=tags/0.6.0"
-  namespace                                 = module.this.namespace
-  stage                                     = module.this.stage
-  name                                      = module.this.name
-  attributes                                = module.this.attributes
-  tags                                      = module.this.tags
+  source                                    = "cloudposse/vpc-peering/aws"
+  version                                   = "0.9.0"
+  enabled                                   = (module.this.enabled && length(var.peered_vpc_id) > 0)
   auto_accept                               = true
   requestor_allow_remote_vpc_dns_resolution = true
   acceptor_allow_remote_vpc_dns_resolution  = true
   requestor_vpc_id                          = var.vpc_id
-  acceptor_vpc_id                           = var.database_vpc_id
+  acceptor_vpc_id                           = var.peered_vpc_id
   create_timeout                            = "5m"
   update_timeout                            = "5m"
   delete_timeout                            = "10m"
+  context                                   = module.this.context
+}
+
+module "redis" {
+  source                     = "cloudposse/elasticache-redis/aws"
+  version                    = "0.37.0"
+  enabled                    = (module.this.enabled && var.provision_cache)
+  availability_zones         = var.redis_availability_zones
+  zone_id                    = var.zone_id
+  vpc_id                     = var.vpc_id
+  allowed_security_groups    = var.redis_allowed_security_group_ids
+  subnets                    = var.private_subnet_ids
+  cluster_size               = var.redis_cluster_size
+  instance_type              = var.redis_instance_type
+  apply_immediately          = true
+  automatic_failover_enabled = false
+  engine_version             = var.redis_engine_version
+  family                     = var.redis_family
+  at_rest_encryption_enabled = false
+  transit_encryption_enabled = true
+
+  context = module.this.context
+}
+
+// SQS
+data "aws_iam_policy_document" "sqs" {
+  count = (module.this.enabled && var.provision_sqs) ? 1 : 0
+
+  # Allow ECS task to access SSM parameter store items
+  statement {
+    sid = ""
+
+    principals {
+      type        = "AWS"
+      identifiers = [module.ecs_task.task_exec_role_arn]
+    }
+
+    actions = [
+      "sqs:SendMessage",
+      "sqs:ReceiveMessage",
+      "sqs:GetQueueUrl"
+    ]
+
+    resources = [
+      module.job-queue.this_sqs_queue_arn
+    ]
+
+    effect = "Allow"
+  }
+}
+
+resource "aws_sqs_queue_policy" "sqs" {
+  count     = (module.this.enabled && var.provision_sqs) ? 1 : 0
+  queue_url = module.job-queue.this_sqs_queue_id
+  policy    = join("", data.aws_iam_policy_document.sqs.*.json)
+}
+
+module "queue" {
+  source  = "terraform-aws-modules/sqs/aws"
+  version = ">= 2.0"
+  create  = (module.this.enabled && var.provision_sqs)
+  name    = module.this.name
+  tags    = module.this.tags
 }

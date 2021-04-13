@@ -33,9 +33,10 @@ variable "ecs_security_group_ids" {
   default     = []
 }
 
-variable "database_vpc_id" {
+variable "peered_vpc_id" {
   type        = string
-  description = "VPC ID for the database VPC"
+  description = "VPC ID for a VPC with which to set up peering"
+  default     = ""
 }
 
 variable "use_alb_security_group" {
@@ -382,11 +383,48 @@ variable "test_report_names" {
   }
 }
 
-// New Relic
+// Redis
 
-variable "newrelic_dns_name" {
-  type        = string
-  description = "Subdomain for EC2 instance"
-  default     = "newrelic"
+variable "provision_cache" {
+  type        = bool
+  description = "Provision an Elasticache Redis instance"
+  default     = true
 }
 
+variable "redis_availability_zones" {
+  type        = list(string)
+  description = "Availability zone IDs"
+  default     = []
+}
+
+variable "redis_allowed_security_groups" {
+  type        = list(string)
+  default     = []
+  description = "List of Security Group IDs that are allowed ingress to the cluster's Security Group created in the module"
+}
+
+variable "redis_cluster_size" {
+  type        = number
+  default     = 1
+  description = "Number of nodes in cluster. *Ignored when `cluster_mode_enabled` == `true`*"
+}
+
+variable "redis_instance_type" {
+  type        = string
+  default     = "cache.t3.micro"
+  description = "Elastic cache instance type"
+}
+
+variable "redis_family" {
+  type        = string
+  default     = "redis5.0"
+  description = "Redis family"
+}
+
+// Queue
+
+variable "provision_sqs" {
+  type        = bool
+  description = "Provision an SQS instance"
+  default     = true
+}
