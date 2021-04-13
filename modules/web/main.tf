@@ -226,9 +226,9 @@ resource "aws_route53_record" "default" {
 // CodePipeline
 
 module "ecs_codepipeline" {
-  # source                  = "git::https://github.com/joe-niland/terraform-aws-ecs-codepipeline.git?ref=tags/0.18.1"
-  source                  = "cloudposse/ecs-codepipeline/aws"
-  version                 = "0.24.0"
+  source = "git::https://github.com/joe-niland/terraform-aws-ecs-codepipeline.git?ref=disable-codestar-condition"
+  # source                  = "cloudposse/ecs-codepipeline/aws"
+  # version                 = "0.24.0"
   context                 = module.this.context
   region                  = var.aws_region
   codestar_connection_arn = var.codestar_connection_arn
