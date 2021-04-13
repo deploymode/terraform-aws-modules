@@ -421,6 +421,19 @@ variable "redis_family" {
   description = "Redis family"
 }
 
+variable "redis_engine_version" {
+  type        = string
+  default     = "5.0.6"
+  description = "Redis engine version"
+}
+
+variable "redis_password" {
+  type        = string
+  description = "Auth token for password protecting redis, `transit_encryption_enabled` must be set to `true`. Password must be longer than 16 chars"
+  default     = null
+
+}
+
 // Queue
 
 variable "provision_sqs" {

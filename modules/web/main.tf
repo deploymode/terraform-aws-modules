@@ -338,13 +338,16 @@ module "vpc_peering" {
 }
 
 module "redis" {
-  source                     = "cloudposse/elasticache-redis/aws"
-  version                    = "0.37.0"
-  enabled                    = (module.this.enabled && var.provision_cache)
-  availability_zones         = var.redis_availability_zones
-  zone_id                    = var.zone_id
-  vpc_id                     = var.vpc_id
-  allowed_security_groups    = var.redis_allowed_security_group_ids
+  source             = "cloudposse/elasticache-redis/aws"
+  version            = "0.37.0"
+  enabled            = (module.this.enabled && var.provision_cache)
+  availability_zones = var.redis_availability_zones
+  zone_id            = var.hosted_zone_id
+  vpc_id             = var.vpc_id
+  allowed_security_groups = compact(concat([
+    # var.redis_allowed_security_group_ids,
+    module.ecs_task.security_group_ids
+  ]))
   subnets                    = var.private_subnet_ids
   cluster_size               = var.redis_cluster_size
   instance_type              = var.redis_instance_type
@@ -354,6 +357,7 @@ module "redis" {
   family                     = var.redis_family
   at_rest_encryption_enabled = false
   transit_encryption_enabled = true
+  auth_token                 = var.redis_password
 
   context = module.this.context
 }
