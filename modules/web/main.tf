@@ -387,7 +387,7 @@ data "aws_iam_policy_document" "sqs" {
 
 resource "aws_sqs_queue_policy" "sqs" {
   count     = (module.this.enabled && var.provision_sqs) ? 1 : 0
-  queue_url = module.job-queue.this_sqs_queue_id
+  queue_url = module.queue.this_sqs_queue_id
   policy    = join("", data.aws_iam_policy_document.sqs.*.json)
 }
 
