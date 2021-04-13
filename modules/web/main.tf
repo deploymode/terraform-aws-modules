@@ -253,9 +253,9 @@ module "ecs_codepipeline" {
   service_name            = module.ecs_task.service_name
   cache_type              = "LOCAL"
   local_cache_modes       = ["LOCAL_DOCKER_LAYER_CACHE"]
-  github_anonymous        = true
-  github_oauth_token      = ""
-  github_webhooks_token   = ""
+  # github_anonymous        = true
+  github_oauth_token    = ""
+  github_webhooks_token = ""
 }
 
 // Allow pull permission to CodeBuild
