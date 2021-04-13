@@ -231,7 +231,7 @@ resource "aws_route53_record" "default" {
 module "ecs_codepipeline" {
   # source                  = "git::https://github.com/joe-niland/terraform-aws-ecs-codepipeline.git?ref=tags/0.18.1"
   source                  = "cloudposse/ecs-codepipeline/aws"
-  version                 = "0.18.3"
+  version                 = "0.24.0"
   context                 = module.this.context
   region                  = var.aws_region
   codestar_connection_arn = var.codestar_connection_arn
@@ -269,7 +269,7 @@ resource "aws_iam_role_policy_attachment" "codebuild" {
 }
 
 module "codebuild_label" {
-  source     = "github.com/cloudposse/terraform-null-label.git?ref=0.21.0"
+  source     = "github.com/cloudposse/terraform-null-label.git?ref=0.24.1"
   attributes = compact(concat(module.this.attributes, ["ecr"]))
   context    = module.this.context
 }
