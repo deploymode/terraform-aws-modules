@@ -336,12 +336,13 @@ module "vpc_peering" {
 }
 
 module "redis" {
-  source             = "cloudposse/elasticache-redis/aws"
-  version            = "0.37.0"
-  enabled            = (module.this.enabled && var.provision_cache)
-  availability_zones = var.redis_availability_zones
-  zone_id            = var.hosted_zone_id
-  vpc_id             = var.vpc_id
+  source                       = "cloudposse/elasticache-redis/aws"
+  version                      = "0.37.0"
+  enabled                      = (module.this.enabled && var.provision_cache)
+  availability_zones           = var.redis_availability_zones
+  zone_id                      = var.hosted_zone_id
+  vpc_id                       = var.vpc_id
+  use_existing_security_groups = true
   allowed_security_groups = compact(concat([
     # var.redis_allowed_security_group_ids,
     module.ecs_task.service_security_group_id
