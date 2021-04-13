@@ -34,7 +34,7 @@ locals {
   queue_env_vars = var.provision_sqs ? [
     {
       name  = "SQS_QUEUE"
-      value = module.queue.queue_name
+      value = module.queue.this_sqs_queue_name
     },
     {
       name  = "SQS_PREFIX"
