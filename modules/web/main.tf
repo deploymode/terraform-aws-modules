@@ -173,7 +173,7 @@ module "ecs_task" {
   source                 = "cloudposse/ecs-alb-service-task/aws"
   version                = "0.55.0"
   context                = module.this.context
-  attributes             = "service"
+  attributes             = compact(concat(module.this.attributes, ["service"]))
   alb_security_group     = module.alb.security_group_id # var.alb_security_group_id
   use_alb_security_group = var.use_alb_security_group
   ecs_load_balancers = [
@@ -337,7 +337,7 @@ module "redis" {
   source                       = "cloudposse/elasticache-redis/aws"
   version                      = "0.37.0"
   enabled                      = (module.this.enabled && var.provision_cache)
-  attributes                   = ["cache"]
+  attributes                   = compact(concat(module.this.attributes, ["cache"]))
   availability_zones           = var.redis_availability_zones
   zone_id                      = var.hosted_zone_id
   vpc_id                       = var.vpc_id
