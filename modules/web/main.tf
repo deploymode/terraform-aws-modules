@@ -212,7 +212,7 @@ module "ecs_task" {
 resource "aws_route53_record" "default" {
   count   = var.hosted_zone_id != "" ? 1 : 0
   zone_id = var.hosted_zone_id
-  name    = join(".", [module.this.name, var.domain_name])
+  name    = join(".", [module.this.name, module.this.environment, var.domain_name])
   type    = "A"
 
   alias {
