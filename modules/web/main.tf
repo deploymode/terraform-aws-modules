@@ -378,7 +378,7 @@ data "aws_iam_policy_document" "sqs" {
     ]
 
     resources = [
-      module.job-queue.this_sqs_queue_arn
+      module.queue.this_sqs_queue_arn
     ]
 
     effect = "Allow"

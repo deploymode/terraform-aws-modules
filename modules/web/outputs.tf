@@ -4,7 +4,7 @@ output "log_groups" {
 }
 
 output "ecs_service_security_group_id" {
-  value       = module.ecs_alb_service_task.service_security_group_id
+  value       = module.ecs_task.service_security_group_id
   description = "ECS security group ids"
 }
 
