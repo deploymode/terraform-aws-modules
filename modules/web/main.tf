@@ -170,12 +170,10 @@ module "alb" {
 }
 
 module "ecs_task" {
-  source                 = "git::https://github.com/cloudposse/terraform-aws-ecs-alb-service-task.git?ref=tags/0.41.0"
-  namespace              = module.this.namespace
-  stage                  = module.this.stage
-  name                   = module.this.name
-  attributes             = module.this.attributes
-  delimiter              = module.this.delimiter
+  source                 = "cloudposse/ecs-alb-service-task/aws"
+  version                = "0.55.0"
+  context                = module.this.context
+  attributes             = "service"
   alb_security_group     = module.alb.security_group_id # var.alb_security_group_id
   use_alb_security_group = var.use_alb_security_group
   ecs_load_balancers = [
