@@ -28,10 +28,11 @@ variable "allowed_security_group_ids" {
 #   description = "The IDs of the existing security groups to associate with the DB instance"
 # }
 
-# variable "database_name" {
-#   type        = string
-#   description = "The name of the database to create when the DB instance is created"
-# }
+variable "database_name" {
+  type        = string
+  description = "The name of the database to create when the DB instance is created"
+  default     = null
+}
 
 variable "database_user" {
   type        = string
