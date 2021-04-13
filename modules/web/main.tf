@@ -118,11 +118,11 @@ module "container_php-fpm" {
   # Task will stop if this container fails
   essential                = true
   readonly_root_filesystem = false
-  environment = compact(concat(
+  environment = merge(
     var.container_environment_php,
-    local.queue_env_vars,
-    local.cache_env_vars
-  ))
+    toset(local.queue_env_vars),
+    toset(local.cache_env_vars)
+  )
   # local.db_env_vars
 
   port_mappings = [
