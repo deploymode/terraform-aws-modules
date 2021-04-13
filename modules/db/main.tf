@@ -13,7 +13,7 @@ module "rds_instance" {
   security_group_ids = var.allowed_security_group_ids
   ca_cert_identifier = "rds-ca-2019"
   # allowed_cidr_blocks         = ["XXX.XXX.XXX.XXX/32"]
-  database_name      = module.this.name
+  database_name      = var.database_name
   database_user      = var.database_user
   database_password  = var.database_password == "" ? random_password.password[0].result : var.database_password
   database_port      = var.database_port
