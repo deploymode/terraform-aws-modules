@@ -121,9 +121,9 @@ module "container_php-fpm" {
   environment = compact(concat(
     var.container_environment_php,
     local.queue_env_vars,
-    local.cache_env_vars,
-    # local.db_env_vars
+    local.cache_env_vars
   ))
+  # local.db_env_vars
 
   port_mappings = [
     {
@@ -346,7 +346,7 @@ module "redis" {
   vpc_id             = var.vpc_id
   allowed_security_groups = compact(concat([
     # var.redis_allowed_security_group_ids,
-    module.ecs_task.security_group_ids
+    module.ecs_task.service_security_group_id
   ]))
   subnets                    = var.private_subnet_ids
   cluster_size               = var.redis_cluster_size
