@@ -34,11 +34,11 @@ module "rds_instance" {
   auto_minor_version_upgrade  = true
   allow_major_version_upgrade = false
   apply_immediately           = true
-  maintenance_window          = "Sun:03:00-Mon:04:00"
+  maintenance_window          = var.maintenance_window
   skip_final_snapshot         = false
   copy_tags_to_snapshot       = true
-  backup_retention_period     = 14
-  backup_window               = "13:00-18:00"
+  backup_retention_period     = var.backup_retention_period
+  backup_window               = var.backup_window
 
   # db_parameter = [
   #   { name  = "myisam_sort_buffer_size"   value = "1048576" },
