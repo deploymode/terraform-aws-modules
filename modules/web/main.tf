@@ -254,6 +254,7 @@ module "ecs_codepipeline" {
   # github_anonymous        = true
   github_oauth_token    = ""
   github_webhooks_token = ""
+  codebuild_vpc_config  = var.codebuild_vpc_config
 }
 
 // Allow pull permission to CodeBuild
