@@ -248,8 +248,8 @@ module "ecs_codepipeline" {
   environment_variables   = var.codepipeline_environment_variables
   ecs_cluster_name        = var.ecs_cluster_name
   service_name            = module.ecs_task.service_name
-  cache_type              = "LOCAL"
-  local_cache_modes       = ["LOCAL_DOCKER_LAYER_CACHE"]
+  cache_type              = var.codebuild_cache_type
+  local_cache_modes       = var.codebuild_local_cache_modes
   # github_anonymous        = true
   github_oauth_token    = ""
   github_webhooks_token = ""
