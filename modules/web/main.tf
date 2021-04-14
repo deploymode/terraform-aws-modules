@@ -84,6 +84,7 @@ module "container_nginx" {
   essential                = true
   readonly_root_filesystem = false
   environment              = var.container_environment_nginx
+  # secrets = 
 
   port_mappings = [
     {
@@ -119,9 +120,8 @@ module "container_php-fpm" {
   # Task will stop if this container fails
   essential                = true
   readonly_root_filesystem = false
-  environment = concat(concat(var.container_environment_php,
-    local.cache_env_vars),
-  local.queue_env_vars)
+  environment              = concat(var.container_environment_php, local.cache_env_vars, local.queue_env_vars)
+  secrets                  = var.container_secrets
   # local.db_env_vars
 
   port_mappings = [
