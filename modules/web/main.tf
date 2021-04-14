@@ -177,6 +177,7 @@ module "ecs_task" {
   attributes             = compact(concat(module.this.attributes, ["service"]))
   alb_security_group     = module.alb.security_group_id # var.alb_security_group_id
   use_alb_security_group = var.use_alb_security_group
+  security_group_ids     = var.ecs_security_group_ids
   ecs_load_balancers = [
     {
       container_name   = join("-", [module.container_label.id, "nginx"])
