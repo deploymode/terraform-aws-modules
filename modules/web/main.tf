@@ -120,8 +120,8 @@ module "container_php-fpm" {
   essential                = true
   readonly_root_filesystem = false
   environment = concat(concat(var.container_environment_php,
-    local.queue_env_vars),
-  local.cache_env_vars)
+    local.cache_env_vars),
+  local.queue_env_vars)
   # local.db_env_vars
 
   port_mappings = [
