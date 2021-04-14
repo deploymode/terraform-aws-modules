@@ -147,8 +147,8 @@ module "container_php-fpm" {
 }
 
 module "alb" {
-  source             = "git::https://github.com/cloudposse/terraform-aws-alb.git?ref=tags/0.21.0"
-  context            = module.this.context
+  source             = "cloudposse/alb/aws"
+  version            = "0.31.0"
   attributes         = compact(concat(module.this.attributes, ["alb"]))
   vpc_id             = var.vpc_id
   security_group_ids = var.alb_security_group_ids
@@ -161,13 +161,14 @@ module "alb" {
   http_enabled                            = var.http_enabled
   https_enabled                           = var.https_enabled
   http_redirect                           = var.http_to_https_redirect
+  health_check_path                       = var.alb_ingress_healthcheck_path
   certificate_arn                         = var.certificate_arn
   access_logs_enabled                     = false
   alb_access_logs_s3_bucket_force_destroy = true
   cross_zone_load_balancing_enabled       = true
   http2_enabled                           = true
   deletion_protection_enabled             = false
-  tags                                    = var.tags
+  context                                 = module.this.context
 }
 
 module "ecs_task" {
