@@ -297,29 +297,23 @@ variable "container_environment_php" {
   default     = []
 }
 
-// SSM params and values for <app> container
-// To define secrets, set secret to true and add an entry to the secrets map with a key that
-// matches the key of this map.
-// Set to empty map if no params.
-variable "container_ssm_params" {
-  type = map(object({
-    value       = string
-    type        = string
-    description = string
-    overwrite   = bool
-    secret      = bool
-    writeable   = bool
+variable "container_secrets_nginx" {
+  type = list(object({
+    name  = string
+    value = string
   }))
-  description = "List of objects for defining SSM params for writing"
-  default     = {}
+  description = "Container secret variables for nginx containers"
+  default     = []
 }
 
-variable "secrets" {
-  type        = map
-  description = "Key/value pairs of secret variables. To be defined in secret.auto.tfvars in consuming module."
-  default     = {}
+variable "container_secrets_php" {
+  type = list(object({
+    name  = string
+    value = string
+  }))
+  description = "Container secret variables for php-fpm containers"
+  default     = []
 }
-
 
 // CodePipeline
 variable "codestar_connection_arn" {
