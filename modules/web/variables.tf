@@ -297,21 +297,21 @@ variable "container_environment_php" {
   default     = []
 }
 
-variable "container_secrets_nginx" {
+variable "container_ssm_secrets_nginx" {
   type = list(object({
-    name  = string
-    value = string
+    name      = string
+    valueFrom = string
   }))
-  description = "Container secret variables for nginx containers"
+  description = "Container secret variables stored in SSM parameter store for nginx containers"
   default     = []
 }
 
-variable "container_secrets_php" {
+variable "container_ssm_secrets_php" {
   type = list(object({
-    name  = string
-    value = string
+    name      = string
+    valueFrom = string
   }))
-  description = "Container secret variables for php-fpm containers"
+  description = "Container secret variables stored in SSM parameter store for php-fpm containers"
   default     = []
 }
 

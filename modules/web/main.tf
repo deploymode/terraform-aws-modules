@@ -84,7 +84,7 @@ module "container_nginx" {
   essential                = true
   readonly_root_filesystem = false
   environment              = var.container_environment_nginx
-  secrets                  = var.container_secrets_nginx
+  secrets                  = var.container_ssm_secrets_nginx
 
   port_mappings = [
     {
@@ -121,7 +121,7 @@ module "container_php-fpm" {
   essential                = true
   readonly_root_filesystem = false
   environment              = concat(var.container_environment_php, local.cache_env_vars, local.queue_env_vars)
-  secrets                  = var.container_secrets_php
+  secrets                  = var.container_ssm_secrets_php
   # local.db_env_vars
 
   port_mappings = [
