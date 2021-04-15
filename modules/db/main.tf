@@ -5,6 +5,33 @@ resource "random_password" "password" {
   override_special = "_%@"
 }
 
+module "sg_label" {
+  source     = "cloudposse/label/null"
+  version    = "0.24.1"
+  attributes = ["db", "allowed"]
+  context    = module.this.context
+}
+
+resource "aws_security_group" "allowed" {
+  count = module.this.enabled ? 1 : 0
+
+  name        = module.sg_label.id
+  description = "Services which need DB access can be assigned this security group"
+  vpc_id      = var.vpc_id
+  tags        = module.this.tags
+}
+
+resource "aws_security_group_rule" "egress" {
+  count             = module.this.enabled ? 1 : 0
+  description       = "Allow all egress traffic"
+  type              = "egress"
+  from_port         = 0
+  to_port           = 0
+  protocol          = "-1"
+  cidr_blocks       = ["0.0.0.0/0"]
+  security_group_id = join("", aws_security_group.allowed.*.id)
+}
+
 module "rds_instance" {
   source             = "cloudposse/rds/aws"
   version            = "0.35.1"

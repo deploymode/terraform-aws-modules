@@ -25,7 +25,12 @@ output "subnet_group_id" {
 
 output "security_group_id" {
   value       = module.rds_instance.security_group_id
-  description = "ID of the Security Group"
+  description = "ID of the database's security group"
+}
+
+output "db_access_security_group_id" {
+  value       = aws_security_group.allowed.id
+  description = "ID of the security group for use by services which need access to the DB"
 }
 
 output "parameter_group_id" {
