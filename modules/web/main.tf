@@ -147,9 +147,9 @@ module "container_php-fpm" {
 }
 
 module "alb" {
-  # source             = "cloudposse/alb/aws"
-  # version            = "0.31.0"
-  source             = "git::https://github.com/joe-niland/terraform-aws-alb.git?ref=fix-access-logs-disabled"
+  source  = "cloudposse/alb/aws"
+  version = "0.32.0"
+  # source             = "git::https://github.com/joe-niland/terraform-aws-alb.git?ref=fix-access-logs-disabled"
   attributes         = compact(concat(module.this.attributes, ["alb"]))
   vpc_id             = var.vpc_id
   security_group_ids = var.alb_security_group_ids
