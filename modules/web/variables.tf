@@ -74,6 +74,13 @@ variable "alb_security_group_ids" {
 #   description = "Route 53 zone ID for ALB"
 # }
 
+variable "alb_ingress_healthcheck_path" {
+  type        = string
+  description = "Health check path used by the ALB"
+  default     = "/"
+}
+
+
 
 variable "target_group_port" {
   type        = number
