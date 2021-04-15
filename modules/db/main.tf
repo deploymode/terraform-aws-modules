@@ -33,11 +33,13 @@ resource "aws_security_group_rule" "egress" {
 }
 
 module "rds_instance" {
-  source             = "cloudposse/rds/aws"
-  version            = "0.35.1"
-  dns_zone_id        = var.dns_zone_id
-  host_name          = var.host_name
-  security_group_ids = var.allowed_security_group_ids
+  source      = "cloudposse/rds/aws"
+  version     = "0.35.1"
+  dns_zone_id = var.dns_zone_id
+  host_name   = var.host_name
+  security_group_ids = compact(concat(
+    [aws_security_group.allowed.id],
+  var.allowed_security_group_ids))
   ca_cert_identifier = "rds-ca-2019"
   # allowed_cidr_blocks         = ["XXX.XXX.XXX.XXX/32"]
   database_name      = var.database_name
