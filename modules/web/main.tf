@@ -164,6 +164,7 @@ module "alb" {
   health_check_path                       = var.alb_ingress_healthcheck_path
   certificate_arn                         = var.certificate_arn
   access_logs_enabled                     = false
+  access_logs_s3_bucket_id                = ""
   alb_access_logs_s3_bucket_force_destroy = true
   cross_zone_load_balancing_enabled       = true
   http2_enabled                           = true
