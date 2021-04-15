@@ -74,10 +74,16 @@ variable "alb_security_group_ids" {
 #   description = "Route 53 zone ID for ALB"
 # }
 
-variable "alb_ingress_healthcheck_path" {
+variable "alb_healthcheck_path" {
   type        = string
   description = "Health check path used by the ALB"
   default     = "/"
+}
+
+variable "alb_healthcheck_timeout" {
+  type        = number
+  description = "The amount of time to wait in seconds before failing a health check request"
+  default     = 10
 }
 
 
