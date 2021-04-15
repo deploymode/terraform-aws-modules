@@ -86,6 +86,12 @@ variable "alb_healthcheck_timeout" {
   default     = 10
 }
 
+variable "alb_healthcheck_interval" {
+  type        = number
+  description = "The duration in seconds in between health checks"
+  default     = 15
+}
+
 
 
 variable "target_group_port" {
