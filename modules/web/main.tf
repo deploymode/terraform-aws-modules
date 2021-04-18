@@ -8,29 +8,6 @@ locals {
     php   = "/ecs/${module.container_label.id}/${local.image_names_map.php}"
   }
 
-  # db_env_vars = length(var.database_host) > 0 ? [
-  #   {
-  #     name  = "DB_HOST"
-  #     value = var.database_host
-  #   },
-  #   {
-  #     name  = "DB_DATABASE"
-  #     value = var.database_name
-  #   },
-  #   {
-  #     name  = "DB_PORT"
-  #     value = var.database_port
-  #   },
-  #   {
-  #     name  = "DB_USERNAME"
-  #     value = var.database_username
-  #   },
-  #   {
-  #     name  = "DB_PASSWORD"
-  #     value = var.database_password
-  #   }
-  # ] : []
-
   queue_env_vars = var.provision_sqs ? [
     {
       name  = "SQS_QUEUE"
@@ -122,7 +99,6 @@ module "container_php-fpm" {
   readonly_root_filesystem = false
   environment              = concat(var.container_environment_php, local.cache_env_vars, local.queue_env_vars)
   secrets                  = var.container_ssm_secrets_php
-  # local.db_env_vars
 
   port_mappings = [
     {
