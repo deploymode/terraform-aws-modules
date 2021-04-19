@@ -355,7 +355,7 @@ data "aws_iam_policy_document" "sqs" {
 
     principals {
       type        = "AWS"
-      identifiers = [module.ecs_task.task_exec_role_arn]
+      identifiers = [module.ecs_task.task_role_arn]
     }
 
     actions = [
