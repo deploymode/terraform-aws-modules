@@ -22,7 +22,7 @@ locals {
   cache_env_vars = var.provision_cache ? [
     {
       name  = "REDIS_HOST"
-      value = module.redis.endpoint
+      value = format("tls://%s", module.redis.endpoint)
     }
   ] : []
 }
