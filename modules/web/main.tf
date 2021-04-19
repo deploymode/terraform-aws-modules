@@ -180,7 +180,7 @@ module "ecs_task" {
   vpc_id                         = var.vpc_id
   subnet_ids                     = var.private_subnet_ids
   tags                           = var.tags
-  ignore_changes_task_definition = true
+  ignore_changes_task_definition = var.ecs_ignore_changes_task_definition
 
   network_mode     = var.ecs_network_mode
   assign_public_ip = var.assign_public_ip

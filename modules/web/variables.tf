@@ -199,7 +199,7 @@ variable "ecs_capacity_provider_strategies" {
 variable "ecs_ignore_changes_task_definition" {
   type        = bool
   description = "Whether to ignore changes in container definition and task definition in the ECS service"
-  default     = false
+  default     = true
 }
 
 
