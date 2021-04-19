@@ -13,6 +13,16 @@ output "host_name" {
   description = "Public hostname associated with load balancer"
 }
 
+output "container_name_nginx" {
+  value       = join("-", [module.container_label.id, "nginx"])
+  description = "ECS container name for nginx container"
+}
+
+output "container_name_php-fpm" {
+  value       = join("-", [module.container_label.id, "php-fpm"])
+  description = "ECS container name for PHP-FPM container"
+}
+
 // Redis
 
 output "redis_endpoint" {
