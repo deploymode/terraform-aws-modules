@@ -326,7 +326,7 @@ module "redis" {
   availability_zones           = var.redis_availability_zones
   zone_id                      = var.hosted_zone_id
   vpc_id                       = var.vpc_id
-  use_existing_security_groups = true
+  use_existing_security_groups = false
   allowed_security_groups = compact(concat([
     # var.redis_allowed_security_group_ids,
     module.ecs_task.service_security_group_id
