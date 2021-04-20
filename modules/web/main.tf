@@ -404,7 +404,7 @@ data aws_iam_policy_document dynamodb {
 module "dynamodb_label" {
   source     = "cloudposse/label/null"
   version    = "0.24.1"
-  attributes = ["dyn"]
+  attributes = ["dynamodb"]
   context    = module.this.context
 }
 
@@ -412,7 +412,7 @@ resource "aws_iam_role_policy" "ecs_task_dynamodb" {
   count  = (module.this.enabled && var.provision_dynamodb_cache) ? 1 : 0
   name   = module.dynamodb_label.id
   policy = join("", data.aws_iam_policy_document.dynamodb.*.json)
-  role   = module.ecs_task.task_role_arn
+  role   = module.ecs_task.task_role_id
 }
 
 // SQS
