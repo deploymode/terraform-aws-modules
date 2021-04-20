@@ -387,6 +387,20 @@ variable "codepipeline_environment_variables" {
 #   default     = []
 # }
 
+// CodePipeline notifications
+
+variable "codepipeline_slack_notification_webhook_url" {
+  type        = string
+  description = "Slack webhook URL for receiving CodePipeline notifications"
+  default     = ""
+}
+
+variable "codepipeline_slack_notification_channel" {
+  type        = string
+  description = "Slack channel for receiving CodePipeline notifications"
+  default     = ""
+}
+
 variable "test_report_names" {
   type        = map
   description = "CodeBuild test report names"

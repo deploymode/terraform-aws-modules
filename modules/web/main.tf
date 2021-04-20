@@ -220,7 +220,7 @@ resource "aws_route53_record" "default" {
 // CodePipeline
 
 module "ecs_codepipeline" {
-  source = "git::https://github.com/joe-niland/terraform-aws-ecs-codepipeline.git?ref=disable-codestar-condition"
+  source = "git::https://github.com/joe-niland/terraform-aws-ecs-codepipeline.git?ref=codebuild-vpc-config"
   # source                  = "cloudposse/ecs-codepipeline/aws"
   # version                 = "0.24.0"
   context                 = module.this.context
@@ -248,6 +248,22 @@ module "ecs_codepipeline" {
   github_oauth_token    = ""
   github_webhooks_token = ""
   codebuild_vpc_config  = var.codebuild_vpc_config
+}
+
+module "codepipeline_notifications" {
+  source  = "kjagiello/codepipeline-slack-notifications/aws"
+  version = "1.1.4"
+
+  count = (module.this.enabled && var.codepipeline_slack_notification_webhook_url == "") ? 0 : 1
+
+  name          = module.this.id
+  namespace     = module.this.namespace
+  stage         = module.this.stage
+  slack_url     = var.codepipeline_slack_notification_webhook_url
+  slack_channel = var.codepipeline_slack_notification_channel
+  codepipelines = [
+    module.ecs_codepipeline.codepipeline_resource
+  ]
 }
 
 // Allow pull permission to CodeBuild
