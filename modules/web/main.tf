@@ -26,7 +26,7 @@ locals {
     }
   ] : []
 
-  dynamodb_cache_env_vars = var.provison_dynamodb_cache ? [
+  dynamodb_cache_env_vars = var.provision_dynamodb_cache ? [
     {
       name  = "DYNAMODB_CACHE_TABLE"
       value = module.dynamodb.table_name
