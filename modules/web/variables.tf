@@ -417,7 +417,7 @@ variable "codebuild_vpc_config" {
 
 // Redis
 
-variable "provison_redis_cache" {
+variable "provision_redis_cache" {
   type        = bool
   description = "Provision an Elasticache Redis instance"
   default     = false

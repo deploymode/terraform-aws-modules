@@ -19,7 +19,7 @@ locals {
     },
   ] : []
 
-  redis_cache_env_vars = var.provison_redis_cache ? [
+  redis_cache_env_vars = var.provision_redis_cache ? [
     {
       name  = "REDIS_HOST"
       value = format("tls://%s", module.redis.endpoint)
@@ -332,7 +332,7 @@ module "vpc_peering" {
 module "redis" {
   source                       = "cloudposse/elasticache-redis/aws"
   version                      = "0.37.0"
-  enabled                      = (module.this.enabled && var.provison_redis_cache)
+  enabled                      = (module.this.enabled && var.provision_redis_cache)
   attributes                   = compact(concat(module.this.attributes, ["cache"]))
   availability_zones           = var.redis_availability_zones
   zone_id                      = var.hosted_zone_id
