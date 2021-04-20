@@ -376,8 +376,9 @@ variable "codepipeline_environment_variables" {
     {
       name  = string
       value = string
+      type  = string
   }))
-  description = "A list of maps, that contain both the key 'name' and the key 'value' to be used as additional environment variables for the build"
+  description = "A list of maps, that contain the keys 'name', 'value', and 'type' to be used as additional environment variables for the build. Valid types are 'PLAINTEXT', 'PARAMETER_STORE', or 'SECRETS_MANAGER'"
   default     = []
 }
 
