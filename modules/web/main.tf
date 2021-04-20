@@ -404,7 +404,7 @@ data aws_iam_policy_document dynamodb {
 module "dynamodb_label" {
   source     = "cloudposse/label/null"
   version    = "0.24.1"
-  attributes = ["dynamodb"]
+  attributes = ["dyn"]
   context    = module.this.context
 }
 
