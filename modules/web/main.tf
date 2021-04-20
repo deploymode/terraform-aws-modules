@@ -256,11 +256,12 @@ module "codepipeline_notifications" {
 
   count = (module.this.enabled && var.codepipeline_slack_notification_webhook_url == "") ? 0 : 1
 
-  name          = module.this.id
-  namespace     = module.this.namespace
-  stage         = module.this.stage
-  slack_url     = var.codepipeline_slack_notification_webhook_url
-  slack_channel = var.codepipeline_slack_notification_channel
+  name           = module.this.id
+  namespace      = module.this.namespace
+  stage          = module.this.stage
+  slack_url      = var.codepipeline_slack_notification_webhook_url
+  slack_channel  = var.codepipeline_slack_notification_channel
+  event_type_ids = var.codepipeline_slack_notification_event_ids
   codepipelines = [
     module.ecs_codepipeline.codepipeline_resource
   ]

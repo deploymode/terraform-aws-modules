@@ -401,6 +401,20 @@ variable "codepipeline_slack_notification_channel" {
   default     = ""
 }
 
+variable "codepipeline_slack_notification_event_ids" {
+  type        = list(any)
+  description = "The list of event type to trigger a notification on"
+  default = [
+    "codepipeline-pipeline-pipeline-execution-failed",
+    "codepipeline-pipeline-pipeline-execution-canceled",
+    "codepipeline-pipeline-pipeline-execution-started",
+    "codepipeline-pipeline-pipeline-execution-resumed",
+    "codepipeline-pipeline-pipeline-execution-succeeded",
+    "codepipeline-pipeline-pipeline-execution-superseded"
+  ]
+
+}
+
 variable "test_report_names" {
   type        = map
   description = "CodeBuild test report names"
