@@ -468,7 +468,7 @@ variable "redis_password" {
 
 // Redis
 
-variable "provison_dynamodb_cache" {
+variable "provision_dynamodb_cache" {
   type        = bool
   description = "Provision a DynamoDB table for app cache"
   default     = false
