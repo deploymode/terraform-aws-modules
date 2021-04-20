@@ -26,17 +26,17 @@ output "container_name_php-fpm" {
 // Redis
 
 output "redis_endpoint" {
-  value       = var.provision_cache ? module.redis.endpoint : ""
+  value       = var.provison_redis_cache ? module.redis.endpoint : ""
   description = "Elasticache Redis endpoint"
 }
 
 output "redis_security_group_id" {
-  value       = var.provision_cache ? module.redis.security_group_id : ""
+  value       = var.provison_redis_cache ? module.redis.security_group_id : ""
   description = "Redis security group ID"
 }
 
 output "redis_port" {
-  value       = var.provision_cache ? module.redis.port : 0
+  value       = var.provison_redis_cache ? module.redis.port : 0
   description = "Redis port"
 }
 

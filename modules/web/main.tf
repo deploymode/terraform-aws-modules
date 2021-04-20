@@ -19,11 +19,22 @@ locals {
     },
   ] : []
 
-  cache_env_vars = var.provision_cache ? [
+  redis_cache_env_vars = var.provison_redis_cache ? [
     {
       name  = "REDIS_HOST"
       value = format("tls://%s", module.redis.endpoint)
     }
+  ] : []
+
+  dynamodb_cache_env_vars = var.provison_dynamodb_cache ? [
+    {
+      name  = "DYNAMODB_CACHE_TABLE"
+      value = module.dynamodb.table_name
+    },
+    # {
+    #   name  = "DYNAMODB_ENDPOINT"
+    #   value = module.dynamodb.table_name
+    # },
   ] : []
 }
 
@@ -98,7 +109,7 @@ module "container_php-fpm" {
   # Task will stop if this container fails
   essential                = true
   readonly_root_filesystem = false
-  environment              = concat(var.container_environment_php, local.cache_env_vars, local.queue_env_vars)
+  environment              = concat(var.container_environment_php, local.dynamodb_cache_env_vars, local.redis_cache_env_vars, local.queue_env_vars)
   secrets                  = var.container_ssm_secrets_php
 
   port_mappings = [
@@ -321,7 +332,7 @@ module "vpc_peering" {
 module "redis" {
   source                       = "cloudposse/elasticache-redis/aws"
   version                      = "0.37.0"
-  enabled                      = (module.this.enabled && var.provision_cache)
+  enabled                      = (module.this.enabled && var.provison_redis_cache)
   attributes                   = compact(concat(module.this.attributes, ["cache"]))
   availability_zones           = var.redis_availability_zones
   zone_id                      = var.hosted_zone_id
@@ -345,11 +356,70 @@ module "redis" {
   context = module.this.context
 }
 
+// DynamoDB Cache
+module "dynamodb" {
+  source                        = "cloudposse/dynamodb/aws"
+  version                       = "0.25.2"
+  enabled                       = (module.this.enabled && var.provision_dynamodb_cache)
+  hash_key                      = "key"
+  enable_autoscaler             = false
+  enable_point_in_time_recovery = false
+  billing_mode                  = "PAY_PER_REQUEST"
+  context                       = module.this.context
+}
+
+data aws_iam_policy_document dynamodb {
+  count = (module.this.enabled && var.provision_dynamodb_cache) ? 1 : 0
+
+  # Allow ECS task to access DynamoDB cache table
+  statement {
+    sid = ""
+
+    # principals {
+    #   type        = "AWS"
+    #   identifiers = [module.ecs_task.task_role_arn]
+    # }
+
+    actions = [
+      "dynamodb:DescribeTable",
+      "dynamodb:Query",
+      "dynamodb:Scan",
+      "dynamodb:BatchGetItem",
+      "dynamodb:BatchWriteItem",
+      "dynamodb:ConditionCheckItem",
+      "dynamodb:PutItem",
+      "dynamodb:DeleteItem",
+      "dynamodb:GetItem",
+      "dynamodb:UpdateItem"
+    ]
+
+    resources = [
+      module.dynamodb.table_arn
+    ]
+
+    effect = "Allow"
+  }
+}
+
+module "dynamodb_label" {
+  source     = "cloudposse/label/null"
+  version    = "0.24.1"
+  attributes = ["dynamodb"]
+  context    = module.this.context
+}
+
+resource "aws_iam_role_policy" "ecs_task_dynamodb" {
+  count  = (module.this.enabled && var.provision_dynamodb_cache) ? 1 : 0
+  name   = module.dynamodb_label.id
+  policy = join("", data.aws_iam_policy_document.dynamodb.*.json)
+  role   = module.ecs_task.task_role_arn
+}
+
 // SQS
 data "aws_iam_policy_document" "sqs" {
   count = (module.this.enabled && var.provision_sqs) ? 1 : 0
 
-  # Allow ECS task to access SSM parameter store items
+  # Allow ECS task to access queue messages
   statement {
     sid = ""
 

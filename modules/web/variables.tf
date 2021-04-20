@@ -417,10 +417,10 @@ variable "codebuild_vpc_config" {
 
 // Redis
 
-variable "provision_cache" {
+variable "provison_redis_cache" {
   type        = bool
   description = "Provision an Elasticache Redis instance"
-  default     = true
+  default     = false
 }
 
 variable "redis_availability_zones" {
@@ -464,6 +464,14 @@ variable "redis_password" {
   description = "Auth token for password protecting redis, `transit_encryption_enabled` must be set to `true`. Password must be longer than 16 chars"
   default     = null
 
+}
+
+// Redis
+
+variable "provison_dynamodb_cache" {
+  type        = bool
+  description = "Provision a DynamoDB table for app cache"
+  default     = false
 }
 
 // Queue
