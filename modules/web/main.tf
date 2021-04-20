@@ -220,7 +220,7 @@ resource "aws_route53_record" "default" {
 // CodePipeline
 
 module "ecs_codepipeline" {
-  source = "git::https://github.com/joe-niland/terraform-aws-ecs-codepipeline.git?ref=codebuild-vpc-config"
+  source = "git::https://github.com/joe-niland/terraform-aws-ecs-codepipeline.git?ref=codebuild-env-vars"
   # source                  = "cloudposse/ecs-codepipeline/aws"
   # version                 = "0.24.0"
   context                 = module.this.context
