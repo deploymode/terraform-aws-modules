@@ -66,3 +66,14 @@ output "queue_name" {
   value       = var.provision_sqs ? module.queue.this_sqs_queue_name : ""
 }
 
+// CodePipeline
+
+output "codepipeline_id" {
+  description = "CodePipeline ID"
+  value       = module.ecs_codepipeline.codepipeline_id
+}
+
+output "codepipeline_arn" {
+  description = "CodePipeline ARN"
+  value       = module.ecs_codepipeline.codepipeline_arn
+}
