@@ -37,6 +37,12 @@ variable "vpc_endpoint_ssm_security_group_ids" {
   default     = []
 }
 
+variable "vpc_endpoint_ssmmesssages_security_group_ids" {
+  type        = list(string)
+  description = "Security groups which control access to VPC endpoint for SSM Messages (ECS Exec)"
+  default     = []
+}
+
 # https://docs.aws.amazon.com/vpc/latest/userguide/vpce-interface.html#access-service-though-endpoint
 variable "enable_private_dns" {
   type        = bool

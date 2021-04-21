@@ -132,3 +132,30 @@ resource "aws_vpc_endpoint" "ssm" {
 
   tags = module.ssm_endpoint_label.tags
 }
+
+###############################
+# VPC Endpoint for SSMMESSAGES
+###############################
+
+module "ssmmessages_endpoint_label" {
+  source  = "cloudposse/label/null"
+  version = "0.24.1" # requires Terraform >= 0.13.0
+  context = module.label.context
+  name    = "ssmmessages"
+}
+
+data "aws_vpc_endpoint_service" "ssmmessages" {
+  service = "ssmmessages"
+}
+
+resource "aws_vpc_endpoint" "ssmmessages" {
+  vpc_id            = var.vpc_id
+  service_name      = data.aws_vpc_endpoint_service.ssmmessages.service_name
+  vpc_endpoint_type = "Interface"
+
+  security_group_ids = compact(concat([aws_security_group.default.id],
+  var.vpc_endpoint_ssmmesssages_security_group_ids))
+  subnet_ids          = var.private_subnet_ids
+  private_dns_enabled = var.enable_private_dns
+  tags                = module.ssmmessages_endpoint_label.tags
+}
