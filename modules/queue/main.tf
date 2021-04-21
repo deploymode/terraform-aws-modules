@@ -30,7 +30,7 @@ resource "aws_iam_policy" "sqs_policy" {
   name        = module.this.id
   path        = "/"
   description = "Allow access to queue messages in ${module.this.id}"
-  policy      = data.aws_iam_policy_document.sqs.json
+  policy      = join("", data.aws_iam_policy_document.sqs.*.json)
 }
 
 # resource "aws_sqs_queue_policy" "sqs" {
