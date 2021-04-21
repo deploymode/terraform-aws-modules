@@ -183,7 +183,6 @@ module "ecs_task" {
     module.container_nginx.json_map_object,
     module.container_php-fpm.json_map_object
   ])
-  #  "[${module.container_nginx.json_map_encoded},${module.container_php-fpm.json_map_encoded}]"
   ecs_cluster_arn                = var.ecs_cluster_arn
   capacity_provider_strategies   = var.ecs_capacity_provider_strategies
   launch_type                    = var.ecs_launch_type
@@ -268,8 +267,6 @@ module "codepipeline_notifications" {
 }
 
 // Allow pull permission to CodeBuild
-
-//codebuild_role_arn
 
 resource "aws_iam_role_policy_attachment" "codebuild" {
   count      = module.this.enabled ? 1 : 0
