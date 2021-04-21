@@ -8,6 +8,21 @@ output "ecs_service_security_group_id" {
   description = "ECS security group ids"
 }
 
+output "ecs_task_role_name" {
+  description = "ECS Task role name"
+  value       = module.ecs_task.task_role_name
+}
+
+output "ecs_task_role_arn" {
+  description = "ECS Task role ARN"
+  value       = module.ecs_task.task_role_arn
+}
+
+output "ecs_task_role_id" {
+  description = "ECS Task role id"
+  value       = module.ecs_task.task_role_id
+}
+
 output "host_name" {
   value       = var.hosted_zone_id != "" ? join("", aws_route53_record.default.*.fqdn) : ""
   description = "Public hostname associated with load balancer"
@@ -52,19 +67,6 @@ output "dynamodb_table_arn" {
   description = "DynamoDB table ARN"
 }
 
-
-
-// SQS
-
-output "queue_arn" {
-  description = "The ARN of the SQS queue"
-  value       = var.provision_sqs ? module.queue.this_sqs_queue_arn : ""
-}
-
-output "queue_name" {
-  description = "The name of the SQS queue"
-  value       = var.provision_sqs ? module.queue.this_sqs_queue_name : ""
-}
 
 // CodePipeline
 

@@ -8,10 +8,11 @@ locals {
     php   = "/ecs/${module.container_label.id}/${local.image_names_map.php}"
   }
 
-  queue_env_vars = var.provision_sqs ? [
+  queue_env_vars = var.queue_name != "" ? [
     {
       name  = "SQS_QUEUE"
-      value = module.queue.this_sqs_queue_name
+      value = var.queue_name
+      # value = module.queue.this_sqs_queue_name
     },
     {
       name  = "SQS_PREFIX"
@@ -429,43 +430,4 @@ resource "aws_iam_role_policy" "ecs_task_dynamodb" {
   role   = module.ecs_task.task_role_name
 }
 
-// SQS
-data "aws_iam_policy_document" "sqs" {
-  count = (module.this.enabled && var.provision_sqs) ? 1 : 0
 
-  # Allow ECS task to access queue messages
-  statement {
-    sid = ""
-
-    principals {
-      type        = "AWS"
-      identifiers = [module.ecs_task.task_role_arn]
-    }
-
-    actions = [
-      "sqs:SendMessage",
-      "sqs:ReceiveMessage",
-      "sqs:GetQueueUrl"
-    ]
-
-    resources = [
-      module.queue.this_sqs_queue_arn
-    ]
-
-    effect = "Allow"
-  }
-}
-
-resource "aws_sqs_queue_policy" "sqs" {
-  count     = (module.this.enabled && var.provision_sqs) ? 1 : 0
-  queue_url = module.queue.this_sqs_queue_id
-  policy    = join("", data.aws_iam_policy_document.sqs.*.json)
-}
-
-module "queue" {
-  source  = "terraform-aws-modules/sqs/aws"
-  version = ">= 2.0"
-  create  = (module.this.enabled && var.provision_sqs)
-  name    = module.this.name
-  tags    = module.this.tags
-}

@@ -511,8 +511,8 @@ variable "provision_dynamodb_cache" {
 
 // Queue
 
-variable "provision_sqs" {
-  type        = bool
-  description = "Provision an SQS instance"
-  default     = true
+variable "queue_name" {
+  type        = string
+  description = "Name of SQS queue used by application"
+  default     = ""
 }
