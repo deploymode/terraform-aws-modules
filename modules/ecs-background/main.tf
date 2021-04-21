@@ -206,6 +206,7 @@ module "ecs_codepipeline" {
   github_webhooks_token = var.codepipeline_github_webhooks_token
   github_webhook_events = var.codepipeline_github_webhook_events
 
+  codebuild_vpc_config = var.codebuild_vpc_config
 
   // True required to build docker containers
   privileged_mode = true
@@ -213,7 +214,10 @@ module "ecs_codepipeline" {
   image_repo_name = module.ecr.repository_name
   image_tag       = "latest"
 
+  cache_type              = var.codebuild_cache_type
+  local_cache_modes       = var.codebuild_local_cache_modes
   s3_bucket_force_destroy = true
+
   environment_variables = concat(
     var.codepipeline_environment_variables,
     [

@@ -302,6 +302,55 @@ variable "codepipeline_environment_variables" {
   default     = []
 }
 
+// CodePipeline notifications
+
+variable "codepipeline_slack_notification_webhook_url" {
+  type        = string
+  description = "Slack webhook URL for receiving CodePipeline notifications"
+  default     = ""
+}
+
+variable "codepipeline_slack_notification_channel" {
+  type        = string
+  description = "Slack channel for receiving CodePipeline notifications"
+  default     = ""
+}
+
+variable "codepipeline_slack_notification_event_ids" {
+  type        = list(any)
+  description = "The list of event type to trigger a notification on"
+  default = [
+    "codepipeline-pipeline-pipeline-execution-failed",
+    "codepipeline-pipeline-pipeline-execution-canceled",
+    "codepipeline-pipeline-pipeline-execution-started",
+    "codepipeline-pipeline-pipeline-execution-resumed",
+    "codepipeline-pipeline-pipeline-execution-succeeded",
+    "codepipeline-pipeline-pipeline-execution-superseded"
+  ]
+}
+
+// CodeBuild
+
+
+variable "codebuild_cache_type" {
+  type        = string
+  default     = "S3"
+  description = "The type of storage that will be used for the AWS CodeBuild project cache. Valid values: NO_CACHE, LOCAL, and S3.  Defaults to S3.  If cache_type is S3, it will create an S3 bucket for storing codebuild cache inside"
+}
+
+variable "codebuild_local_cache_modes" {
+  type        = list(string)
+  default     = []
+  description = "Specifies settings that AWS CodeBuild uses to store and reuse build dependencies. Valid values: LOCAL_SOURCE_CACHE, LOCAL_DOCKER_LAYER_CACHE, and LOCAL_CUSTOM_CACHE"
+}
+
+# https://registry.terraform.io/providers/hashicorp/aws/latest/docs/resources/codebuild_project#vpc_config
+variable "codebuild_vpc_config" {
+  type        = any
+  default     = {}
+  description = "Configuration for the builds to run inside a VPC."
+}
+
 // Queue
 
 variable "queue_name" {
