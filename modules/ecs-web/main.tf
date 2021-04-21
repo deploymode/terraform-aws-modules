@@ -12,7 +12,6 @@ locals {
     {
       name  = "SQS_QUEUE"
       value = var.queue_name
-      # value = module.queue.this_sqs_queue_name
     },
     {
       name  = "SQS_PREFIX"
@@ -62,7 +61,8 @@ module "container_label" {
 }
 
 module "container_nginx" {
-  source                       = "git::https://github.com/cloudposse/terraform-aws-ecs-container-definition.git?ref=tags/0.56.0"
+  source                       = "cloudposse/ecs-container-definition/aws"
+  version                      = "0.56.0"
   container_name               = join("-", [module.container_label.id, "nginx"])
   container_image              = join(":", [module.ecr.repository_url_map[local.image_names_map.nginx], "latest"])
   container_memory             = var.container_memory_nginx
@@ -99,7 +99,8 @@ module "container_nginx" {
 }
 
 module "container_php-fpm" {
-  source                       = "git::https://github.com/cloudposse/terraform-aws-ecs-container-definition.git?ref=tags/0.56.0"
+  source                       = "cloudposse/ecs-container-definition/aws"
+  version                      = "0.56.0"
   container_name               = join("-", [module.container_label.id, "php-fpm"])
   container_image              = join(":", [module.ecr.repository_url_map[local.image_names_map.php], "latest"])
   container_memory             = var.container_memory_php

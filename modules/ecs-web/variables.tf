@@ -513,7 +513,7 @@ variable "provision_dynamodb_cache" {
 
 variable "queue_name" {
   type        = string
-  description = "Name of SQS queue used by application"
+  description = "Name of SQS queue used by application (if any)"
   default     = ""
 }
 
