@@ -206,6 +206,7 @@ module "ecs_codepipeline" {
   github_webhooks_token = var.codepipeline_github_webhooks_token
   github_webhook_events = var.codepipeline_github_webhook_events
 
+
   // True required to build docker containers
   privileged_mode = true
 
