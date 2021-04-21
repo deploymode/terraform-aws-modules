@@ -187,9 +187,10 @@ resource "aws_service_discovery_service" "service_discovery" {
 
 // CodePipeline using ECS Deploy
 module "ecs_codepipeline" {
-  source  = "cloudposse/ecs-codepipeline/aws"
-  version = "0.24.0"
-  region  = var.aws_region
+  source = "git::https://github.com/joe-niland/terraform-aws-ecs-codepipeline.git?ref=codebuild-env-vars"
+  # source  = "cloudposse/ecs-codepipeline/aws"
+  # version = "0.24.0"
+  region = var.aws_region
 
   repo_owner = var.codepipeline_repo_owner
   repo_name  = var.codepipeline_repo_name
@@ -238,6 +239,23 @@ module "ecs_codepipeline" {
   ecs_cluster_name = var.ecs_cluster_name
   service_name     = module.ecs_task.service_name
   context          = module.this.context
+}
+
+module "codepipeline_notifications" {
+  source  = "kjagiello/codepipeline-slack-notifications/aws"
+  version = "1.1.4"
+
+  count = (module.this.enabled && var.codepipeline_slack_notification_webhook_url == "") ? 0 : 1
+
+  name           = module.this.id
+  namespace      = module.this.namespace
+  stage          = module.this.stage
+  slack_url      = var.codepipeline_slack_notification_webhook_url
+  slack_channel  = var.codepipeline_slack_notification_channel
+  event_type_ids = var.codepipeline_slack_notification_event_ids
+  codepipelines = [
+    module.ecs_codepipeline.codepipeline_resource
+  ]
 }
 
 // Block public ACLs for Codepipeline bucket

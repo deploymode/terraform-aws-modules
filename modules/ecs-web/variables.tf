@@ -388,12 +388,6 @@ variable "codepipeline_environment_variables" {
   default     = []
 }
 
-# variable "codepipeline_ssm_params" {
-#   type        = list(string)
-#   description = "SSM params required by CodeBuild"
-#   default     = []
-# }
-
 // CodePipeline notifications
 
 variable "codepipeline_slack_notification_webhook_url" {
@@ -419,7 +413,6 @@ variable "codepipeline_slack_notification_event_ids" {
     "codepipeline-pipeline-pipeline-execution-succeeded",
     "codepipeline-pipeline-pipeline-execution-superseded"
   ]
-
 }
 
 variable "test_report_names" {
