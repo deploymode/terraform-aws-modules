@@ -239,7 +239,7 @@ variable "assign_public_ip" {
 }
 
 variable "security_group_ids" {
-  type        = list
+  type        = list(any)
   description = "Additional security groups that should have access to the ECS service"
   default     = []
 }
@@ -423,7 +423,7 @@ variable "codepipeline_slack_notification_event_ids" {
 }
 
 variable "test_report_names" {
-  type        = map
+  type        = map(any)
   description = "CodeBuild test report names"
   default = {
     "UnitTestReports" = "build/logs"
@@ -514,5 +514,11 @@ variable "provision_dynamodb_cache" {
 variable "queue_name" {
   type        = string
   description = "Name of SQS queue used by application"
+  default     = ""
+}
+
+variable "queue_access_policy_arn" {
+  type        = string
+  description = "IAM Policy to allow access to queue"
   default     = ""
 }

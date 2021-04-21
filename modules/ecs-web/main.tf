@@ -371,6 +371,14 @@ module "redis" {
   context = module.this.context
 }
 
+// SQS Access
+
+resource "aws_iam_role_policy_attachment" "sqs_access" {
+  count  = var.queue_access_policy_arn != "" ? 1 : 0
+  role   = module.ecs_task.task_role_name
+  policy = var.queue_access_policy_arn
+}
+
 // DynamoDB Cache
 module "dynamodb" {
   source                        = "cloudposse/dynamodb/aws"
@@ -383,7 +391,7 @@ module "dynamodb" {
   context                       = module.this.context
 }
 
-data aws_iam_policy_document dynamodb {
+data "aws_iam_policy_document" "dynamodb" {
   count = (module.this.enabled && var.provision_dynamodb_cache) ? 1 : 0
 
   # Allow ECS task to access DynamoDB cache table
