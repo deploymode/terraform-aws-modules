@@ -190,7 +190,7 @@ module "ecs_task" {
   platform_version               = var.ecs_platform_version
   vpc_id                         = var.vpc_id
   subnet_ids                     = var.private_subnet_ids
-  tags                           = var.tags
+  exec_enabled                   = var.ecs_enable_exec
   ignore_changes_task_definition = var.ecs_ignore_changes_task_definition
 
   network_mode     = var.ecs_network_mode

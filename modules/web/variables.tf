@@ -244,6 +244,12 @@ variable "security_group_ids" {
   default     = []
 }
 
+variable "ecs_enable_exec" {
+  type        = bool
+  description = "Specifies whether to enable Amazon ECS Exec for the tasks within the service. Creates required IAM policies."
+  default     = false
+}
+
 // Container variables
 
 variable "log_driver" {
