@@ -5,7 +5,7 @@ output "codepipeline_arn" {
 
 output "ecs_service_security_group_id" {
   description = "Security Group ID of the ECS task"
-  value       = module.ecs_alb_service_task.service_security_group_id
+  value       = module.ecs_task.service_security_group_id
 }
 
 output "cloudwatch_log_group_name" {
