@@ -23,6 +23,11 @@ output "ecs_task_role_id" {
   value       = module.ecs_task.task_role_id
 }
 
+output "ecs_task_definition_revision" {
+  description = "ECS task definition revision"
+  value       = module.ecs_task.task_definition_revision
+}
+
 output "host_name" {
   value       = var.hosted_zone_id != "" ? join("", aws_route53_record.default.*.fqdn) : ""
   description = "Public hostname associated with load balancer"

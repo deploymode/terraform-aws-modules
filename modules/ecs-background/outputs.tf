@@ -12,3 +12,8 @@ output "cloudwatch_log_group_name" {
   description = "ECS Service log group name"
   value       = module.container_label.id
 }
+
+output "ecs_task_definition_revision" {
+  description = "ECS task definition revision"
+  value       = module.ecs_task.task_definition_revision
+}
