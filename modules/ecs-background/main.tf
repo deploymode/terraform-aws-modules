@@ -43,7 +43,7 @@ module "container" {
   essential                    = true
   readonly_root_filesystem     = false
   environment                  = concat(var.container_environment, local.queue_env_vars)
-  secrets                      = var.container_secrets
+  secrets                      = var.container_ssm_secrets
   port_mappings                = var.container_port_mappings
   command                      = var.container_command
   entrypoint                   = var.container_entrypoint

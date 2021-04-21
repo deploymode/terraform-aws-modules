@@ -168,7 +168,7 @@ variable "container_environment" {
   default     = null
 }
 
-variable "container_secrets" {
+variable "container_ssm_secrets" {
   type = list(object({
     name      = string
     valueFrom = string
