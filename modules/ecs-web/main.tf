@@ -374,9 +374,9 @@ module "redis" {
 // SQS Access
 
 resource "aws_iam_role_policy_attachment" "sqs_access" {
-  count  = var.queue_access_policy_arn != "" ? 1 : 0
-  role   = module.ecs_task.task_role_name
-  policy = var.queue_access_policy_arn
+  count      = var.queue_access_policy_arn != "" ? 1 : 0
+  role       = module.ecs_task.task_role_name
+  policy_arn = var.queue_access_policy_arn
 }
 
 // DynamoDB Cache
