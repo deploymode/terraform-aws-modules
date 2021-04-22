@@ -248,7 +248,7 @@ module "codepipeline_notifications" {
 
   count = (module.this.enabled && var.codepipeline_slack_notification_webhook_url == "") ? 0 : 1
 
-  name           = module.this.id
+  name           = module.this.name
   namespace      = module.this.namespace
   stage          = module.this.stage
   slack_url      = var.codepipeline_slack_notification_webhook_url
