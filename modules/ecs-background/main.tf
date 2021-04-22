@@ -201,11 +201,12 @@ module "ecs_codepipeline" {
   build_compute_type = var.codepipeline_build_compute_type
   buildspec          = var.codepipeline_buildspec
 
-  poll_source_changes   = false
-  webhook_enabled       = var.codepipeline_github_webhook_enabled
-  github_oauth_token    = var.codepipeline_github_oauth_token
-  github_webhooks_token = var.codepipeline_github_webhooks_token
-  github_webhook_events = var.codepipeline_github_webhook_events
+  poll_source_changes     = false
+  codestar_connection_arn = var.codestar_connection_arn
+  webhook_enabled         = var.codepipeline_github_webhook_enabled
+  github_oauth_token      = var.codepipeline_github_oauth_token
+  github_webhooks_token   = var.codepipeline_github_webhooks_token
+  github_webhook_events   = var.codepipeline_github_webhook_events
 
   codebuild_vpc_config = var.codebuild_vpc_config
 

@@ -215,6 +215,12 @@ variable "container_stop_timeout" {
 
 // CodePipeline
 
+variable "codestar_connection_arn" {
+  type        = string
+  description = "Bitbucket connection"
+  default     = ""
+}
+
 variable "codepipeline_skip_deploy_step" {
   type        = bool
   description = "When true Deploy step will not be added in CodePipeline"
