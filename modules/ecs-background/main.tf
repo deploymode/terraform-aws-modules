@@ -13,9 +13,9 @@ locals {
 
 // ECR Registry/Repo
 module "ecr" {
-  source               = "cloudposse/ecr/aws"
-  version              = "0.32.2"
-  attributes           = compact(concat(module.this.attributes, ["ecr"]))
+  source  = "cloudposse/ecr/aws"
+  version = "0.32.2"
+  # attributes           = compact(concat(module.this.attributes, ["ecr"]))
   use_fullname         = true
   scan_images_on_push  = true
   image_tag_mutability = "MUTABLE"
