@@ -213,7 +213,7 @@ module "ecs_codepipeline" {
   // True required to build docker containers
   privileged_mode = true
 
-  image_repo_name = module.ecr.repository_name
+  image_repo_name = split("/", module.ecr.repository_url)[0]
   image_tag       = "latest"
 
   cache_type              = var.codebuild_cache_type
