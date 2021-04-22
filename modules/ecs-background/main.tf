@@ -13,9 +13,8 @@ locals {
 
 // ECR Registry/Repo
 module "ecr" {
-  source  = "cloudposse/ecr/aws"
-  version = "0.32.2"
-  # attributes           = compact(concat(module.this.attributes, ["ecr"]))
+  source               = "cloudposse/ecr/aws"
+  version              = "0.32.2"
   use_fullname         = true
   scan_images_on_push  = true
   image_tag_mutability = "MUTABLE"
@@ -24,16 +23,16 @@ module "ecr" {
 }
 
 // Container Defs
-module "container_label" {
-  source  = "cloudposse/label/null"
-  version = "0.24.1"
-  context = module.this.context
-}
+# module "container_label" {
+#   source  = "cloudposse/label/null"
+#   version = "0.24.1"
+#   context = module.this.context
+# }
 
 module "container" {
   source                       = "cloudposse/ecs-container-definition/aws"
   version                      = "0.56.0"
-  container_name               = module.container_label.id
+  container_name               = module.this.id
   container_image              = join(":", [module.ecr.repository_url, "latest"])
   container_memory             = var.container_memory
   container_memory_reservation = var.container_memory_reservation

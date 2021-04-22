@@ -399,11 +399,6 @@ data "aws_iam_policy_document" "dynamodb" {
   statement {
     sid = ""
 
-    # principals {
-    #   type        = "AWS"
-    #   identifiers = [module.ecs_task.task_role_arn]
-    # }
-
     actions = [
       "dynamodb:DescribeTable",
       "dynamodb:Query",
@@ -432,11 +427,18 @@ module "dynamodb_label" {
   context    = module.this.context
 }
 
-resource "aws_iam_role_policy" "ecs_task_dynamodb" {
-  count  = (module.this.enabled && var.provision_dynamodb_cache) ? 1 : 0
-  name   = module.dynamodb_label.id
-  policy = join("", data.aws_iam_policy_document.dynamodb.*.json)
-  role   = module.ecs_task.task_role_name
+resource "aws_iam_policy" "dynamodb_access_policy" {
+  count       = (module.this.enabled && var.provision_dynamodb_cache) ? 1 : 0
+  name        = module.dynamodb_label.id
+  path        = "/"
+  description = "Allows access to DynamoDB table for app cache"
+  policy      = join("", data.aws_iam_policy_document.dynamodb.*.json)
+}
+
+resource "aws_iam_role_policy_attachment" "ecs_task_dynamodb" {
+  count      = (module.this.enabled && var.provision_dynamodb_cache) ? 1 : 0
+  role       = module.ecs_task.task_role_name
+  policy_arn = aws_iam_policy.dynamodb_access_policy.arn
 }
 
 

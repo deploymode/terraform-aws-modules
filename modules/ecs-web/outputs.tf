@@ -72,6 +72,11 @@ output "dynamodb_table_arn" {
   description = "DynamoDB table ARN"
 }
 
+output "dynamodb_access_policy_arn" {
+  value       = var.provision_dynamodb_cache ? join("", aws_iam_policy.dynamodb_access_policy.*.arn) : ""
+  description = "Policy to allow access to DynamoDB table for app cache"
+}
+
 
 // CodePipeline
 
