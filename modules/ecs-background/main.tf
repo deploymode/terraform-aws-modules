@@ -302,7 +302,7 @@ data "aws_iam_policy_document" "codebuild" {
       "ecr:GetDownloadUrlForLayer"
     ]
 
-    resources = [module.ecr.repository_arn]
+    resources = values(module.ecr.repository_arn_map)
     effect    = "Allow"
   }
 
