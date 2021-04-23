@@ -250,6 +250,12 @@ variable "ecs_enable_exec" {
   default     = false
 }
 
+variable "ecs_task_policy_arns" {
+  type        = list(string)
+  description = "List of IAM policy ARNs to attach to the ECS task role"
+  default     = []
+}
+
 // Container variables
 
 variable "log_driver" {
@@ -510,8 +516,4 @@ variable "queue_name" {
   default     = ""
 }
 
-variable "queue_access_policy_arn" {
-  type        = string
-  description = "IAM Policy to allow access to queue"
-  default     = ""
-}
+

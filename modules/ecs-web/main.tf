@@ -191,6 +191,7 @@ module "ecs_task" {
   platform_version               = var.ecs_platform_version
   vpc_id                         = var.vpc_id
   subnet_ids                     = var.private_subnet_ids
+  task_policy_arns               = var.ecs_task_policy_arns
   exec_enabled                   = var.ecs_enable_exec
   ignore_changes_task_definition = var.ecs_ignore_changes_task_definition
 
@@ -440,5 +441,3 @@ resource "aws_iam_role_policy_attachment" "ecs_task_dynamodb" {
   role       = module.ecs_task.task_role_name
   policy_arn = join("", aws_iam_policy.dynamodb_access_policy.*.arn)
 }
-
-

@@ -329,11 +329,3 @@ data "aws_iam_policy_document" "codebuild" {
   }
 
 }
-
-// SQS Access
-
-resource "aws_iam_role_policy_attachment" "sqs_access" {
-  count      = var.queue_access_policy_arn != "" ? 1 : 0
-  role       = module.ecs_task.task_role_name
-  policy_arn = var.queue_access_policy_arn
-}
