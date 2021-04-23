@@ -50,7 +50,7 @@ module "container" {
   stop_timeout                 = var.container_stop_timeout
   essential                    = true
   readonly_root_filesystem     = false
-  environment                  = concat(var.container_environment, local.queue_env_vars)
+  environment                  = concat(var.container_environment, local.queue_env_vars, local.dynamodb_cache_env_vars)
   secrets                      = var.container_ssm_secrets
   port_mappings                = var.container_port_mappings
   command                      = var.container_command
