@@ -438,7 +438,7 @@ resource "aws_iam_policy" "dynamodb_access_policy" {
 resource "aws_iam_role_policy_attachment" "ecs_task_dynamodb" {
   count      = (module.this.enabled && var.provision_dynamodb_cache) ? 1 : 0
   role       = module.ecs_task.task_role_name
-  policy_arn = aws_iam_policy.dynamodb_access_policy.arn
+  policy_arn = join("", aws_iam_policy.dynamodb_access_policy.*.arn)
 }
 
 
