@@ -83,6 +83,7 @@ module "ecs_task" {
   # Additional security groups to assign to service
   security_group_ids             = var.ecs_security_group_ids
   subnet_ids                     = var.subnet_ids
+  task_policy_arns               = var.ecs_task_policy_arns
   assign_public_ip               = var.assign_public_ip
   enable_icmp_rule               = false
   tags                           = var.tags

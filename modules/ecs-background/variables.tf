@@ -31,6 +31,12 @@ variable "allowed_ingress_security_group_ids" {
   default     = []
 }
 
+variable "ecs_task_policy_arns" {
+  type        = list(string)
+  description = "List of IAM policy ARNs to attach to the ECS task role"
+  default     = []
+}
+
 variable "ecs_cluster_arn" {
   type        = string
   description = "ECS cluster ARN"
