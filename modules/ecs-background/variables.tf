@@ -372,8 +372,8 @@ variable "queue_name" {
   default     = ""
 }
 
-variable "queue_access_policy_arn" {
+variable "dynamodb_table_name" {
   type        = string
-  description = "IAM Policy to allow access to queue"
+  description = "Name of DynamoDB table used by application (if any)"
   default     = ""
 }

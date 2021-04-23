@@ -9,7 +9,16 @@ locals {
       value = "https://sqs.${var.aws_region}.amazonaws.com/${var.aws_account_id}"
     },
   ] : []
+
+  dynamodb_cache_env_vars = var.dynamodb_table_name != "" ? [
+    {
+      name  = "DYNAMODB_CACHE_TABLE"
+      value = var.dynamodb_table_name
+    },
+  ] : []
 }
+
+
 
 // ECR Registry/Repo
 module "ecr" {
