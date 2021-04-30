@@ -154,6 +154,14 @@ variable "hosted_zone_id" {
   default     = ""
 }
 
+// ECR
+
+variable "ecr_max_image_count" {
+  type        = number
+  description = "Maximum number of images to store before ECR lifecycle rules delete oldest"
+  default     = 500
+}
+
 // ECS
 
 variable "ecs_cluster_arn" {

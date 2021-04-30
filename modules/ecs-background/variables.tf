@@ -17,6 +17,14 @@ variable "subnet_ids" {
   description = "List of subnet IDs - public or private. When choosing public you can also specific that a public IP is assigned."
 }
 
+// ECR
+
+variable "ecr_max_image_count" {
+  type        = number
+  description = "Maximum number of images to store before ECR lifecycle rules delete oldest"
+  default     = 500
+}
+
 // ECS
 
 variable "ecs_security_group_ids" {

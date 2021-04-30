@@ -26,6 +26,7 @@ module "ecr" {
   version              = "0.32.2"
   use_fullname         = true
   scan_images_on_push  = true
+  max_image_count      = var.ecr_max_image_count
   image_tag_mutability = "MUTABLE"
 
   context = module.this.context
