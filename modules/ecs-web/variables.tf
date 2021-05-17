@@ -516,6 +516,12 @@ variable "provision_dynamodb_cache" {
   default     = false
 }
 
+variable "dynamodb_cache_ttl_attribute" {
+  type        = string
+  default     = "expires_at"
+  description = "DynamoDB table TTL attribute"
+}
+
 // Queue
 
 variable "queue_name" {
