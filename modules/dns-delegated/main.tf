@@ -28,7 +28,7 @@ resource "aws_route53_record" "soa" {
 
 data "aws_route53_zone" "root_zone" {
   for_each = local.zone_map
-  #   provider = aws.primary
+  provider = aws.primary
 
   name         = format("%s.", each.value)
   private_zone = false
@@ -36,7 +36,7 @@ data "aws_route53_zone" "root_zone" {
 
 resource "aws_route53_record" "root_ns" {
   for_each = data.aws_route53_zone.root_zone
-  #   provider = aws.primary
+  provider = aws.primary
 
   allow_overwrite = true
   name            = each.key
