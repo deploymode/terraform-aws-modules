@@ -59,7 +59,7 @@ output "database_password" {
   sensitive   = true
 }
 
-output "database_name" {
-  value       = module.rds_instance.database_name
-  description = "Name of database created with instance"
-}
+# output "database_name" {
+#   value       = module.rds_instance.database_name
+#   description = "Name of database created with instance"
+# }
