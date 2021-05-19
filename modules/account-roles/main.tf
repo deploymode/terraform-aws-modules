@@ -38,7 +38,9 @@ data "aws_iam_policy_document" "dns_policy" {
       "route53:ListResourceRecordSets",
       "route53:GetHostedZoneCount",
       "route53:GetChange",
-      "route53:ListHostedZonesByName"
+      "route53:ListHostedZonesByName",
+      "route53:ListTagsForResource",
+      "route53:ChangeTagsForResource"
     ]
 
     resources = [

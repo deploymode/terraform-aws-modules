@@ -20,7 +20,7 @@ data "aws_iam_policy_document" "sqs" {
     ]
 
     resources = [
-      module.queue.this_sqs_queue_arn
+      module.queue.sqs_queue_arn
     ]
 
     effect = "Allow"
@@ -37,7 +37,7 @@ resource "aws_iam_policy" "sqs_policy" {
 
 module "queue" {
   source  = "terraform-aws-modules/sqs/aws"
-  version = ">= 2.0"
+  version = ">= 3.0"
   create  = module.this.enabled
   name    = module.this.id
   tags    = module.this.tags
