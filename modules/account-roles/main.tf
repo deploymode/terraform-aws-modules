@@ -5,6 +5,7 @@ module "dns_role" {
   version = "0.7.0"
 
   context = module.this.context
+  name    = "dns"
 
   enabled = module.this.enabled && var.provision_dns_role
 
