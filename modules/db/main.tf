@@ -13,7 +13,7 @@ module "sg_label" {
 }
 
 resource "aws_security_group" "allowed" {
-  count = module.this.enabled ? 1 : 0
+  count = module.this.enabled && var.provision_security_group ? 1 : 0
 
   name        = module.sg_label.id
   description = "Services which need DB access can be assigned this security group"
