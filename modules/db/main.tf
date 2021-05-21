@@ -67,7 +67,7 @@ module "rds_instance" {
   allow_major_version_upgrade = false
   apply_immediately           = true
   maintenance_window          = var.maintenance_window
-  skip_final_snapshot         = false
+  skip_final_snapshot         = var.skip_final_snapshot
   copy_tags_to_snapshot       = true
   backup_retention_period     = var.backup_retention_period
   backup_window               = var.backup_window
