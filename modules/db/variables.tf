@@ -10,6 +10,12 @@ variable "host_name" {
   description = "The DB host name created in Route53"
 }
 
+variable "provision_security_group" {
+  type = bool
+  default = false
+  description = "If true, create security group which can be assigned to resources needing DB access"
+}
+
 variable "allowed_security_group_ids" {
   type        = list(string)
   default     = []
