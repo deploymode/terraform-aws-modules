@@ -11,8 +11,8 @@ variable "host_name" {
 }
 
 variable "provision_security_group" {
-  type = bool
-  default = false
+  type        = bool
+  default     = false
   description = "If true, create security group which can be assigned to resources needing DB access"
 }
 
@@ -321,4 +321,10 @@ variable "monitoring_role_arn" {
 variable "iam_database_authentication_enabled" {
   description = "Specifies whether or mappings of AWS Identity and Access Management (IAM) accounts to database accounts is enabled"
   default     = false
+}
+
+variable "skip_final_snapshot" {
+  type        = bool
+  description = "If true (default), no snapshot will be made before deleting DB"
+  default     = true
 }
