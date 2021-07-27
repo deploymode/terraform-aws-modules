@@ -270,7 +270,7 @@ module "cdn" {
   price_class          = "PriceClass_All"
 
   ordered_cache = [
-    merge(local.app_cache_behavior, tomap("path_pattern", "*")),
+    merge(local.app_cache_behavior, tomap({ "path_pattern" = "*" })),
     # merge(local.wp_nocache_behavior, map("path_pattern", "wp-login.php")),
     # merge(local.wp_nocache_behavior, map("path_pattern", "wp-signup.php")),
     # merge(local.wp_nocache_behavior, map("path_pattern", "wp-trackback.php")),
