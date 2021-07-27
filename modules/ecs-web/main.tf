@@ -245,9 +245,9 @@ locals {
 }
 
 module "cdn" {
-  source     = "cloudposse/cloudfront-cdn/aws"
-  version    = "0.21.0"
-  name       = module.this.id
+  source  = "cloudposse/cloudfront-cdn/aws"
+  version = "0.21.0"
+  # name       = module.this.id
   attributes = [var.domain_name]
 
   # aliases                           = ["cloudposse.com", "www.cloudposse.com"]
