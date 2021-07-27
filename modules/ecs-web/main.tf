@@ -548,8 +548,9 @@ module "app_bucket_policy_label" {
   context    = module.this.context
 }
 
-resource "aws_iam_role_policy" "app_bucket_policy" {
-  name   = module.app_bucket_policy_label.id
-  role   = module.ecs_task.task_role_name
-  policy = module.app_bucket_iam_policy.json
-}
+# Temporarily remove
+# resource "aws_iam_role_policy" "app_bucket_policy" {
+#   name   = module.app_bucket_policy_label.id
+#   role   = module.ecs_task.task_role_name
+#   policy = module.app_bucket_iam_policy.json
+# }
