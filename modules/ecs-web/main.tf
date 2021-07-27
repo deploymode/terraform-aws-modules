@@ -270,7 +270,7 @@ module "cdn" {
   price_class          = "PriceClass_All"
 
   ordered_cache = [
-    merge(local.app_nocache_behavior, map("path_pattern", "*")),
+    merge(local.app_cache_behavior, map("path_pattern", "*")),
     # merge(local.wp_nocache_behavior, map("path_pattern", "wp-login.php")),
     # merge(local.wp_nocache_behavior, map("path_pattern", "wp-signup.php")),
     # merge(local.wp_nocache_behavior, map("path_pattern", "wp-trackback.php")),
@@ -551,5 +551,5 @@ module "app_bucket_policy_label" {
 resource "aws_iam_role_policy" "app_bucket_policy" {
   name   = module.app_bucket_policy_label.id
   role   = module.ecs_task.task_role_name
-  policy = module.app_bucket_iam_policy.json
+  policy = jsonencode(module.app_bucket_iam_policy.json)
 }
