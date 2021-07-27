@@ -551,5 +551,5 @@ module "app_bucket_policy_label" {
 resource "aws_iam_role_policy" "app_bucket_policy" {
   name   = module.app_bucket_policy_label.id
   role   = module.ecs_task.task_role_name
-  policy = jsonencode(module.app_bucket_iam_policy.json)
+  policy = module.app_bucket_iam_policy.json
 }
