@@ -30,3 +30,9 @@ variable "assign_elastic_ips" {
   type    = bool
   default = false
 }
+
+variable "enable_s3_endpoint" {
+  type        = bool
+  default     = false
+  description = "If true, create S3 VPC endpoint"
+}
