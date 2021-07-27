@@ -39,9 +39,11 @@ module "s3_endpoint_label" {
   version    = "0.24.1"
   context    = module.this.context
   attributes = compact(concat(module.this.attributes, ["s3"]))
+  enabled    = var.enable_s3_endpoint
 }
 
 resource "aws_vpc_endpoint" "s3" {
+  count        = var.enable_s3_endpoint ? 1 : 0
   vpc_id       = module.vpc.vpc_id
   service_name = format("com.amazonaws.%s.s3", var.aws_region)
 

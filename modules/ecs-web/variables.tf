@@ -530,4 +530,10 @@ variable "queue_name" {
   default     = ""
 }
 
+// Buckets
 
+variable "app_buckets" {
+  type        = list(string)
+  description = "S3 buckets used by the application. Used to allow application roles to access buckets."
+  default     = []
+}

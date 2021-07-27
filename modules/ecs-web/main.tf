@@ -14,9 +14,13 @@ locals {
       value = var.queue_name
     },
     {
+      name  = "SQS_REGION"
+      value = var.aws_region
+    },
+    {
       name  = "SQS_PREFIX"
       value = "https://sqs.${var.aws_region}.amazonaws.com/${var.aws_account_id}"
-    },
+    }
   ] : []
 
   redis_cache_env_vars = var.provision_redis_cache ? [
@@ -219,6 +223,62 @@ resource "aws_route53_record" "default" {
     zone_id                = module.alb.alb_zone_id
     evaluate_target_health = true
   }
+}
+
+locals {
+  app_cache_behavior = {
+    viewer_protocol_policy      = "redirect-to-https"
+    cached_methods              = ["GET", "HEAD"]
+    allowed_methods             = ["HEAD", "DELETE", "POST", "GET", "OPTIONS", "PUT", "PATCH"]
+    default_ttl                 = 60
+    min_ttl                     = 0
+    max_ttl                     = 86400
+    compress                    = true
+    target_origin_id            = module.alb.alb_dns_name
+    forward_cookies             = "all"
+    forward_header_values       = ["*"]
+    forward_query_string        = true
+    lambda_function_association = []
+    cache_policy_id             = ""
+    origin_request_policy_id    = ""
+  }
+}
+
+module "cdn" {
+  source     = "cloudposse/cloudfront-cdn/aws"
+  version    = "0.21.0"
+  name       = module.this.id
+  attributes = [var.domain_name]
+
+  # aliases                           = ["cloudposse.com", "www.cloudposse.com"]
+  origin_domain_name     = module.alb.alb_dns_name
+  origin_protocol_policy = "match-viewer"
+  viewer_protocol_policy = "redirect-to-https"
+  parent_zone_name       = var.domain_name
+  default_root_object    = ""
+  acm_certificate_arn    = var.certificate_arn
+  forward_cookies        = "all" #"whitelist"
+  # forward_cookies_whitelisted_names = ["comment_author_*", "comment_author_email_*", "comment_author_url_*", "wordpress_logged_in_*", "wordpress_test_cookie", "wp-settings-*"]
+  forward_headers      = ["Host", "Origin", "Referer", "CloudFront-Forwarded-Proto", "Access-Control-Request-Headers", "Access-Control-Request-Method"]
+  forward_query_string = true
+  default_ttl          = 86400
+  min_ttl              = 0
+  max_ttl              = 31536000
+  compress             = true
+  cached_methods       = ["GET", "HEAD", "OPTIONS"]
+  allowed_methods      = ["GET", "HEAD", "OPTIONS", "PUT", "POST", "PATCH", "DELETE"]
+  price_class          = "PriceClass_All"
+
+  ordered_cache = [
+    merge(local.app_nocache_behavior, map("path_pattern", "*")),
+    # merge(local.wp_nocache_behavior, map("path_pattern", "wp-login.php")),
+    # merge(local.wp_nocache_behavior, map("path_pattern", "wp-signup.php")),
+    # merge(local.wp_nocache_behavior, map("path_pattern", "wp-trackback.php")),
+    # merge(local.wp_nocache_behavior, map("path_pattern", "wp-cron.php")),
+    # merge(local.wp_nocache_behavior, map("path_pattern", "xmlrpc.php"))
+  ]
+
+  context = module.this.context
 }
 
 // CodePipeline
@@ -435,4 +495,61 @@ resource "aws_iam_role_policy_attachment" "ecs_task_dynamodb" {
   count      = (module.this.enabled && var.provision_dynamodb_cache) ? 1 : 0
   role       = module.ecs_task.task_role_name
   policy_arn = join("", aws_iam_policy.dynamodb_access_policy.*.arn)
+}
+
+// Bucket access
+module "app_bucket_iam_policy" {
+  source  = "cloudposse/iam-policy/aws"
+  version = "0.1.0"
+
+  for_each = var.app_buckets
+
+  iam_policy_statements = [
+    {
+      sid        = "ListBucket"
+      effect     = "Allow"
+      actions    = ["s3:ListBucket"]
+      resources  = [each.key]
+      conditions = []
+    },
+    {
+      sid    = "WriteBucket"
+      effect = "Allow"
+      actions = [
+        "s3:PutObject",
+        "s3:PutObjectVersionAcl",
+        "s3:PutObjectAcl",
+        "s3:GetObjectAcl",
+        "s3:GetObject",
+        "s3:GetObjectVersionAcl",
+        "s3:GetObjectVersion"
+      ]
+      resources  = ["${each.key}/*"]
+      conditions = []
+    },
+    # TODO: move this out so it's not duplicated
+    {
+      sid    = "ListBuckets"
+      effect = "Allow"
+      actions = [
+        "s3:ListAllMyBuckets",
+        "s3:HeadBucket"
+      ]
+      resources  = ["*"]
+      conditions = []
+    }
+  ]
+}
+
+module "app_bucket_policy_label" {
+  source     = "cloudposse/label/null"
+  version    = "0.24.1"
+  attributes = ["buckets"]
+  context    = module.this.context
+}
+
+resource "aws_iam_role_policy" "app_bucket_policy" {
+  name   = module.app_bucket_policy_label.id
+  role   = module.ecs_task.task_role_name
+  policy = module.app_bucket_iam_policy.json
 }
