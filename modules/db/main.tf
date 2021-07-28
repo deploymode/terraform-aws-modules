@@ -33,9 +33,9 @@ resource "aws_security_group_rule" "egress" {
 }
 
 module "rds_instance" {
-  source = "git::https://github.com/joe-niland/terraform-aws-rds.git?ref=avoid-sec-group-count-issue"
-  # source      = "cloudposse/rds/aws"
-  # version     = "0.35.1"
+  # source = "git::https://github.com/joe-niland/terraform-aws-rds.git?ref=avoid-sec-group-count-issue"
+  source      = "cloudposse/rds/aws"
+  version     = "0.37.0"
   dns_zone_id = var.dns_zone_id
   host_name   = var.host_name
   security_group_ids = compact(
