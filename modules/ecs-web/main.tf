@@ -251,7 +251,7 @@ module "cdn" {
   attributes = [var.domain_name]
 
   # aliases                           = ["cloudposse.com", "www.cloudposse.com"]
-  origin_domain_name     = aws_route53_record.default.fqdn // module.alb.alb_dns_name
+  origin_domain_name     = join("", aws_route53_record.default.*.fqdn) // module.alb.alb_dns_name
   origin_protocol_policy = "match-viewer"
   viewer_protocol_policy = "redirect-to-https"
   parent_zone_name       = var.domain_name
