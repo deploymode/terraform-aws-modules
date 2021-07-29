@@ -234,7 +234,7 @@ locals {
     min_ttl                     = 0
     max_ttl                     = 86400
     compress                    = true
-    target_origin_id            = join("", aws_route53_record.default.*.fqdn)
+    target_origin_id            = module.alb.alb_dns_name #  join("", aws_route53_record.default.*.fqdn)
     forward_cookies             = "all"
     forward_header_values       = ["*"]
     forward_query_string        = true
@@ -251,13 +251,14 @@ module "cdn" {
   attributes = [var.domain_name]
 
   # aliases                           = ["cloudposse.com", "www.cloudposse.com"]
-  origin_domain_name     = join("", aws_route53_record.default.*.fqdn) // module.alb.alb_dns_name
-  origin_protocol_policy = "match-viewer"
-  viewer_protocol_policy = "redirect-to-https"
-  parent_zone_name       = var.domain_name
-  default_root_object    = ""
-  acm_certificate_arn    = var.certificate_arn
-  forward_cookies        = "all" #"whitelist"
+  origin_domain_name              = join("", aws_route53_record.default.*.fqdn) // module.alb.alb_dns_name
+  origin_protocol_policy          = "match-viewer"
+  viewer_protocol_policy          = "redirect-to-https"
+  viewer_minimum_protocol_version = "TLSv1.2"
+  parent_zone_name                = var.domain_name
+  default_root_object             = ""
+  acm_certificate_arn             = var.certificate_arn
+  forward_cookies                 = "all" #"whitelist"
   # forward_cookies_whitelisted_names = ["comment_author_*", "comment_author_email_*", "comment_author_url_*", "wordpress_logged_in_*", "wordpress_test_cookie", "wp-settings-*"]
   forward_headers      = ["Host", "Origin", "Referer", "CloudFront-Forwarded-Proto", "Access-Control-Request-Headers", "Access-Control-Request-Method"]
   forward_query_string = true
