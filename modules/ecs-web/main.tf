@@ -215,7 +215,7 @@ module "ecs_task" {
 resource "aws_route53_record" "default" {
   count   = var.hosted_zone_id != "" ? 1 : 0
   zone_id = var.hosted_zone_id
-  name    = join(".", [module.this.name, module.this.environment, var.domain_name])
+  name    = join(".", [var.app_dns_name, var.domain_name]) // module.this.name, module.this.environment, var.domain_name])
   type    = "A"
 
   alias {
@@ -251,7 +251,7 @@ module "cdn" {
   attributes = [var.domain_name]
 
   # aliases                           = ["cloudposse.com", "www.cloudposse.com"]
-  origin_domain_name     = module.alb.alb_dns_name
+  origin_domain_name     = aws_route53_record.default.fqdn // module.alb.alb_dns_name
   origin_protocol_policy = "match-viewer"
   viewer_protocol_policy = "redirect-to-https"
   parent_zone_name       = var.domain_name

@@ -154,6 +154,12 @@ variable "hosted_zone_id" {
   default     = ""
 }
 
+variable "app_dns_name" {
+  type        = string
+  description = "Subdomain prepended to `domain_name`"
+  default     = "app"
+}
+
 // ECR
 
 variable "ecr_max_image_count" {
