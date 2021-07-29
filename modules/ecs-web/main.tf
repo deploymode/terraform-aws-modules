@@ -254,7 +254,7 @@ module "cdn" {
   origin_domain_name              = join("", aws_route53_record.default.*.fqdn) // module.alb.alb_dns_name
   origin_protocol_policy          = "match-viewer"
   viewer_protocol_policy          = "redirect-to-https"
-  viewer_minimum_protocol_version = "TLSv1.2"
+  viewer_minimum_protocol_version = var.cdn_viewer_min_protocol_version
   parent_zone_name                = var.domain_name
   default_root_object             = ""
   acm_certificate_arn             = var.certificate_arn

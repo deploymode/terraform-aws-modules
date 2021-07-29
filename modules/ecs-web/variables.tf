@@ -543,3 +543,11 @@ variable "app_buckets" {
   description = "S3 buckets used by the application. Used to allow application roles to access buckets."
   default     = []
 }
+
+// CDN / CloudFront
+
+var "cdn_viewer_min_protocol_version" {
+  type        = string
+  description = "Minimum TLS standard for clients"
+  default     = "TLSv1.2_2019"
+}
