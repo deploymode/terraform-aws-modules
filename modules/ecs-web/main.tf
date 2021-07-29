@@ -234,7 +234,7 @@ locals {
     min_ttl                     = 0
     max_ttl                     = 86400
     compress                    = true
-    target_origin_id            = module.alb.alb_dns_name
+    target_origin_id            = join("", aws_route53_record.default.*.fqdn)
     forward_cookies             = "all"
     forward_header_values       = ["*"]
     forward_query_string        = true
