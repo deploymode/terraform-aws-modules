@@ -1,4 +1,6 @@
 locals {
+  app_fqdn = join(".", [var.app_dns_name, var.domain_name])
+
   image_names_map = {
     "nginx" = format("%s-%s", "nginx", module.this.stage)
     "php"   = format("%s-%s", "php-fpm", module.this.stage)
@@ -215,7 +217,7 @@ module "ecs_task" {
 resource "aws_route53_record" "default" {
   count   = var.hosted_zone_id != "" ? 1 : 0
   zone_id = var.hosted_zone_id
-  name    = join(".", [var.app_dns_name, var.domain_name]) // module.this.name, module.this.environment, var.domain_name])
+  name    = local.app_fqdn // join(".", [local.app_fqdnvar.app_dns_name, var.domain_name]) // module.this.name, module.this.environment, var.domain_name])
   type    = "A"
 
   alias {
@@ -248,10 +250,10 @@ module "cdn" {
   source  = "cloudposse/cloudfront-cdn/aws"
   version = "0.21.0"
   # name       = module.this.id
-  attributes = [var.domain_name]
+  # attributes = [var.domain_name]
 
-  # aliases                           = ["cloudposse.com", "www.cloudposse.com"]
-  origin_domain_name              = join("", aws_route53_record.default.*.fqdn) // module.alb.alb_dns_name
+  aliases                         = [local.app_fqdn]
+  origin_domain_name              =  module.alb.alb_dns_name // join("", aws_route53_record.default.*.fqdn)
   origin_protocol_policy          = "match-viewer"
   viewer_protocol_policy          = "redirect-to-https"
   viewer_minimum_protocol_version = var.cdn_viewer_min_protocol_version
