@@ -253,7 +253,7 @@ module "cdn" {
   # attributes = [var.domain_name]
 
   aliases                         = [local.app_fqdn]
-  origin_domain_name              =  module.alb.alb_dns_name // join("", aws_route53_record.default.*.fqdn)
+  origin_domain_name              = module.alb.alb_dns_name // join("", aws_route53_record.default.*.fqdn)
   origin_protocol_policy          = "match-viewer"
   viewer_protocol_policy          = "redirect-to-https"
   viewer_minimum_protocol_version = var.cdn_viewer_min_protocol_version
