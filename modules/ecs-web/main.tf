@@ -62,8 +62,8 @@ module "ecr" {
 
 // Container Defs
 module "container_label" {
-  source = "git::https://github.com/cloudposse/terraform-null-label.git?ref=tags/0.24.1"
-  # attributes = compact(concat(module.this.attributes, ["container"]))
+  source     = "cloudposse/label/null"
+  version    = "0.24.1"
   attributes = ["container"]
   context    = module.this.context
 }
@@ -144,11 +144,17 @@ module "container_php-fpm" {
   }
 }
 
+module "alb_label" {
+  source     = "cloudposse/label/null"
+  version    = "0.24.1"
+  attributes = ["alb"]
+  context    = module.this.context
+}
+
 module "alb" {
   source  = "cloudposse/alb/aws"
   version = "0.32.0"
   # source             = "git::https://github.com/joe-niland/terraform-aws-alb.git?ref=fix-access-logs-disabled"
-  attributes         = compact(concat(module.this.attributes, ["alb"]))
   vpc_id             = var.vpc_id
   security_group_ids = var.alb_security_group_ids
   subnet_ids         = var.public_subnet_ids
@@ -170,7 +176,7 @@ module "alb" {
   cross_zone_load_balancing_enabled       = true
   http2_enabled                           = true
   deletion_protection_enabled             = false
-  context                                 = module.this.context
+  context                                 = module.alb_label.context
 }
 
 module "ecs_task" {
@@ -236,7 +242,7 @@ locals {
     min_ttl                     = 0
     max_ttl                     = 86400
     compress                    = true
-    target_origin_id            = module.alb.alb_dns_name #  join("", aws_route53_record.default.*.fqdn)
+    target_origin_id            = module.alb_label.id # .alb_dns_name #  join("", aws_route53_record.default.*.fqdn)
     forward_cookies             = "all"
     forward_header_values       = ["*"]
     forward_query_string        = true
@@ -343,8 +349,9 @@ resource "aws_iam_role_policy_attachment" "codebuild" {
 }
 
 module "codebuild_label" {
-  source     = "github.com/cloudposse/terraform-null-label.git?ref=0.24.1"
-  attributes = compact(concat(module.this.attributes, ["ecr"]))
+  source     = "cloudposse/label/null"
+  version    = "0.24.1"
+  attributes = ["ecr"]
   context    = module.this.context
 }
 
