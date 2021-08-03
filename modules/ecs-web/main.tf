@@ -278,14 +278,14 @@ module "cdn" {
   allowed_methods      = ["GET", "HEAD", "OPTIONS", "PUT", "POST", "PATCH", "DELETE"]
   price_class          = "PriceClass_All"
 
-  ordered_cache = [
-    merge(local.app_cache_behavior, tomap({ "path_pattern" = "*" })),
-    # merge(local.wp_nocache_behavior, map("path_pattern", "wp-login.php")),
-    # merge(local.wp_nocache_behavior, map("path_pattern", "wp-signup.php")),
-    # merge(local.wp_nocache_behavior, map("path_pattern", "wp-trackback.php")),
-    # merge(local.wp_nocache_behavior, map("path_pattern", "wp-cron.php")),
-    # merge(local.wp_nocache_behavior, map("path_pattern", "xmlrpc.php"))
-  ]
+  # ordered_cache = [
+  #   merge(local.app_cache_behavior, tomap({ "path_pattern" = "*" })),
+  #   # merge(local.wp_nocache_behavior, map("path_pattern", "wp-login.php")),
+  #   # merge(local.wp_nocache_behavior, map("path_pattern", "wp-signup.php")),
+  #   # merge(local.wp_nocache_behavior, map("path_pattern", "wp-trackback.php")),
+  #   # merge(local.wp_nocache_behavior, map("path_pattern", "wp-cron.php")),
+  #   # merge(local.wp_nocache_behavior, map("path_pattern", "xmlrpc.php"))
+  # ]
 
   context = module.this.context
 }
