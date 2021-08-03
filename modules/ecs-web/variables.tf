@@ -551,3 +551,21 @@ variable "cdn_viewer_min_protocol_version" {
   description = "Minimum TLS standard for clients"
   default     = "TLSv1.2_2019"
 }
+
+variable "cdn_default_ttl" {
+  type        = number
+  description = "Default TTL for CloudFront"
+  default     = 3600
+}
+
+variable "cdn_min_ttl" {
+  type        = number
+  description = "Min TTL for CloudFront"
+  default     = 0
+}
+
+variable "cdn_max_ttl" {
+  type        = number
+  description = "Max TTL for CloudFront"
+  default     = 86400
+}

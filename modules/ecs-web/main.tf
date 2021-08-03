@@ -270,9 +270,9 @@ module "cdn" {
   # forward_cookies_whitelisted_names = ["comment_author_*", "comment_author_email_*", "comment_author_url_*", "wordpress_logged_in_*", "wordpress_test_cookie", "wp-settings-*"]
   forward_headers      = ["Host", "Origin", "Referer", "CloudFront-Forwarded-Proto", "Access-Control-Request-Headers", "Access-Control-Request-Method"]
   forward_query_string = true
-  default_ttl          = 86400
-  min_ttl              = 0
-  max_ttl              = 31536000
+  default_ttl          = var.cdn_default_ttl
+  min_ttl              = var.cdn_min_ttl
+  max_ttl              = var.cdn_max_ttl
   compress             = true
   cached_methods       = ["GET", "HEAD", "OPTIONS"]
   allowed_methods      = ["GET", "HEAD", "OPTIONS", "PUT", "POST", "PATCH", "DELETE"]
