@@ -113,7 +113,13 @@ variable "http_enabled" {
 variable "certificate_arn" {
   type        = string
   default     = ""
-  description = "The ARN of the default SSL certificate for HTTPS listener"
+  description = "The ARN of the default SSL certificate for ALB HTTPS listener"
+}
+
+variable "cdn_certificate_arn" {
+  type        = string
+  default     = ""
+  description = "The ARN of the SSL certificate for CloudFront - must be in us-east-2"
 }
 
 variable "https_port" {

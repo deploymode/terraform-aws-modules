@@ -265,7 +265,7 @@ module "cdn" {
   viewer_minimum_protocol_version = var.cdn_viewer_min_protocol_version
   parent_zone_name                = var.domain_name
   default_root_object             = ""
-  acm_certificate_arn             = var.certificate_arn
+  acm_certificate_arn             = var.cdn_certificate_arn
   forward_cookies                 = "all" #"whitelist"
   # forward_cookies_whitelisted_names = ["comment_author_*", "comment_author_email_*", "comment_author_url_*", "wordpress_logged_in_*", "wordpress_test_cookie", "wp-settings-*"]
   forward_headers      = ["Host", "Origin", "Referer", "CloudFront-Forwarded-Proto", "Access-Control-Request-Headers", "Access-Control-Request-Method"]
