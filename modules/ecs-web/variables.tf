@@ -39,13 +39,13 @@ variable "peered_vpc_id" {
   default     = ""
 }
 
+// ALB
+
 variable "use_alb_security_group" {
   type        = bool
   description = "A flag to enable/disable adding the ingress rule to the ALB security group"
   default     = false
 }
-
-// ALB
 
 # variable "alb_target_group_arn" {
 #   type        = string
@@ -92,8 +92,6 @@ variable "alb_healthcheck_interval" {
   default     = 15
 }
 
-
-
 variable "target_group_port" {
   type        = number
   default     = 80
@@ -136,7 +134,7 @@ variable "http_to_https_redirect" {
   description = "Whether to redirect HTTP to HTTPS"
 }
 
-variable "create_public_dns_record" {
+variable "create_alb_dns_record" {
   type        = bool
   default     = false
   description = "Whether to create an alias to the ALB endpoint or not"

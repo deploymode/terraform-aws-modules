@@ -221,7 +221,7 @@ module "ecs_task" {
 }
 
 resource "aws_route53_record" "default" {
-  count   = var.hosted_zone_id != "" ? 1 : 0
+  count   = (var.hosted_zone_id != "" && var.create_alb_dns_record) ? 1 : 0
   zone_id = var.hosted_zone_id
   name    = local.app_fqdn // join(".", [local.app_fqdnvar.app_dns_name, var.domain_name]) // module.this.name, module.this.environment, var.domain_name])
   type    = "A"
