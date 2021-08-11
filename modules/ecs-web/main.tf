@@ -293,9 +293,9 @@ module "cdn" {
 // CodePipeline
 
 module "ecs_codepipeline" {
-  source = "git::https://github.com/joe-niland/terraform-aws-ecs-codepipeline.git?ref=support-type-attr-in-codebuild-env"
-  # source                  = "cloudposse/ecs-codepipeline/aws"
-  # version                 = "0.24.0"
+  # source = "git::https://github.com/joe-niland/terraform-aws-ecs-codepipeline.git?ref=support-type-attr-in-codebuild-env"
+  source                  = "cloudposse/ecs-codepipeline/aws"
+  version                 = "0.28.1"
   context                 = module.this.context
   region                  = var.aws_region
   codestar_connection_arn = var.codestar_connection_arn
