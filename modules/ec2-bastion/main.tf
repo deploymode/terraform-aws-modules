@@ -22,6 +22,7 @@ module "ec2_bastion" {
   user_data_template          = var.user_data_template
   vpc_id                      = var.vpc_id
   associate_public_ip_address = var.associate_public_ip_address
+  assign_eip_address          = var.assign_eip_address
 
   context = module.this.context
 }

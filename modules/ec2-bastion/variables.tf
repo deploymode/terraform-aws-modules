@@ -83,3 +83,9 @@ variable "associate_public_ip_address" {
   default     = true
   description = "Whether to associate public IP to the instance."
 }
+
+variable "assign_eip_address" {
+  type        = bool
+  description = "Assign an Elastic IP address to the instance"
+  default     = true
+}
