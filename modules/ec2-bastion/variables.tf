@@ -48,11 +48,6 @@ variable "generate_ssh_key" {
   description = "Whether or not to generate an SSH key"
 }
 
-variable "security_groups" {
-  type        = list(string)
-  description = "List of Security Group IDs allowed to connect to the bastion host"
-}
-
 variable "root_block_device_encrypted" {
   type        = bool
   default     = false
