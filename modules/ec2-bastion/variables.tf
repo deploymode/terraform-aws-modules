@@ -1,3 +1,19 @@
+variable "vpc_id" {
+  type        = string
+  description = "VPC ID"
+}
+
+variable "public_subnet_ids" {
+  type        = list(string)
+  description = "List of public subnet IDs"
+}
+
+variable "security_groups" {
+  type        = list(string)
+  description = "Additional Security Group IDs to apply to EC2 instance"
+  default     = []
+}
+
 variable "zone_id" {
   type        = string
   default     = ""
