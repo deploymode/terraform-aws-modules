@@ -250,6 +250,7 @@ variable "github_anonymous" {
 variable "codepipeline_github_oauth_token" {
   type        = string
   description = "GitHub OAuth Token with permissions to access private repositories"
+  default     = ""
 }
 
 variable "codepipeline_github_webhooks_token" {
