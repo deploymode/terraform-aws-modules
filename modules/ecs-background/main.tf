@@ -63,7 +63,7 @@ module "container" {
     "options" : {
       "awslogs-group" : module.container_label.id,
       "awslogs-region" : var.aws_region,
-      "awslogs-stream-prefix" : module.this.name,
+      "awslogs-stream-prefix" : "ecs", # module.this.name,
       "awslogs-create-group" : "true"
     }
   }
