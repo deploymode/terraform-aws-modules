@@ -487,6 +487,12 @@ variable "redis_allowed_security_groups" {
   description = "List of Security Group IDs that are allowed ingress to the cluster's Security Group created in the module"
 }
 
+variable "redis_cluster_mode_enabled" {
+  type        = bool
+  description = "Flag to enable/disable creation of a native redis cluster. `automatic_failover_enabled` must be set to `true`. Only 1 `cluster_mode` block is allowed"
+  default     = false
+}
+
 variable "redis_cluster_size" {
   type        = number
   default     = 1

@@ -52,7 +52,7 @@ output "redis_endpoint" {
 
 output "redis_security_group_id" {
   value       = var.provision_redis_cache ? module.redis.security_group_id : ""
-  description = "Redis security group ID"
+  description = "Elasticache Redis security group ID - allows access to Redis cache"
 }
 
 output "redis_port" {

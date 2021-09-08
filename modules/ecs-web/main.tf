@@ -419,19 +419,36 @@ module "vpc_peering" {
 }
 
 module "redis" {
-  source                       = "cloudposse/elasticache-redis/aws"
-  version                      = "0.40.1"
-  enabled                      = (module.this.enabled && var.provision_redis_cache)
-  attributes                   = compact(concat(module.this.attributes, ["cache"]))
-  availability_zones           = var.redis_availability_zones
-  zone_id                      = var.hosted_zone_id
-  vpc_id                       = var.vpc_id
-  use_existing_security_groups = false
-  allowed_security_groups = compact(concat([
-    # var.redis_allowed_security_group_ids,
-    module.ecs_task.service_security_group_id
-  ]))
+  source                 = "cloudposse/elasticache-redis/aws"
+  version                = "0.40.1"
+  enabled                = (module.this.enabled && var.provision_redis_cache)
+  attributes             = compact(concat(module.this.attributes, ["cache"]))
+  availability_zones     = var.redis_availability_zones
+  zone_id                = var.hosted_zone_id
+  vpc_id                 = var.vpc_id
+  security_group_enabled = true
+  security_group_rules = [
+    {
+      type                     = "egress"
+      from_port                = 0
+      to_port                  = 65535
+      protocol                 = "-1"
+      cidr_blocks              = ["0.0.0.0/0"]
+      source_security_group_id = null
+      description              = "Allow all outbound traffic"
+    },
+    {
+      type                     = "ingress"
+      from_port                = 0
+      to_port                  = 65535
+      protocol                 = "-1"
+      cidr_blocks              = []
+      source_security_group_id = module.ecs_task.service_security_group_id
+      description              = "Allow all inbound traffic from ECS service Security Groups"
+    },
+  ]
   subnets                    = var.private_subnet_ids
+  cluster_mode_enabled       = var.redis_cluster_mode_enabled
   cluster_size               = var.redis_cluster_size
   instance_type              = var.redis_instance_type
   apply_immediately          = true
