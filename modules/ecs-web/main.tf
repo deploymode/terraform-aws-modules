@@ -242,7 +242,7 @@ locals {
     min_ttl                     = 0
     max_ttl                     = 86400
     compress                    = true
-    target_origin_id            = module.alb_label.id # .alb_dns_name #  join("", aws_route53_record.default.*.fqdn)
+    target_origin_id            = module.this.id # module.alb_label.id # .alb_dns_name #  join("", aws_route53_record.default.*.fqdn)
     forward_cookies             = "all"
     forward_header_values       = ["*"]
     forward_query_string        = true
@@ -254,7 +254,7 @@ locals {
 
 module "cdn" {
   source  = "cloudposse/cloudfront-cdn/aws"
-  version = "0.21.0"
+  version = "0.21.3"
   # name       = module.this.id
   # attributes = [var.domain_name]
 
@@ -278,14 +278,14 @@ module "cdn" {
   allowed_methods      = ["GET", "HEAD", "OPTIONS", "PUT", "POST", "PATCH", "DELETE"]
   price_class          = "PriceClass_All"
 
-  # ordered_cache = [
-  #   merge(local.app_cache_behavior, tomap({ "path_pattern" = "*" })),
-  #   # merge(local.wp_nocache_behavior, map("path_pattern", "wp-login.php")),
-  #   # merge(local.wp_nocache_behavior, map("path_pattern", "wp-signup.php")),
-  #   # merge(local.wp_nocache_behavior, map("path_pattern", "wp-trackback.php")),
-  #   # merge(local.wp_nocache_behavior, map("path_pattern", "wp-cron.php")),
-  #   # merge(local.wp_nocache_behavior, map("path_pattern", "xmlrpc.php"))
-  # ]
+  ordered_cache = [
+    merge(local.app_cache_behavior, tomap({ "path_pattern" = "*" })),
+    #   # merge(local.wp_nocache_behavior, map("path_pattern", "wp-login.php")),
+    #   # merge(local.wp_nocache_behavior, map("path_pattern", "wp-signup.php")),
+    #   # merge(local.wp_nocache_behavior, map("path_pattern", "wp-trackback.php")),
+    #   # merge(local.wp_nocache_behavior, map("path_pattern", "wp-cron.php")),
+    #   # merge(local.wp_nocache_behavior, map("path_pattern", "xmlrpc.php"))
+  ]
 
   context = module.this.context
 }
