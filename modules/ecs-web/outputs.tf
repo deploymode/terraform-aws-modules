@@ -3,6 +3,15 @@ output "log_groups" {
   description = "ECS log groups"
 }
 
+// ECR
+
+output "repository_url_map" {
+  value       = module.ecr.repository_url_map
+  description = "Map of repository names to repository URLs"
+}
+
+// ECS
+
 output "ecs_service_security_group_id" {
   value       = module.ecs_task.service_security_group_id
   description = "ECS security group ids"

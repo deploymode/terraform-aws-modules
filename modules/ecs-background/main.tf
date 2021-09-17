@@ -74,12 +74,13 @@ module "ecs_task" {
   version = "0.55.0"
   context = module.this.context
 
-  container_definition_json    = "[${module.container.json_map_encoded}]" // module.container_definition.json
+  container_definition_json    = "[${module.container.json_map_encoded}]"
   ecs_cluster_arn              = var.ecs_cluster_arn
   capacity_provider_strategies = var.ecs_capacity_provider_strategies
   launch_type                  = var.ecs_launch_type
   platform_version             = var.ecs_platform_version
   vpc_id                       = var.vpc_id
+  exec_enabled                 = var.ecs_enable_exec
 
   service_registries = var.use_service_discovery == false ? [] : [
     {
