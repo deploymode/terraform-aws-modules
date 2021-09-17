@@ -341,38 +341,37 @@ module "ecs_codepipeline" {
   webhook_enabled         = false
   s3_bucket_force_destroy = true
   environment_variables = merge(var.codepipeline_environment_variables,
-    [
-      {
-        name  = "NAMESPACE"
-        value = module.this.namespace
-        type  = "PLAINTEXT"
-      },
-      {
-        name  = "ENVIRONMENT"
-        value = module.this.environment
-        type  = "PLAINTEXT"
-      },
-      {
-        name  = "NGINX_ECR_REPO_URL"
-        value = module.ecr.repository_url_map[local.image_names_map.nginx]
-        type  = "PLAINTEXT"
-      },
-      {
-        name  = "PHP_ECR_REPO_URL"
-        value = module.ecr.repository_url_map[local.image_names_map.php]
-        type  = "PLAINTEXT"
-      },
-      {
-        name  = "NGINX_CONTAINER_NAME"
-        value = module.nginx_container_label.id
-        type  = "PLAINTEXT"
-      },
-      {
-        name  = "PHP_CONTAINER_NAME"
-        value = module.php-fpm_container_label.id
-        type  = "PLAINTEXT"
-      },
-  ])
+    {
+      name  = "NAMESPACE"
+      value = module.this.namespace
+      type  = "PLAINTEXT"
+    },
+    {
+      name  = "ENVIRONMENT"
+      value = module.this.environment
+      type  = "PLAINTEXT"
+    },
+    {
+      name  = "NGINX_ECR_REPO_URL"
+      value = module.ecr.repository_url_map[local.image_names_map.nginx]
+      type  = "PLAINTEXT"
+    },
+    {
+      name  = "PHP_ECR_REPO_URL"
+      value = module.ecr.repository_url_map[local.image_names_map.php]
+      type  = "PLAINTEXT"
+    },
+    {
+      name  = "NGINX_CONTAINER_NAME"
+      value = module.nginx_container_label.id
+      type  = "PLAINTEXT"
+    },
+    {
+      name  = "PHP_CONTAINER_NAME"
+      value = module.php-fpm_container_label.id
+      type  = "PLAINTEXT"
+    }
+  )
   ecs_cluster_name  = var.ecs_cluster_name
   service_name      = module.ecs_task.service_name
   cache_type        = var.codebuild_cache_type
