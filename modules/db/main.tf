@@ -7,7 +7,7 @@ resource "random_password" "password" {
 
 module "sg_label" {
   source     = "cloudposse/label/null"
-  version    = "0.24.1"
+  version    = "0.25.0"
   attributes = ["db", "allowed"]
   enabled    = var.provision_security_group
   context    = module.this.context

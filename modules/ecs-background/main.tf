@@ -35,7 +35,7 @@ module "ecr" {
 // Container Defs
 module "container_label" {
   source  = "cloudposse/label/null"
-  version = "0.24.1"
+  version = "0.25.0"
   context = module.this.context
 }
 
@@ -167,7 +167,7 @@ resource "aws_service_discovery_service" "service_discovery" {
 
 # module "ecs_task_label" {
 #   source     = "cloudposse/label/null"
-#   version    = "0.24.1"
+#   version    = "0.25.0"
 #   attributes = compact(concat(module.this.attributes, ["task"]))
 #   context    = module.this.context
 # }
@@ -291,7 +291,7 @@ resource "aws_iam_role_policy_attachment" "codebuild" {
 module "codebuild_label" {
   //source     = "github.com/cloudposse/terraform-null-label.git?ref=0.21.0"
   source     = "cloudposse/label/null"
-  version    = "0.24.1"
+  version    = "0.25.0"
   attributes = compact(concat(module.this.attributes, ["ecr"]))
   context    = module.this.context
 }

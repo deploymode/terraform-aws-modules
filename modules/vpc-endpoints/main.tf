@@ -1,6 +1,6 @@
 module "label" {
   source     = "cloudposse/label/null"
-  version    = "0.24.1" # requires Terraform >= 0.13.0
+  version    = "0.25.0" # requires Terraform >= 0.13.0
   context    = module.this.context
   attributes = ["endpoint"]
 }
@@ -42,7 +42,7 @@ resource "aws_security_group" "default" {
 
 module "logs_endpoint_label" {
   source     = "cloudposse/label/null"
-  version    = "0.24.1" # requires Terraform >= 0.13.0
+  version    = "0.25.0" # requires Terraform >= 0.13.0
   context    = module.label.context
   name       = "network"
   attributes = ["logs"]
@@ -65,7 +65,7 @@ resource "aws_vpc_endpoint" "logs" {
 
 module "ecr_dkr_endpoint_label" {
   source     = "cloudposse/label/null"
-  version    = "0.24.1" # requires Terraform >= 0.13.0
+  version    = "0.25.0" # requires Terraform >= 0.13.0
   context    = module.label.context
   name       = "network"
   attributes = ["ecr_dkr"]
@@ -88,7 +88,7 @@ resource "aws_vpc_endpoint" "ecr_dkr" {
 
 module "ecr_api_endpoint_label" {
   source     = "cloudposse/label/null"
-  version    = "0.24.1" # requires Terraform >= 0.13.0
+  version    = "0.25.0" # requires Terraform >= 0.13.0
   context    = module.label.context
   name       = "network"
   attributes = ["ecr_api"]
@@ -112,7 +112,7 @@ resource "aws_vpc_endpoint" "ecr_api" {
 
 module "ssm_endpoint_label" {
   source  = "cloudposse/label/null"
-  version = "0.24.1" # requires Terraform >= 0.13.0
+  version = "0.25.0" # requires Terraform >= 0.13.0
   context = module.label.context
   name    = "ssm"
   # attributes = compact(concat(var.attributes, ["ssm"]))
@@ -139,7 +139,7 @@ resource "aws_vpc_endpoint" "ssm" {
 
 module "ssmmessages_endpoint_label" {
   source  = "cloudposse/label/null"
-  version = "0.24.1" # requires Terraform >= 0.13.0
+  version = "0.25.0" # requires Terraform >= 0.13.0
   context = module.label.context
   name    = "ssmmessages"
 }

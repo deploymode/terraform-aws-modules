@@ -1,10 +1,25 @@
+module "nginx_image_label" {
+  source     = "cloudposse/label/null"
+  version    = "0.25.0"
+  attributes = ["nginx"]
+  context    = module.this.context
+}
+
+module "php-fpm_image_label" {
+  source     = "cloudposse/label/null"
+  version    = "0.25.0"
+  attributes = ["php-fpm"]
+  context    = module.this.context
+}
+
 locals {
   app_fqdn = join(".", [var.app_dns_name, var.domain_name])
 
   image_names_map = {
-    "nginx" = format("%s-%s", "nginx", module.this.stage)
-    "php"   = format("%s-%s", "php-fpm", module.this.stage)
+    "nginx" = module.nginx_image_label.id   # format("%s-%s-%s", "nginx", module.this.stage, module.this.environment)
+    "php"   = module.php-fpm_image_label.id # format("%s-%s-%s", "php-fpm", module.this.stage, module.this.environment)
   }
+
   log_groups = {
     nginx = "/ecs/${module.container_label.id}/${local.image_names_map.nginx}"
     php   = "/ecs/${module.container_label.id}/${local.image_names_map.php}"
@@ -47,7 +62,7 @@ locals {
 // ECR Registry/Repo
 module "ecr" {
   source       = "cloudposse/ecr/aws"
-  version      = "0.32.2"
+  version      = "0.32.3"
   use_fullname = true
   image_names = [
     local.image_names_map.nginx,
@@ -59,19 +74,25 @@ module "ecr" {
   context                 = module.this.context
 }
 
-
 // Container Defs
 module "container_label" {
   source     = "cloudposse/label/null"
-  version    = "0.24.1"
+  version    = "0.25.0"
   attributes = ["container"]
   context    = module.this.context
 }
 
+module "nginx_container_label" {
+  source     = "cloudposse/label/null"
+  version    = "0.25.0"
+  attributes = ["nginx"]
+  context    = module.container_label.context
+}
+
 module "container_nginx" {
   source                       = "cloudposse/ecs-container-definition/aws"
-  version                      = "0.56.0"
-  container_name               = join("-", [module.container_label.id, "nginx"])
+  version                      = "0.58.1"
+  container_name               = module.nginx_container_label.id #join("-", [module.container_label.id, "nginx"])
   container_image              = join(":", [module.ecr.repository_url_map[local.image_names_map.nginx], "latest"])
   container_memory             = var.container_memory_nginx
   container_memory_reservation = var.container_memory_reservation_nginx
@@ -106,10 +127,17 @@ module "container_nginx" {
   }
 }
 
+module "php-fpm_container_label" {
+  source     = "cloudposse/label/null"
+  version    = "0.25.0"
+  attributes = ["php-fpm"]
+  context    = module.container_label.context
+}
+
 module "container_php-fpm" {
   source                       = "cloudposse/ecs-container-definition/aws"
-  version                      = "0.56.0"
-  container_name               = join("-", [module.container_label.id, "php-fpm"])
+  version                      = "0.58.1"
+  container_name               = module.php-fpm_container_label.id # join("-", [module.container_label.id, "php-fpm"])
   container_image              = join(":", [module.ecr.repository_url_map[local.image_names_map.php], "latest"])
   container_memory             = var.container_memory_php
   container_memory_reservation = var.container_memory_reservation_php
@@ -146,7 +174,7 @@ module "container_php-fpm" {
 
 module "alb_label" {
   source     = "cloudposse/label/null"
-  version    = "0.24.1"
+  version    = "0.25.0"
   attributes = ["alb"]
   context    = module.this.context
 }
@@ -312,11 +340,43 @@ module "ecs_codepipeline" {
   image_tag               = "latest" // var.image_tag
   webhook_enabled         = false
   s3_bucket_force_destroy = true
-  environment_variables   = var.codepipeline_environment_variables
-  ecs_cluster_name        = var.ecs_cluster_name
-  service_name            = module.ecs_task.service_name
-  cache_type              = var.codebuild_cache_type
-  local_cache_modes       = var.codebuild_local_cache_modes
+  environment_variables = merge(var.codepipeline_environment_variables,
+    [
+      {
+        name  = "NAMESPACE"
+        value = module.this.namespace
+        type  = "PLAINTEXT"
+      },
+      {
+        name  = "ENVIRONMENT"
+        value = module.this.environment
+        type  = "PLAINTEXT"
+      },
+      {
+        name  = "NGINX_ECR_REPO_URL"
+        value = module.ecr.repository_url_map[local.image_names_map.nginx]
+        type  = "PLAINTEXT"
+      },
+      {
+        name  = "PHP_ECR_REPO_URL"
+        value = module.ecr.repository_url_map[local.image_names_map.php]
+        type  = "PLAINTEXT"
+      },
+      {
+        name  = "NGINX_CONTAINER_NAME"
+        value = module.nginx_container_label.id
+        type  = "PLAINTEXT"
+      },
+      {
+        name  = "PHP_CONTAINER_NAME"
+        value = module.php-fpm_container_label.id
+        type  = "PLAINTEXT"
+      },
+  ])
+  ecs_cluster_name  = var.ecs_cluster_name
+  service_name      = module.ecs_task.service_name
+  cache_type        = var.codebuild_cache_type
+  local_cache_modes = var.codebuild_local_cache_modes
   # github_anonymous        = true
   github_oauth_token    = ""
   github_webhooks_token = ""
@@ -350,7 +410,7 @@ resource "aws_iam_role_policy_attachment" "codebuild" {
 
 module "codebuild_label" {
   source     = "cloudposse/label/null"
-  version    = "0.24.1"
+  version    = "0.25.0"
   attributes = ["ecr"]
   context    = module.this.context
 }
@@ -505,7 +565,7 @@ data "aws_iam_policy_document" "dynamodb" {
 
 module "dynamodb_label" {
   source     = "cloudposse/label/null"
-  version    = "0.24.1"
+  version    = "0.25.0"
   attributes = ["dynamodb"]
   context    = module.this.context
 }
@@ -570,7 +630,7 @@ module "app_bucket_iam_policy" {
 
 module "app_bucket_policy_label" {
   source     = "cloudposse/label/null"
-  version    = "0.24.1"
+  version    = "0.25.0"
   attributes = ["buckets"]
   context    = module.this.context
 }

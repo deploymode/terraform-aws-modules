@@ -36,7 +36,7 @@ resource "aws_eip" "nat_ips" {
 
 module "s3_endpoint_label" {
   source     = "cloudposse/label/null"
-  version    = "0.24.1"
+  version    = "0.25.0"
   context    = module.this.context
   attributes = compact(concat(module.this.attributes, ["s3"]))
   enabled    = var.enable_s3_endpoint
