@@ -340,7 +340,7 @@ module "ecs_codepipeline" {
   image_tag               = "latest" // var.image_tag
   webhook_enabled         = false
   s3_bucket_force_destroy = true
-  environment_variables = merge(var.codepipeline_environment_variables,
+  environment_variables = concat(var.codepipeline_environment_variables, [
     {
       name  = "NAMESPACE"
       value = module.this.namespace
@@ -371,6 +371,7 @@ module "ecs_codepipeline" {
       value = module.php-fpm_container_label.id
       type  = "PLAINTEXT"
     }
+    ]
   )
   ecs_cluster_name  = var.ecs_cluster_name
   service_name      = module.ecs_task.service_name
