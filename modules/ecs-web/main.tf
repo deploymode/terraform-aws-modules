@@ -68,7 +68,7 @@ module "ecr" {
     local.image_names_map.nginx,
     local.image_names_map.php
   ]
-  image_tag_mutability    = "IMMUTABLE"
+  image_tag_mutability    = "MUTABLE"
   enable_lifecycle_policy = true
   max_image_count         = var.ecr_max_image_count
   context                 = module.this.context
