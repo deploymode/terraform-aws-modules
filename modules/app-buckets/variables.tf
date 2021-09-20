@@ -14,6 +14,6 @@ variable "buckets" {
       }))
     }
   ))
-  default     = []
-  description = "List of buckets to create with their config"
+  default     = {}
+  description = "Map of bucket name fragment to config object"
 }
