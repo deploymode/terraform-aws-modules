@@ -535,7 +535,7 @@ module "redis_sg_label" {
   source     = "cloudposse/label/null"
   version    = "0.25.0"
   attributes = ["redis", "allowed"]
-  enabled    = module.this.enabled && var.provision_redis_cache ? 1 : 0
+  enabled    = module.this.enabled && var.provision_redis_cache
   context    = module.this.context
 }
 
