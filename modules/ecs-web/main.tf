@@ -512,7 +512,7 @@ module "redis" {
       to_port                  = 6379
       protocol                 = "-1"
       cidr_blocks              = []
-      source_security_group_id = aws_security_group.redis_allowed.id
+      source_security_group_id = join("", aws_security_group.redis_allowed.*.id)
       description              = "Allow all inbound traffic from generic Redis access Security Group"
     },
   ]
