@@ -234,18 +234,16 @@ module "ecs_codepipeline" {
   environment_variables = concat(
     var.codepipeline_environment_variables,
     [
-      # {
-      #   name  = "ECS_CLUSTER"
-      #   value = var.ecs_cluster_name
-      # },
-      # {
-      #   name  = "SERVICE_SUBNETS"
-      #   value = join(",", var.subnet_ids)
-      # },
-      # {
-      #   name  = "SERVICE_SECURITY_GROUPS"
-      #   value = module.ecs_task.service_security_group_id
-      # }
+      {
+        name  = "PHP_ECR_REPO_URL"
+        value = module.ecr.repository_url_map[module.this.id]
+        type  = "PLAINTEXT"
+      },
+      {
+        name  = "PHP_CONTAINER_NAME"
+        value = module.container_label.id
+        type  = "PLAINTEXT"
+      }
     ]
   )
   ecs_cluster_name = var.ecs_cluster_name
