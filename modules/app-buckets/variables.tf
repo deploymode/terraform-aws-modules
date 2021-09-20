@@ -1,7 +1,6 @@
 variable "buckets" {
   type = map(object(
     {
-      name               = string
       acl                = string
       versioning_enabled = bool
       block_public       = bool
