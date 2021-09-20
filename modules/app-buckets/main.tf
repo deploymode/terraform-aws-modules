@@ -4,7 +4,7 @@ module "s3_bucket" {
 
   for_each = var.buckets
 
-  name = join("-", [module.this.id, each.key])
+  name = each.key
 
   acl                     = each.value.acl
   block_public_acls       = each.value.block_public
