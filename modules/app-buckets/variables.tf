@@ -1,5 +1,5 @@
 variable "buckets" {
-  type = list(object(
+  type = map(object(
     {
       name               = string
       acl                = string
