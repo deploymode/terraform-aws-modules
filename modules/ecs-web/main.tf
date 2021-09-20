@@ -147,8 +147,22 @@ module "container_php-fpm" {
   # Task will stop if this container fails
   essential                = true
   readonly_root_filesystem = false
-  environment              = concat(var.container_environment_php, local.dynamodb_cache_env_vars, local.redis_cache_env_vars, local.queue_env_vars)
-  secrets                  = var.container_ssm_secrets_php
+  environment = concat([
+    {
+      name  = "STAGE"
+      value = module.this.stage
+    },
+    {
+      name  = "ENVIRONMENT"
+      value = module.this.environment
+    },
+    ],
+    var.container_environment_php,
+    local.dynamodb_cache_env_vars,
+    local.redis_cache_env_vars,
+    local.queue_env_vars
+  )
+  secrets = var.container_ssm_secrets_php
 
   port_mappings = [
     {

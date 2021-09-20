@@ -51,11 +51,25 @@ module "container" {
   stop_timeout                 = var.container_stop_timeout
   essential                    = true
   readonly_root_filesystem     = false
-  environment                  = concat(var.container_environment, local.queue_env_vars, local.dynamodb_cache_env_vars)
-  secrets                      = var.container_ssm_secrets
-  port_mappings                = var.container_port_mappings
-  command                      = var.container_command
-  entrypoint                   = var.container_entrypoint
+  environment = concat(
+    [
+      {
+        name  = "STAGE"
+        value = module.this.stage
+      },
+      {
+        name  = "ENVIRONMENT"
+        value = module.this.environment
+      },
+    ],
+    var.container_environment,
+    local.queue_env_vars,
+    local.dynamodb_cache_env_vars
+  )
+  secrets       = var.container_ssm_secrets
+  port_mappings = var.container_port_mappings
+  command       = var.container_command
+  entrypoint    = var.container_entrypoint
 
   log_configuration = {
     "logDriver" : var.log_driver,
