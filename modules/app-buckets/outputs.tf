@@ -1,4 +1,6 @@
-output "buckets" {
-  value       = module.rds_instance.instance_id
-  description = "ID of the instance"
+output "dr_bucket_arns" {
+  value = tomap({
+    for k, bucket in module.s3_bucket : k => bucket.bucket_arn
+  })
+  description = "ARNs of DR buckets"
 }

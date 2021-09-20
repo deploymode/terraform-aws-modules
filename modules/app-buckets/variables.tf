@@ -4,7 +4,14 @@ variable "buckets" {
       name               = string
       acl                = string
       versioning_enabled = bool
-      allow_public       = bool
+      block_public       = bool
+      cors_rules = list(object({
+        allowed_headers = list(string)
+        allowed_methods = list(string)
+        allowed_origins = list(string)
+        expose_headers  = list(string)
+        max_age_seconds = number
+      }))
     }
   ))
   default     = []

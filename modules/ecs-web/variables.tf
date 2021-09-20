@@ -548,9 +548,9 @@ variable "queue_name" {
 
 // Buckets
 
-variable "app_buckets" {
+variable "external_app_buckets" {
   type        = list(string)
-  description = "S3 buckets used by the application. Used to allow application roles to access buckets."
+  description = "Existing S3 buckets used by the application. Used to allow application roles to access buckets."
   default     = []
 }
 
