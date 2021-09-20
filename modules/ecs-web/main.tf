@@ -499,12 +499,21 @@ module "redis" {
     },
     {
       type                     = "ingress"
-      from_port                = 0
-      to_port                  = 65535
+      from_port                = 6379
+      to_port                  = 6379
       protocol                 = "-1"
       cidr_blocks              = []
       source_security_group_id = module.ecs_task.service_security_group_id
-      description              = "Allow all inbound traffic from ECS service Security Groups"
+      description              = "Allow all inbound traffic from ECS service Security Group"
+    },
+    {
+      type                     = "ingress"
+      from_port                = 6379
+      to_port                  = 6379
+      protocol                 = "-1"
+      cidr_blocks              = []
+      source_security_group_id = aws_security_group.redis_allowed.id
+      description              = "Allow all inbound traffic from generic Redis access Security Group"
     },
   ]
   subnets                    = var.private_subnet_ids
@@ -520,6 +529,34 @@ module "redis" {
   auth_token                 = var.redis_password
 
   context = module.this.context
+}
+
+module "redis_sg_label" {
+  source     = "cloudposse/label/null"
+  version    = "0.25.0"
+  attributes = ["redis", "allowed"]
+  enabled    = module.this.enabled && var.provision_redis_cache ? 1 : 0
+  context    = module.this.context
+}
+
+resource "aws_security_group" "redis_allowed" {
+  count = module.this.enabled && var.provision_redis_cache ? 1 : 0
+
+  name        = module.redis_sg_label.id
+  description = "Services which need Redis access can be assigned this security group"
+  vpc_id      = var.vpc_id
+  tags        = module.this.tags
+}
+
+resource "aws_security_group_rule" "redis_egress" {
+  count             = module.this.enabled && var.provision_redis_cache ? 1 : 0
+  description       = "Allow all egress traffic"
+  type              = "egress"
+  from_port         = 0
+  to_port           = 0
+  protocol          = "-1"
+  cidr_blocks       = ["0.0.0.0/0"]
+  security_group_id = join("", aws_security_group.redis_allowed.*.id)
 }
 
 // DynamoDB Cache

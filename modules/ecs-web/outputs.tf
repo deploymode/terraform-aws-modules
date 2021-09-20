@@ -59,15 +59,22 @@ output "redis_endpoint" {
   description = "Elasticache Redis endpoint"
 }
 
+output "redis_port" {
+  value       = var.provision_redis_cache ? module.redis.port : 0
+  description = "Redis port"
+}
+
 output "redis_security_group_id" {
   value       = var.provision_redis_cache ? module.redis.security_group_id : ""
   description = "Elasticache Redis security group ID - allows access to Redis cache"
 }
 
-output "redis_port" {
-  value       = var.provision_redis_cache ? module.redis.port : 0
-  description = "Redis port"
+output "redis_access_security_group_id" {
+  value       = var.provision_redis_cache ? join("", aws_security_group.redis_allowed.*.id) : ""
+  description = "ID of the security group for use by services which need access to Redis"
 }
+
+
 
 // DynamoDB
 
