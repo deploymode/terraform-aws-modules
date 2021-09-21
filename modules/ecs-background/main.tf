@@ -249,6 +249,16 @@ module "ecs_codepipeline" {
     var.codepipeline_environment_variables,
     [
       {
+      name  = "NAMESPACE"
+      value = module.this.namespace
+      type  = "PLAINTEXT"
+    },
+    {
+      name  = "ENVIRONMENT"
+      value = module.this.environment
+      type  = "PLAINTEXT"
+    },
+      {
         name  = "PHP_ECR_REPO_URL"
         value = module.ecr.repository_url_map[module.this.id]
         type  = "PLAINTEXT"
