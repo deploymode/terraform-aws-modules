@@ -40,6 +40,7 @@ variable "database_name" {
   default     = null
 }
 
+# https://docs.aws.amazon.com/AmazonRDS/latest/UserGuide/USER_CreateDBInstance.html
 variable "database_user" {
   type        = string
   default     = null

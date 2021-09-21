@@ -38,12 +38,13 @@ resource "aws_security_group_rule" "egress" {
 }
 
 module "db_username_label" {
-  source     = "cloudposse/label/null"
-  version    = "0.25.0"
-  attributes = ["admin"]
-  delimiter  = "_"
-  enabled    = module.this.enabled && var.database_user == null
-  context    = module.this.context
+  source          = "cloudposse/label/null"
+  version         = "0.25.0"
+  attributes      = ["admin"]
+  delimiter       = ""
+  id_length_limit = "16"
+  enabled         = module.this.enabled && var.database_user == null
+  context         = module.this.context
 }
 
 module "rds_instance" {
