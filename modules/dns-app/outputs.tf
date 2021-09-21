@@ -9,6 +9,6 @@ output "zone_id" {
 }
 
 output "zone_name" {
-  value = local.zone_name
+  value       = local.zone_name
   description = "Route53 zone name"
 }

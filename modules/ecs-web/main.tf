@@ -640,7 +640,7 @@ module "app_bucket_iam_policy" {
   source  = "cloudposse/iam-policy/aws"
   version = "0.1.0"
 
-  for_each = toset(var.app_buckets)
+  for_each = toset(var.external_app_buckets)
 
   iam_policy_statements = [
     {
