@@ -259,12 +259,12 @@ module "ecs_codepipeline" {
         type  = "PLAINTEXT"
       },
       {
-        name  = "PHP_ECR_REPO_URL"
+        name  = "BACKGROUND_ECR_REPO_URL"
         value = module.ecr.repository_url_map[module.this.id]
         type  = "PLAINTEXT"
       },
       {
-        name  = "PHP_CONTAINER_NAME"
+        name  = "BACKGROUND_CONTAINER_NAME"
         value = module.container_label.id
         type  = "PLAINTEXT"
       }
