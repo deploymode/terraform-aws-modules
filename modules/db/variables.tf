@@ -11,8 +11,8 @@ variable "host_name" {
 }
 
 variable "provision_security_group" {
-  type = bool
-  default = false
+  type        = bool
+  default     = false
   description = "If true, create security group which can be assigned to resources needing DB access"
 }
 
@@ -42,7 +42,7 @@ variable "database_name" {
 
 variable "database_user" {
   type        = string
-  default     = ""
+  default     = null
   description = "(Required unless a `snapshot_identifier` or `replicate_source_db` is provided) Username for the master DB user"
 }
 

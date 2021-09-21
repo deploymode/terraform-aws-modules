@@ -9,7 +9,7 @@ module "sg_label" {
   source     = "cloudposse/label/null"
   version    = "0.25.0"
   attributes = ["db", "allowed"]
-  enabled    = var.provision_security_group
+  enabled    = module.this.enabled && var.provision_security_group
   context    = module.this.context
 }
 
@@ -33,6 +33,14 @@ resource "aws_security_group_rule" "egress" {
   security_group_id = join("", aws_security_group.allowed.*.id)
 }
 
+module "db_username_label" {
+  source     = "cloudposse/label/null"
+  version    = "0.25.0"
+  attributes = ["admin"]
+  enabled    = module.this.enabled && var.database_user == null
+  context    = module.this.context
+}
+
 module "rds_instance" {
   # source = "git::https://github.com/joe-niland/terraform-aws-rds.git?ref=avoid-sec-group-count-issue"
   source             = "cloudposse/rds/aws"
@@ -48,7 +56,7 @@ module "rds_instance" {
   ca_cert_identifier = "rds-ca-2019"
   # allowed_cidr_blocks         = ["XXX.XXX.XXX.XXX/32"]
   database_name      = var.database_name
-  database_user      = var.database_user
+  database_user      = var.database_user == null ? module.db_username_label.id : var.database_user
   database_password  = var.database_password == "" ? random_password.password[0].result : var.database_password
   database_port      = var.database_port
   multi_az           = false
