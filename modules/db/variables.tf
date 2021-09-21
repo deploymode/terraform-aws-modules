@@ -46,6 +46,12 @@ variable "database_user" {
   description = "(Required unless a `snapshot_identifier` or `replicate_source_db` is provided) Username for the master DB user"
 }
 
+variable "db_username_ssm_param_path" {
+  type        = string
+  default     = ""
+  description = "SSM param store path for db username"
+}
+
 variable "database_password" {
   type        = string
   default     = ""
@@ -90,6 +96,7 @@ variable "iops" {
 variable "allocated_storage" {
   type        = number
   description = "The allocated storage in GBs"
+  default     = 1
 }
 
 variable "max_allocated_storage" {

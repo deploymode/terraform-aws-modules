@@ -1,3 +1,7 @@
+locals {
+  database_username = var.database_user == null ? module.db_username_label.id : var.database_user
+}
+
 resource "random_password" "password" {
   count            = var.database_password == "" ? 1 : 0
   length           = 20
@@ -56,7 +60,7 @@ module "rds_instance" {
   ca_cert_identifier = "rds-ca-2019"
   # allowed_cidr_blocks         = ["XXX.XXX.XXX.XXX/32"]
   database_name      = var.database_name
-  database_user      = var.database_user == null ? module.db_username_label.id : var.database_user
+  database_user      = local.database_username
   database_password  = var.database_password == "" ? random_password.password[0].result : var.database_password
   database_port      = var.database_port
   multi_az           = false
@@ -95,6 +99,25 @@ module "rds_instance" {
   #       ]
   #   }
   # ]
+
+  context = module.this.context
+}
+
+module "store_write" {
+  source  = "cloudposse/ssm-parameter-store/aws"
+  version = "0.8.0"
+
+  enabled = module.this.enabled && var.db_username_ssm_param_path != ""
+
+  parameter_write = [
+    {
+      name        = var.db_username_ssm_param_path
+      value       = local.database_username
+      type        = "SecureString"
+      overwrite   = "true"
+      description = "${module.this.stage} database master user"
+    }
+  ]
 
   context = module.this.context
 }
