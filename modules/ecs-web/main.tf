@@ -406,6 +406,7 @@ module "codepipeline_notifications" {
   name           = module.this.id
   namespace      = module.this.namespace
   stage          = module.this.stage
+  attributes     = [module.this.environment]
   slack_url      = var.codepipeline_slack_notification_webhook_url
   slack_channel  = var.codepipeline_slack_notification_channel
   event_type_ids = var.codepipeline_slack_notification_event_ids
