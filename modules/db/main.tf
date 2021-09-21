@@ -41,6 +41,7 @@ module "db_username_label" {
   source     = "cloudposse/label/null"
   version    = "0.25.0"
   attributes = ["admin"]
+  delimiter  = "_"
   enabled    = module.this.enabled && var.database_user == null
   context    = module.this.context
 }
