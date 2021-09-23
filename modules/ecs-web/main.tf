@@ -319,6 +319,7 @@ module "cdn" {
   cached_methods       = ["GET", "HEAD", "OPTIONS"]
   allowed_methods      = ["GET", "HEAD", "OPTIONS", "PUT", "POST", "PATCH", "DELETE"]
   price_class          = "PriceClass_All"
+  logging_enabled      = var.cdn_logging_enabled
 
   ordered_cache = [
     merge(local.app_cache_behavior, tomap({ "path_pattern" = "*" })),

@@ -579,3 +579,9 @@ variable "cdn_max_ttl" {
   description = "Max TTL for CloudFront"
   default     = 86400
 }
+
+variable "cdn_logging_enabled" {
+  type        = bool
+  default     = false
+  description = "When true, access logs will be sent to a newly created s3 bucket"
+}
