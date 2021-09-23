@@ -1,5 +1,6 @@
 locals {
   database_username = var.database_user == null ? module.db_username_label.id : var.database_user
+  database_password = var.database_password == "" ? join("", random_password.password.*.result) : var.database_password
 }
 
 resource "random_password" "password" {
@@ -118,6 +119,13 @@ module "store_write" {
       type        = "SecureString"
       overwrite   = "true"
       description = "${module.this.stage} database master user"
+    },
+    {
+      name        = var.db_password_ssm_param_path
+      value       = local.database_password
+      type        = "SecureString"
+      overwrite   = "true"
+      description = "${module.this.stage} database master user password"
     }
   ]
 
