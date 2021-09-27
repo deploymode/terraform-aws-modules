@@ -229,6 +229,7 @@ module "ecs_task" {
   alb_security_group     = module.alb.security_group_id # var.alb_security_group_id
   use_alb_security_group = var.use_alb_security_group
   security_group_ids     = var.ecs_security_group_ids
+  task_policy_arns       = [module.app_bucket_iam_policy.arn]
   ecs_load_balancers = [
     {
       container_name   = join("-", [module.container_label.id, "nginx"])
@@ -289,6 +290,7 @@ locals {
     forward_header_values       = ["*"]
     forward_query_string        = true
     lambda_function_association = []
+    function_association        = []
     cache_policy_id             = ""
     origin_request_policy_id    = ""
   }
@@ -638,7 +640,7 @@ resource "aws_iam_role_policy_attachment" "ecs_task_dynamodb" {
 // Bucket access
 module "app_bucket_iam_policy" {
   source  = "cloudposse/iam-policy/aws"
-  version = "0.1.0"
+  version = "0.2.1"
 
   for_each = toset(var.external_app_buckets)
 
@@ -682,13 +684,18 @@ module "app_bucket_iam_policy" {
 module "app_bucket_policy_label" {
   source     = "cloudposse/label/null"
   version    = "0.25.0"
-  attributes = ["buckets"]
+  attributes = ["s3"]
   context    = module.this.context
 }
 
-# Temporarily remove
-resource "aws_iam_role_policy" "app_bucket_policy" {
-  name   = module.app_bucket_policy_label.id
-  role   = module.ecs_task.task_role_name
-  policy = module.app_bucket_iam_policy.json
+resource "aws_iam_policy" "app_bucket_iam_policy" {
+  name        = module.app_bucket_policy_label.id
+  path        = "/"
+  description = "Allow ECS tasks access to S3 buckets required by the application"
+  policy      = module.app_bucket_iam_policy.json
 }
+
+# resource "aws_iam_role_policy_attachment" "app_bucket_role_policy" {
+#   role   = module.ecs_task.task_role_name
+#   policy = module.app_bucket_iam_policy.arn
+# }
