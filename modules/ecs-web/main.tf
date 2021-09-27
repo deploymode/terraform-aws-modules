@@ -296,12 +296,10 @@ locals {
 
 module "cdn" {
   source  = "cloudposse/cloudfront-cdn/aws"
-  version = "0.21.3"
-  # name       = module.this.id
-  # attributes = [var.domain_name]
+  version = "0.22.0"
 
   aliases                         = [local.app_fqdn]
-  origin_domain_name              = module.alb.alb_dns_name // join("", aws_route53_record.default.*.fqdn)
+  origin_domain_name              = module.alb.alb_dns_name
   origin_protocol_policy          = "match-viewer"
   viewer_protocol_policy          = "redirect-to-https"
   viewer_minimum_protocol_version = var.cdn_viewer_min_protocol_version
@@ -689,8 +687,8 @@ module "app_bucket_policy_label" {
 }
 
 # Temporarily remove
-# resource "aws_iam_role_policy" "app_bucket_policy" {
-#   name   = module.app_bucket_policy_label.id
-#   role   = module.ecs_task.task_role_name
-#   policy = module.app_bucket_iam_policy.json
-# }
+resource "aws_iam_role_policy" "app_bucket_policy" {
+  name   = module.app_bucket_policy_label.id
+  role   = module.ecs_task.task_role_name
+  policy = module.app_bucket_iam_policy.json
+}
