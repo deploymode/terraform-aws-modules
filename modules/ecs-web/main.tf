@@ -229,7 +229,6 @@ module "ecs_task" {
   alb_security_group     = module.alb.security_group_id # var.alb_security_group_id
   use_alb_security_group = var.use_alb_security_group
   security_group_ids     = var.ecs_security_group_ids
-  task_policy_arns       = [module.app_bucket_iam_policy.arn]
   ecs_load_balancers = [
     {
       container_name   = join("-", [module.container_label.id, "nginx"])
@@ -242,13 +241,16 @@ module "ecs_task" {
     module.container_nginx.json_map_object,
     module.container_php-fpm.json_map_object
   ])
-  ecs_cluster_arn                = var.ecs_cluster_arn
-  capacity_provider_strategies   = var.ecs_capacity_provider_strategies
-  launch_type                    = var.ecs_launch_type
-  platform_version               = var.ecs_platform_version
-  vpc_id                         = var.vpc_id
-  subnet_ids                     = var.private_subnet_ids
-  task_policy_arns               = var.ecs_task_policy_arns
+  ecs_cluster_arn              = var.ecs_cluster_arn
+  capacity_provider_strategies = var.ecs_capacity_provider_strategies
+  launch_type                  = var.ecs_launch_type
+  platform_version             = var.ecs_platform_version
+  vpc_id                       = var.vpc_id
+  subnet_ids                   = var.private_subnet_ids
+  task_policy_arns = concat(
+    var.ecs_task_policy_arns,
+    [module.app_bucket_iam_policy.arn]
+  )
   exec_enabled                   = var.ecs_enable_exec
   ignore_changes_task_definition = var.ecs_ignore_changes_task_definition
 
