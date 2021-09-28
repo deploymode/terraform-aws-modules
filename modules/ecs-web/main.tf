@@ -702,7 +702,8 @@ resource "aws_iam_policy" "app_bucket_iam_policy" {
   for_each    = toset(var.external_app_buckets)
   path        = "/"
   description = format("Allow ECS tasks access to S3 bucket %s required by the application", each.key)
-  policy      = jsonencode(module.app_bucket_iam_policy[each.key].json)
+  # policy      = jsonencode(module.app_bucket_iam_policy[each.key].json)
+  policy = module.app_bucket_iam_policy[each.key].json
 }
 
 # resource "aws_iam_role_policy_attachment" "app_bucket_role_policy" {
