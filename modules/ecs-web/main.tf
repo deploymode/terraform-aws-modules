@@ -249,7 +249,7 @@ module "ecs_task" {
   subnet_ids                   = var.private_subnet_ids
   task_policy_arns = concat(
     var.ecs_task_policy_arns,
-    [aws_iam_policy.app_bucket_iam_policy.arn]
+    aws_iam_policy.app_bucket_iam_policy.*.arn
   )
   exec_enabled                   = var.ecs_enable_exec
   ignore_changes_task_definition = var.ecs_ignore_changes_task_definition
@@ -698,13 +698,14 @@ module "app_bucket_policy_label" {
 }
 
 resource "aws_iam_policy" "app_bucket_iam_policy" {
-  name        = module.app_bucket_policy_label.id
+  for_each    = toset(var.external_app_buckets)
   path        = "/"
-  description = "Allow ECS tasks access to S3 buckets required by the application"
-  policy      = jsonencode(module.app_bucket_iam_policy.json)
+  description = format("Allow ECS tasks access to S3 bucket %s required by the application", each.key)
+  policy      = jsonencode(module.app_bucket_iam_policy[each.key].json)
 }
 
 # resource "aws_iam_role_policy_attachment" "app_bucket_role_policy" {
+#   for_each = toset(var.external_app_buckets)
 #   role   = module.ecs_task.task_role_name
 #   policy = module.app_bucket_iam_policy.arn
 # }
