@@ -426,6 +426,13 @@ resource "aws_iam_role_policy_attachment" "codebuild" {
   policy_arn = join("", aws_iam_policy.codebuild.*.arn)
 }
 
+# Allow Codebuild to read/write from S3 buckets
+resource "aws_iam_role_policy_attachment" "codebuild_app_bucket" {
+  count      = module.this.enabled && length(var.external_app_buckets) > 0 ? 1 : 0
+  role       = module.ecs_codepipeline.codebuild_role_id
+  policy_arn = aws_iam_policy.app_bucket_iam_policy.arn
+}
+
 module "codebuild_label" {
   source     = "cloudposse/label/null"
   version    = "0.25.0"
