@@ -659,7 +659,7 @@ module "app_bucket_iam_policy" {
       sid        = "ListBucket"
       effect     = "Allow"
       actions    = ["s3:ListBucket"]
-      resources  = [each.key]
+      resources  = ["arn:aws:s3:::${each.key}"]
       conditions = []
     },
     {
@@ -674,7 +674,7 @@ module "app_bucket_iam_policy" {
         "s3:GetObjectVersionAcl",
         "s3:GetObjectVersion"
       ]
-      resources  = ["${each.key}/*"]
+      resources  = ["arn:aws:s3:::${each.key}/*"]
       conditions = []
     },
     # TODO: move this out so it's not duplicated
