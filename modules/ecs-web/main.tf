@@ -701,7 +701,7 @@ resource "aws_iam_policy" "app_bucket_iam_policy" {
   name        = module.app_bucket_policy_label.id
   path        = "/"
   description = "Allow ECS tasks access to S3 buckets required by the application"
-  policy      = module.app_bucket_iam_policy.json
+  policy      = jsonencode(module.app_bucket_iam_policy.json)
 }
 
 # resource "aws_iam_role_policy_attachment" "app_bucket_role_policy" {
