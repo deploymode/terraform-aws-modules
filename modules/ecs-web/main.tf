@@ -428,9 +428,10 @@ resource "aws_iam_role_policy_attachment" "codebuild" {
 
 # Allow Codebuild to read/write from S3 buckets
 resource "aws_iam_role_policy_attachment" "codebuild_app_bucket" {
-  count      = module.this.enabled && length(var.external_app_buckets) > 0 ? 1 : 0
+  # count      = module.this.enabled && length(var.external_app_buckets) > 0 ? 1 : 0
+  for_each   = toset(var.external_app_buckets)
   role       = module.ecs_codepipeline.codebuild_role_id
-  policy_arn = aws_iam_policy.app_bucket_iam_policy.arn
+  policy_arn = aws_iam_policy.app_bucket_iam_policy[each.key].arn
 }
 
 module "codebuild_label" {
