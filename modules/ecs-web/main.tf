@@ -249,7 +249,7 @@ module "ecs_task" {
   subnet_ids                   = var.private_subnet_ids
   task_policy_arns = concat(
     var.ecs_task_policy_arns,
-    # aws_iam_policy.app_bucket_iam_policy.*.arn
+    aws_iam_policy.app_bucket_iam_policy.*.arn
   )
   exec_enabled                   = var.ecs_enable_exec
   ignore_changes_task_definition = var.ecs_ignore_changes_task_definition
