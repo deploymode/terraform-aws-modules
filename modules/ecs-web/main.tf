@@ -222,10 +222,10 @@ module "alb" {
 }
 
 module "ecs_task" {
-  source                 = "cloudposse/ecs-alb-service-task/aws"
-  version                = "0.55.0"
-  context                = module.this.context
-  attributes             = compact(concat(module.this.attributes, ["service"]))
+  source  = "cloudposse/ecs-alb-service-task/aws"
+  version = "0.55.0"
+  context = module.this.context
+  # attributes             = compact(concat(module.this.attributes, ["service"]))
   alb_security_group     = module.alb.security_group_id # var.alb_security_group_id
   use_alb_security_group = var.use_alb_security_group
   security_group_ids     = var.ecs_security_group_ids
@@ -249,7 +249,7 @@ module "ecs_task" {
   subnet_ids                   = var.private_subnet_ids
   task_policy_arns = concat(
     var.ecs_task_policy_arns,
-    [ for v in aws_iam_policy.app_bucket_iam_policy : v.arn ]
+    [for v in aws_iam_policy.app_bucket_iam_policy : v.arn]
     # aws_iam_policy.app_bucket_iam_policy.*.arn
   )
   exec_enabled                   = var.ecs_enable_exec
