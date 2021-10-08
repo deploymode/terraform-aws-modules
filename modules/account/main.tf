@@ -22,4 +22,8 @@ resource "aws_organizations_account" "account" {
   lifecycle {
     ignore_changes = [role_name]
   }
+
+  depends_on = [
+    aws_organizations_organization.this
+  ]
 }
