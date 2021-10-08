@@ -1,11 +1,36 @@
-output "account_arn" {
-  value = aws_organizations_account.account.arn
+output "organization_id" {
+  value       = local.organization_id
+  description = "Organization ID"
 }
 
-output "account_id" {
-  value = aws_organizations_account.account.id
+output "organization_arn" {
+  value       = local.organization_arn
+  description = "Organization ARN"
 }
 
-output "organization_account_access_role" {
-  value = aws_organizations_account.account.role_name
+output "organization_master_account_id" {
+  value       = local.organization_master_account_id
+  description = "Organization master account ID"
+}
+
+output "organization_master_account_arn" {
+  value       = local.organization_master_account_arn
+  description = "Organization master account ARN"
+}
+
+output "organization_master_account_email" {
+  value       = local.organization_master_account_email
+  description = "Organization master account email"
+}
+
+output "account_arns" {
+  value = values(aws_organizations_account.account)[*]["arn"]
+}
+
+output "account_ids" {
+  value = values(aws_organizations_account.account)[*]["id"]
+}
+
+output "organization_account_access_roles" {
+  value = values(aws_organizations_account.account)[*]["role_name"]
 }
