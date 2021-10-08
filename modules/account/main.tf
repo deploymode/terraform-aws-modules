@@ -15,7 +15,7 @@ locals {
 
 resource "aws_organizations_account" "account" {
   for_each  = toset(var.accounts)
-  name      = each.value.name
+  name      = each.key
   email     = format(var.account_email_format, each.key)
   role_name = var.account_role_name
 
