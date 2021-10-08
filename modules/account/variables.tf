@@ -4,6 +4,7 @@ variable "org_feature_set" {
   description = "Organisation feature set. Specify \"ALL\" (default) or \"CONSOLIDATED_BILLING\"."
 }
 
+# https://gist.github.com/shortjared/4c1e3fe52bdfa47522cfe5b41e5d6f22
 variable "org_service_access_principals" {
   type        = list(string)
   default     = []
@@ -16,7 +17,7 @@ variable "org_enabled_policy_types" {
   default     = []
 }
 
-variable "account_email" {
+variable "account_email_format" {
   type        = string
   description = "Account email format string. Used in combination with `name`, e.g. ops-%s@deploymode.com"
 }
