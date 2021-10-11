@@ -31,6 +31,14 @@ output "account_ids" {
   value = values(aws_organizations_account.account)[*]["id"]
 }
 
+output "account_name_id_map" {
+  value = { for a in var.accounts : a => {
+    account_id           = aws_organizations_account.account[a]["id"]
+    org_access_role_name = aws_organizations_account.account[a]["role_name"]
+    }
+  }
+}
+
 output "organization_account_access_roles" {
   value = values(aws_organizations_account.account)[*]["role_name"]
 }
