@@ -25,9 +25,9 @@ resource "aws_iam_user_login_profile" "user_login" {
   pgp_key  = "keybase:${var.keybase_user}"
 }
 
-resource "aws_iam_user_group_membership" "group_membership" {
+resource "aws_iam_group_membership" "group_membership" {
   for_each = aws_iam_group.group # toset(var.groups)
-  users    = [for u in var.users : u if contains(u.groups, each.value.name)]
+  users    = [for u in var.users : u.key if contains(u.value.groups, each.value.name)]
   group    = each.value.name
 }
 

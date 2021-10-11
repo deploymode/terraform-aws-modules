@@ -19,5 +19,5 @@ output "user_login_profile_encrypted_password" {
 
 output "user_groups" {
   description = "Group membership of users"
-  value       = aws_iam_user_group_membership.group_membership.*
+  value       = aws_iam_group_membership.group_membership.*
 }
