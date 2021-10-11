@@ -27,7 +27,7 @@ resource "aws_iam_user_login_profile" "user_login" {
 
 resource "aws_iam_group_membership" "group_membership" {
   for_each = aws_iam_group.group # toset(var.groups)
-  names    = "${each.value.name}-membership"
+  name     = "${each.value.name}-membership"
   users    = [for u in var.users : u.key if contains(u.value.groups, each.value.name)]
   group    = each.value.name
 }
