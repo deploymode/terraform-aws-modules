@@ -4,11 +4,11 @@
 #################################################################
 
 locals {
-  group_names = setproduct(toset(var.accounts), toset(var.groups))
+  group_names = setproduct(var.accounts, toset(var.groups))
 }
 
 resource "aws_iam_group" "group" {
-  for_each = var.group_names
+  for_each = local.group_names
   name     = "${each.key[0]}-${each.key[1]}"
 }
 
