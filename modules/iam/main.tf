@@ -1,6 +1,7 @@
 #################################################################
 # Simplified IAM module for small orgs
 #
+# Intended to be run from master account
 #################################################################
 
 locals {
@@ -10,6 +11,15 @@ locals {
       group   = tuple[1]
     }
   }
+
+  master_account_with_role = lookup(var.accounts, var.master_account_name)
+  accounts = merge(var.accounts, {
+    (var.master_account_name) = {
+      account_id           = local.master_account_with_role.account_id
+      org_access_role_name = module.master_admin_role.name
+    }
+    }
+  )
 }
 
 resource "aws_iam_group" "group" {
@@ -25,10 +35,17 @@ resource "aws_iam_user" "user" {
 }
 
 resource "aws_iam_user_login_profile" "user_login" {
-  for_each = var.users
-  user     = aws_iam_user.user[each.key].name
+  for_each = aws_iam_user.user
+  user     = each.value.name
   pgp_key  = "keybase:${var.keybase_user}"
 }
+
+resource "aws_iam_access_key" "user_key" {
+  for_each = { for u, user_data in aws_iam_user.user : u => user_data if user_data.generate_access_key }
+  user     = each.value.name
+  pgp_key  = "keybase:${var.keybase_user}"
+}
+
 
 resource "aws_iam_group_membership" "group_membership" {
   for_each = aws_iam_group.group # toset(var.groups)
@@ -39,7 +56,7 @@ resource "aws_iam_group_membership" "group_membership" {
 
 
 data "aws_iam_policy_document" "assume_admin_role_with_mfa" {
-  for_each = var.accounts
+  for_each = local.accounts
 
   statement {
     actions = [
@@ -62,7 +79,53 @@ data "aws_iam_policy_document" "assume_admin_role_with_mfa" {
 
 resource "aws_iam_group_policy" "admin_group_with_mfa_policy" {
   for_each = local.group_names
-  name     = "${each.key}-policy" # "${each.key}-${each.value}-policy"
-  group    = each.key             # "${each.key}-${each.value}"
+  name     = "${each.key}-policy"
+  group    = each.key
   policy   = data.aws_iam_policy_document.assume_admin_role_with_mfa[each.value.account].json
 }
+
+resource "aws_iam_role_policy_attachment" "role_policy_attachment_admin" {
+  role       = module.master_admin_role.name
+  policy_arn = "arn:aws:iam::aws:policy/AdministratorAccess"
+}
+
+// Role to allow primary account role to assume role in this account for managing DNS
+module "master_admin_role" {
+  source  = "cloudposse/iam-role/aws"
+  version = "0.13.0"
+
+  context = module.this.context
+  name    = "admin"
+
+  enabled = module.this.enabled && var.provision_master_admin_role
+
+  policy_document_count = 0
+
+  policy_description = "Allow admin access to master account"
+  role_description   = "IAM role with admin permissions"
+
+  # Roles allowed to assume role
+  principals = {
+    AWS = [
+      "arn:aws:iam::${var.accounts["master"].account_id}:root"
+    ]
+  }
+
+  # policy_documents = [
+  #   data.aws_iam_policy_document.dns_policy.json
+  # ]
+}
+
+# data "aws_iam_policy_document" "admin_policy" {
+#   statement {
+#     sid = "admin"
+
+#     actions = [
+#     ]
+
+#     resources = [
+#       "*"
+#     ]
+#   }
+
+# }

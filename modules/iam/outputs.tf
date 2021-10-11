@@ -21,3 +21,13 @@ output "user_groups" {
   description = "Group membership of users"
   value       = aws_iam_group_membership.group_membership.*
 }
+
+output "user_access_keys" {
+  description = "User access keys"
+  value = { for u, user_data in aws_iam_access_key.user_key : u => {
+    encrypted_password = user_data.encrypted_secret
+    key_fingerprint    = user_data.key_fingerprint
+    }
+  }
+  sensitive = true
+}

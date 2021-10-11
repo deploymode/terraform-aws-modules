@@ -14,8 +14,9 @@ variable "groups" {
 
 variable "users" {
   type = map(object({
-    force_destroy = bool
-    groups        = list(string)
+    force_destroy       = bool
+    groups              = list(string)
+    generate_access_key = bool
   }))
   default     = {}
   description = "List of IAM users with assigned groups to create in account"
@@ -25,4 +26,16 @@ variable "keybase_user" {
   type        = string
   default     = ""
   description = "Keybase username for encrypting IAM user passwords"
+}
+
+variable "provision_master_admin_role" {
+  type        = bool
+  default     = true
+  description = "Create an admin role for the master account"
+}
+
+variable "master_account_name" {
+  type        = string
+  default     = "master"
+  description = "Name of master account"
 }
