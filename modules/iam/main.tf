@@ -27,6 +27,7 @@ resource "aws_iam_user_login_profile" "user_login" {
 
 resource "aws_iam_group_membership" "group_membership" {
   for_each = aws_iam_group.group # toset(var.groups)
+  names    = "${each.value.name}-membership"
   users    = [for u in var.users : u.key if contains(u.value.groups, each.value.name)]
   group    = each.value.name
 }
@@ -56,7 +57,7 @@ data "aws_iam_policy_document" "assume_admin_role_with_mfa" {
 
 resource "aws_iam_group_policy" "admin_group_with_mfa_policy" {
   for_each = local.group_names
-  name     = "${each.key[0]}-${each.key[1]}-policy"
-  group    = "${each.key[0]}-${each.key[1]}"
-  policy   = data.aws_iam_policy_document.assume_admin_role_with_mfa[each.key[0]].json
+  name     = "${each.key}-${each.value}-policy"
+  group    = "${each.key}-${each.value}"
+  policy   = data.aws_iam_policy_document.assume_admin_role_with_mfa[each.key].json
 }
