@@ -32,11 +32,17 @@ output "account_ids" {
 }
 
 output "account_name_id_map" {
-  value = { for a in var.accounts : a => {
+  value = merge({ for a in var.accounts : a => {
     account_id           = aws_organizations_account.account[a]["id"]
     org_access_role_name = aws_organizations_account.account[a]["role_name"]
+    } },
+    {
+      "master" = {
+        account_id           = local.organization_master_account_id
+        org_access_role_name = null
+      }
     }
-  }
+  )
 }
 
 output "organization_account_access_roles" {

@@ -1,17 +1,17 @@
 output "users" {
   description = "IAM user name"
-  value = { for u in aws_iam_user.user : u.value.name => {
-    arn       = u.value.arn
-    unique_id = u.value.unique_id
+  value = { for u, user_data in aws_iam_user.user : u => {
+    arn       = user_data.arn
+    unique_id = user_data.unique_id
     }
   }
 }
 
 output "user_login_profile_encrypted_password" {
   description = "The encrypted password, base64 encoded"
-  value = { for u in aws_iam_user_login_profile.user_login : u.value.name => {
-    encrypted_password = u.value.encrypted_password
-    key_fingerprint    = u.value.key_fingerprint
+  value = { for u, user_data in aws_iam_user_login_profile.user_login : u => {
+    encrypted_password = user_data.encrypted_password
+    key_fingerprint    = user_data.key_fingerprint
     }
   }
   sensitive = true

@@ -4,12 +4,17 @@
 #################################################################
 
 locals {
-  group_names = setproduct(keys(var.accounts), toset(var.groups))
+  group_names = {
+    for tuple in setproduct(keys(var.accounts), toset(var.groups)) : "${tuple[0]}-${tuple[1]}" => {
+      account = tuple[0]
+      group   = tuple[1]
+    }
+  }
 }
 
 resource "aws_iam_group" "group" {
   for_each = local.group_names
-  name     = "${each.key}-${each.value}"
+  name     = each.key # "${each.key}-${each.value}"
 }
 
 resource "aws_iam_user" "user" {
@@ -28,7 +33,7 @@ resource "aws_iam_user_login_profile" "user_login" {
 resource "aws_iam_group_membership" "group_membership" {
   for_each = aws_iam_group.group # toset(var.groups)
   name     = "${each.value.name}-membership"
-  users    = [for u in var.users : u.key if contains(u.value.groups, each.value.name)]
+  users    = [for u, user_data in var.users : u if contains(user_data.groups, each.value.name)]
   group    = each.value.name
 }
 
@@ -57,7 +62,7 @@ data "aws_iam_policy_document" "assume_admin_role_with_mfa" {
 
 resource "aws_iam_group_policy" "admin_group_with_mfa_policy" {
   for_each = local.group_names
-  name     = "${each.key}-${each.value}-policy"
-  group    = "${each.key}-${each.value}"
-  policy   = data.aws_iam_policy_document.assume_admin_role_with_mfa[each.key].json
+  name     = "${each.key}-policy" # "${each.key}-${each.value}-policy"
+  group    = each.key             # "${each.key}-${each.value}"
+  policy   = data.aws_iam_policy_document.assume_admin_role_with_mfa[each.value.account].json
 }

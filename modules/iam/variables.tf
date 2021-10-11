@@ -1,6 +1,7 @@
 variable "accounts" {
   type = map(object({
-    account_id = string
+    account_id           = string
+    org_access_role_name = string
   }))
   description = "Map of account names to account IDs in the Org, e.g. master, prod"
 }
