@@ -9,7 +9,7 @@ output "users" {
 
 output "user_login_profile_encrypted_password" {
   description = "The encrypted password, base64 encoded"
-  value = { for u in aws_iam_user_login_profile.user : u.value.name => {
+  value = { for u in aws_iam_user_login_profile.user_login : u.value.name => {
     encrypted_password = u.value.encrypted_password
     key_fingerprint    = u.value.key_fingerprint
     }
