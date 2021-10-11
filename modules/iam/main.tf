@@ -4,7 +4,7 @@
 #################################################################
 
 locals {
-  group_names = setproduct(var.accounts, toset(var.groups))
+  group_names = setproduct(keys(var.accounts), toset(var.groups))
 }
 
 resource "aws_iam_group" "group" {
@@ -54,8 +54,8 @@ data "aws_iam_policy_document" "assume_admin_role_with_mfa" {
   }
 }
 
-resource "aws_iam_group_policy" "admin_group_with_mfa_dev" {
-  for_each = local_group_names
+resource "aws_iam_group_policy" "admin_group_with_mfa_policy" {
+  for_each = local.group_names
   name     = "${each.key[0]}-${each.key[1]}-policy"
   group    = "${each.key[0]}-${each.key[1]}"
   policy   = data.aws_iam_policy_document.assume_admin_role_with_mfa[each.key[0]].json
