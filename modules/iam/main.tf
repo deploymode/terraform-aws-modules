@@ -9,7 +9,7 @@ locals {
 
 resource "aws_iam_group" "group" {
   for_each = local.group_names
-  name     = "${each.key[0]}-${each.key[1]}"
+  name     = "${each.key}-${each.value}"
 }
 
 resource "aws_iam_user" "user" {
