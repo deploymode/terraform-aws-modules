@@ -31,3 +31,8 @@ output "user_access_keys" {
   }
   sensitive = true
 }
+
+output "master_admin_role_arn" {
+  value       = module.master_admin_role.arn
+  description = "ARN of role for access master account as admin"
+}

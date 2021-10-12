@@ -12,6 +12,7 @@ locals {
     }
   }
 
+  # Add the admin role for the master account, since it wasn't created in the `account` module
   master_account_with_role = lookup(var.accounts, var.master_account_name)
   accounts = merge(var.accounts, {
     (var.master_account_name) = {
@@ -114,32 +115,12 @@ module "master_admin_role" {
   # ]
 }
 
-// Role to allow users in the master account to change their own password
-module "master_change_password_role" {
-  source  = "cloudposse/iam-role/aws"
-  version = "0.13.0"
-
-  context = module.this.context
-  name    = "change-password"
-
-  enabled = module.this.enabled
-
-  policy_document_count = 1
-
-  policy_description = "Allow users to change their own password"
-  role_description   = "IAM role with settings for users in master account"
-
-  policy_documents = [
-    data.aws_iam_policy_document.change_password_policy.json
-  ]
-}
-
-# Group to control users in master account
+# Group to control password policy for users in master account
 resource "aws_iam_group" "master_account_users" {
   name = "master-account-users"
 }
 
-resource "aws_iam_group_policy" "master_admin_group_with_mfa_policy" {
+resource "aws_iam_group_policy" "master_users_policy" {
   name   = "master-account-users-policy"
   group  = aws_iam_group.master_account_users.name
   policy = data.aws_iam_policy_document.change_password_policy.json
@@ -147,8 +128,6 @@ resource "aws_iam_group_policy" "master_admin_group_with_mfa_policy" {
 
 data "aws_iam_policy_document" "change_password_policy" {
   statement {
-    sid = "get-password-policy"
-
     actions = [
       "iam:GetAccountPasswordPolicy"
     ]
@@ -158,8 +137,6 @@ data "aws_iam_policy_document" "change_password_policy" {
     ]
   }
   statement {
-    sid = "change-password"
-
     actions = [
       "iam:ChangePassword"
     ]
@@ -168,4 +145,10 @@ data "aws_iam_policy_document" "change_password_policy" {
       "arn:aws:iam::${local.master_account_with_role.account_id}:user/$${aws:username}"
     ]
   }
+}
+
+resource "aws_iam_group_membership" "master_account_users_group_membership" {
+  name  = "master-account-users-group-membership"
+  users = keys(var.users)
+  group = aws_iam_group.master_account_users.name
 }
