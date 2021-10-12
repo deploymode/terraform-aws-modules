@@ -32,3 +32,16 @@ variable "accounts" {
   type        = list(string)
   description = "List of account names to create"
 }
+
+// Account Settings
+variable "minimum_password_length" {
+  type        = number
+  default     = 12
+  description = "Min password length"
+}
+
+variable "allow_users_to_change_password" {
+  type        = bool
+  default     = true
+  description = "Allow users to change passwords"
+}

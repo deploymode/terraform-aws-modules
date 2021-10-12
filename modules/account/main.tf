@@ -27,3 +27,13 @@ resource "aws_organizations_account" "account" {
     aws_organizations_organization.this
   ]
 }
+
+resource "aws_iam_account_password_policy" "account_password_policy" {
+  for_each                       = toset(var.accounts)
+  minimum_password_length        = var.minimum_password_length
+  require_lowercase_characters   = true
+  require_numbers                = true
+  require_uppercase_characters   = true
+  require_symbols                = true
+  allow_users_to_change_password = var.allow_users_to_change_password
+}
