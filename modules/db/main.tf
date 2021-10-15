@@ -5,12 +5,12 @@ locals {
 
 resource "random_password" "password" {
   count            = var.database_password == "" ? 1 : 0
-  length           = 20
-  number           = true
-  upper            = true
-  lower            = true
-  special          = true
-  override_special = "/@\"' "
+  length           = var.database_password_settings.length
+  number           = var.database_password_settings.number
+  upper            = var.database_password_settings.upper
+  lower            = var.database_password_settings.lower
+  special          = var.database_password_settings.special
+  override_special = var.database_password_settings.override_special # "/@\"' "
 }
 
 module "sg_label" {

@@ -65,6 +65,26 @@ variable "db_password_ssm_param_path" {
   description = "SSM param store path for db user password"
 }
 
+variable "database_password_settings" {
+  type = object({
+    length           = number
+    number           = bool
+    upper            = bool
+    lower            = bool
+    special          = bool
+    override_special = string
+  })
+  default = {
+    length           = 16
+    lower            = true
+    number           = true
+    override_special = "/@\"' "
+    special          = false
+    upper            = true
+  }
+  description = "Database password characteristics"
+}
+
 variable "database_port" {
   type        = number
   description = "Database port (_e.g._ `3306` for `MySQL`). Used in the DB Security Group to allow access to the DB instance from the provided `security_group_ids`"
