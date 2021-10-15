@@ -2,7 +2,7 @@
 // Role to allow primary account role to assume role in this account for managing DNS
 module "dns_role" {
   source  = "cloudposse/iam-role/aws"
-  version = "0.7.0"
+  version = "0.13.0"
 
   context = module.this.context
   name    = "dns"
