@@ -249,6 +249,7 @@ module "ecs_task" {
   subnet_ids                   = var.private_subnet_ids
   task_policy_arns = concat(
     var.ecs_task_policy_arns,
+    aws_iam_policy.email_policy.*.arn,
     [for v in aws_iam_policy.app_bucket_iam_policy : v.arn]
     # aws_iam_policy.app_bucket_iam_policy.*.arn
   )
@@ -265,6 +266,35 @@ module "ecs_task" {
   task_memory                = var.ecs_task_memory
   task_cpu                   = var.ecs_task_cpu
 }
+
+module "email_policy_label" {
+  source     = "cloudposse/label/null"
+  version    = "0.25.0"
+  attributes = ["email"]
+  context    = module.this.context
+}
+
+resource "aws_iam_policy" "email_policy" {
+  count  = module.this.enabled && var.allow_email_sending ? 1 : 0
+  name   = module.email_policy_label.id
+  path   = "/"
+  policy = join("", data.aws_iam_policy_document.send_email_policy.*.json)
+}
+
+data "aws_iam_policy_document" "send_email_policy" {
+  count = module.this.enabled && var.allow_email_sending ? 1 : 0
+  statement {
+    actions = [
+      "ses:SendEmail",
+      "ses:SendRawEmail"
+    ]
+
+    resources = [
+      "*"
+    ]
+  }
+}
+
 
 resource "aws_route53_record" "default" {
   count   = (var.hosted_zone_id != "" && var.create_alb_dns_record) ? 1 : 0

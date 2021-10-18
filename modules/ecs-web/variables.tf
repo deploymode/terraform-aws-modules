@@ -274,6 +274,12 @@ variable "ecs_task_policy_arns" {
   default     = []
 }
 
+variable "allow_email_sending" {
+  type        = bool
+  description = "If true, adds IAM policy to ECS task role to allow sending email with SES"
+  default     = false
+}
+
 // Container variables
 
 variable "log_driver" {
