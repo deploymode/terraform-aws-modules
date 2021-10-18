@@ -93,6 +93,12 @@ output "dynamodb_access_policy_arn" {
   description = "Policy to allow access to DynamoDB table for app cache"
 }
 
+// Email
+
+output "email_sending_policy_arn" {
+  value       = var.allow_email_sending ? join("", aws_iam_policy.email_policy.*.arn) : ""
+  description = "Policy to allow sending email via SES"
+}
 
 // CodePipeline
 
