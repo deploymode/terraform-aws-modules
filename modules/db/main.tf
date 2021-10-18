@@ -10,7 +10,7 @@ resource "random_password" "password" {
   upper            = var.database_password_settings.upper
   lower            = var.database_password_settings.lower
   special          = var.database_password_settings.special
-  override_special = var.database_password_settings.override_special # "/@\"' "
+  override_special = var.database_password_settings.length # 
 }
 
 module "sg_label" {
