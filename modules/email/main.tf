@@ -35,7 +35,7 @@ module "send_email_role" {
   # Roles allowed to assume role
   principals = {
     AWS = [
-      "arn:aws:iam::${get_aws_account_id()}:root"
+      "arn:aws:iam::${var.aws_account_id}:root"
     ]
   }
 

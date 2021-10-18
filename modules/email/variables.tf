@@ -1,3 +1,8 @@
+variable "aws_account_id" {
+  description = "Current AWS account ID."
+  type        = string
+}
+
 variable "domain" {
   description = "The domain to create the SES identity for."
   type        = string
