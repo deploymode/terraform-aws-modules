@@ -17,3 +17,8 @@ output "send_email_role" {
   value       = module.send_email_role.arn
   description = "Role which allows sending email"
 }
+
+output "email_domain" {
+  value       = var.domain
+  description = "Email domain configured in SES"
+}
