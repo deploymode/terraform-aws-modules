@@ -16,3 +16,9 @@ variable "buckets" {
   default     = {}
   description = "Map of bucket name fragment to config object"
 }
+
+variable "generate_s3_backup_policy" {
+  type        = bool
+  default     = false
+  description = "Create a policy to allow readonly access to S3 buckets for backup purposes"
+}

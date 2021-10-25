@@ -11,3 +11,8 @@ output "bucket_arns" {
   })
   description = "ARNs of created buckets"
 }
+
+output "s3_backup_policy_arn" {
+  value       = var.generate_s3_backup_policy ? join("", aws_iam_policy.s3_backup_policy.*.arn) : ""
+  description = "Policy to allow readonly access to backup buckets"
+}
