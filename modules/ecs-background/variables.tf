@@ -27,6 +27,12 @@ variable "ecr_max_image_count" {
 
 // ECS
 
+variable "container_image" {
+  type        = string
+  description = "Docker registry image name (and tag). If not specified, ECR is used."
+  default     = null
+}
+
 variable "ecs_security_group_ids" {
   type        = list(string)
   description = "Additional Security Group IDs to assign to ECS Service"

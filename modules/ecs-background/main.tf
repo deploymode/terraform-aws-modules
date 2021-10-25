@@ -28,6 +28,7 @@ module "ecr" {
   scan_images_on_push  = true
   max_image_count      = var.ecr_max_image_count
   image_tag_mutability = "MUTABLE"
+  enabled              = var.container_image == null
 
   context = module.this.context
 }
@@ -43,7 +44,7 @@ module "container" {
   source                       = "cloudposse/ecs-container-definition/aws"
   version                      = "0.56.0"
   container_name               = module.container_label.id
-  container_image              = join(":", [module.ecr.repository_url, "latest"])
+  container_image              = var.container_image == null ? join(":", [module.ecr.repository_url, "latest"]) : var.container_image
   container_memory             = var.container_memory
   container_memory_reservation = var.container_memory_reservation
   container_cpu                = var.container_cpu
@@ -172,50 +173,15 @@ resource "aws_service_discovery_service" "service_discovery" {
   }
 }
 
-// Allow ECS task to access SSM parameters
-# resource "aws_iam_role_policy_attachment" "ecs_task" {
-#   count      = module.this.enabled ? 1 : 0
-#   role       = module.ecs_task.task_role_name
-#   policy_arn = join("", aws_iam_policy.ecs_task.*.arn)
-# }
-
-# module "ecs_task_label" {
-#   source     = "cloudposse/label/null"
-#   version    = "0.25.0"
-#   attributes = compact(concat(module.this.attributes, ["task"]))
-#   context    = module.this.context
-# }
-
-# resource "aws_iam_policy" "ecs_task" {
-#   count  = module.this.enabled ? 1 : 0
-#   name   = module.ecs_task_label.id
-#   policy = data.aws_iam_policy_document.ecs_task.json
-# }
-
-# data "aws_iam_policy_document" "ecs_task" {
-
-#   # Allow ECS task to access SSM parameter store items
-#   statement {
-#     sid = ""
-
-#     actions = [
-#       "ssm:GetParameter"
-#     ]
-
-#     resources = [
-#       "arn:aws:ssm:${var.aws_region}:${var.aws_account_id}:parameter/${module.this.namespace}/${module.this.stage}/app/*"
-#     ]
-
-#     effect = "Allow"
-#   }
-# }
-
 // CodePipeline using ECS Deploy
 module "ecs_codepipeline" {
   # source = "git::https://github.com/joe-niland/terraform-aws-ecs-codepipeline.git?ref=support-type-attr-in-codebuild-env"
   source  = "cloudposse/ecs-codepipeline/aws"
   version = "0.28.1"
-  region  = var.aws_region
+
+  enabled = var.container_image == null
+
+  region = var.aws_region
 
   repo_owner = var.codepipeline_repo_owner
   repo_name  = var.codepipeline_repo_name
@@ -315,17 +281,19 @@ module "codebuild_label" {
   //source     = "github.com/cloudposse/terraform-null-label.git?ref=0.21.0"
   source     = "cloudposse/label/null"
   version    = "0.25.0"
+  enabled    = var.container_image == null
   attributes = compact(concat(module.this.attributes, ["ecr"]))
   context    = module.this.context
 }
 
 resource "aws_iam_policy" "codebuild" {
-  count  = module.this.enabled ? 1 : 0
+  count  = module.this.enabled && var.container_image == null ? 1 : 0
   name   = module.codebuild_label.id
   policy = data.aws_iam_policy_document.codebuild.json
 }
 
 data "aws_iam_policy_document" "codebuild" {
+  count = var.container_image == null
 
   # Allow CodeBuild to pull ECR images
   statement {
