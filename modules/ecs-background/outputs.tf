@@ -8,6 +8,11 @@ output "ecs_service_security_group_id" {
   value       = module.ecs_task.service_security_group_id
 }
 
+output "ecs_task_definition_family" {
+  description = "Family of ECS task definition"
+  value       = module.ecs_task.task_definition_family
+}
+
 output "cloudwatch_log_group_name" {
   description = "ECS Service log group name"
   value       = module.container_label.id
