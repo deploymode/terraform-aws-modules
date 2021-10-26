@@ -300,8 +300,9 @@ module "codepipeline_notifications" {
 
 // Block public ACLs for Codepipeline bucket
 resource "aws_s3_bucket_public_access_block" "codepipeline_bucket_block_public" {
-  bucket = join("-", [module.this.id, "codepipeline"])
+  count = var.container_image == null ? 1 : 0
 
+  bucket                  = join("-", [module.this.id, "codepipeline"])
   block_public_acls       = true
   block_public_policy     = true
   ignore_public_acls      = true
