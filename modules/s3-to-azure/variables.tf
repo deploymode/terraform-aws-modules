@@ -27,9 +27,9 @@ variable "s3_backup_access_role_arn" {
 }
 
 variable "container_command" {
-  type        = string
+  type        = list(string)
   description = "Git branch monitored by CodePipeline"
-  default     = null
+  default     = ["azcopy"]
 }
 
 # https://registry.terraform.io/providers/hashicorp/aws/latest/docs/resources/cloudwatch_event_rule#schedule_expression

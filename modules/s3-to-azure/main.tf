@@ -57,14 +57,8 @@ module "service" {
   ecs_task_memory        = 1024
   ecs_task_desired_count = 0 # Task is run via event trigger
 
-  container_image = "peterdavehello/azcopy"
-  container_command = ["azcopy",
-    "sync",
-    "https://s3.amazonaws.com/${var.s3_bucket_names[0]}",
-    "$$AZURE_STORAGE_CONTAINER_SAS_ENDPOINT",
-    "--recursive",
-    "--log-level=INFO"
-  ]
+  container_image              = "peterdavehello/azcopy"
+  container_command            = var.container_command
   container_cpu                = 512
   container_memory_reservation = 1024
   container_memory             = 1024
