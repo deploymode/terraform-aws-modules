@@ -111,3 +111,10 @@ output "codepipeline_arn" {
   description = "CodePipeline ARN"
   value       = module.ecs_codepipeline.codepipeline_arn
 }
+
+// IAM
+
+output "app_bucket_policy_arn" {
+  description = "ARN of IAM policy allowing access to S3 buckets used by app"
+  value       = aws_iam_policy.app_bucket_iam_policy.arn
+}

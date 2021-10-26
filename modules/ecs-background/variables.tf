@@ -27,11 +27,6 @@ variable "ecr_max_image_count" {
 
 // ECS
 
-variable "container_image" {
-  type        = string
-  description = "Docker registry image name (and tag). If not specified, ECR is used."
-  default     = null
-}
 
 variable "ecs_security_group_ids" {
   type        = list(string)
@@ -153,6 +148,14 @@ variable "log_driver" {
   type        = string
   description = "Docker log driver"
   default     = "awslogs"
+}
+
+// Container
+
+variable "container_image" {
+  type        = string
+  description = "Docker registry image name (and tag). If not specified, ECR is used."
+  default     = null
 }
 
 variable "container_command" {
