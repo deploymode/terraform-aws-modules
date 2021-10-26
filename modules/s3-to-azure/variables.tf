@@ -17,7 +17,7 @@ variable "subnet_ids" {
 }
 
 variable "s3_bucket_names" {
-  type        = string
+  type        = list(string)
   description = "Names of S3 buckets to back up - used by the ECS service"
 }
 
