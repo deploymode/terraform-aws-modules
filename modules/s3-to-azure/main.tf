@@ -15,11 +15,11 @@
 module "cluster" {
   source = "../ecs-cluster"
 
-  vpc_id = var.vpc_id
-
+  vpc_id                             = var.vpc_id
   container_insights_enabled         = false
   create_service_discovery_namespace = false
-  context                            = module.this.context
+
+  context = module.this.context
 }
 
 module "service" {

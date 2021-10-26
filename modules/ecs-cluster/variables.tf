@@ -6,7 +6,6 @@ variable "aws_region" {
   type = string
 }
 
-
 variable "vpc_id" {
   type        = string
   description = "VPC ID - must be specified if `create_service_discovery_namespace` is true"
