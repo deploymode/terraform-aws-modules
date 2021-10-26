@@ -332,7 +332,7 @@ resource "aws_iam_policy" "codebuild" {
 }
 
 data "aws_iam_policy_document" "codebuild" {
-  count = var.container_image == null
+  count = var.container_image == null ? 1 : 0
 
   # Allow CodeBuild to pull ECR images
   statement {
