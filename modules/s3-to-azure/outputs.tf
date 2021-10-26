@@ -1,24 +1,26 @@
-output "ses_domain_identity_arn" {
-  value       = module.ses.ses_domain_identity_arn
-  description = "The ARN of the SES domain identity"
+# ecs service ARN
+
+output "ecs_cluster_arn" {
+  value       = module.cluster.arn
+  description = "ARN of ECS cluster"
 }
 
-output "ses_domain_identity_verification_token" {
-  value       = module.ses.ses_domain_identity_verification_token
-  description = "A code which when added to the domain as a TXT record will signal to SES that the owner of the domain has authorised SES to act on their behalf. The domain identity will be in state 'verification pending' until this is done. See below for an example of how this might be achieved when the domain is hosted in Route 53 and managed by Terraform. Find out more about verifying domains in Amazon SES in the AWS SES docs."
+output "ecs_service_codepipeline_arn" {
+  value       = module.service.codepipeline_arn
+  description = "ARN of CodePipeline service"
 }
 
-output "ses_dkim_tokens" {
-  value       = module.ses.ses_dkim_tokens
-  description = "A list of DKIM Tokens which, when added to the DNS Domain as CNAME records, allows for receivers to verify that emails were indeed authorized by the domain owner."
+output "ecs_service_security_group_id" {
+  value       = module.service.ecs_service_security_group_id
+  description = "Security group assigned to ECS service"
 }
 
-output "send_email_role" {
-  value       = module.send_email_role.arn
-  description = "Role which allows sending email"
+output "ecs_service_cloudwatch_log_group_name" {
+  description = "ECS Service log group name"
+  value       = module.service.cloudwatch_log_group_name
 }
 
-output "email_domain" {
-  value       = var.domain
-  description = "Email domain configured in SES"
+output "enabled" {
+  value       = module.this.enabled
+  description = "Is module enabled?"
 }
