@@ -18,3 +18,10 @@ resource "aws_ecs_cluster" "fargate_cluster" {
     create_before_destroy = true
   }
 }
+
+resource "aws_service_discovery_private_dns_namespace" "default" {
+  count       = var.create_service_discovery_namespace ? 1 : 0
+  name        = join(".", [module.this.namespace, "local"])
+  description = module.this.id
+  vpc         = var.vpc_id
+}

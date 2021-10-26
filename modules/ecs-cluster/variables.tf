@@ -17,3 +17,9 @@ variable "container_insights_enabled" {
   description = "Whether to enable Container Insights on the cluster"
   default     = false
 }
+
+variable "create_service_discovery_namespace" {
+  type        = bool
+  description = "If true, create service discovery DNS namespace"
+  default     = true
+}
