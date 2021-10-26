@@ -165,7 +165,7 @@ resource "aws_cloudwatch_event_target" "ecs_scheduled_task" {
       assign_public_ip = false
     }
     task_count          = 1
-    task_definition_arn = "arn:aws:ecs:${var.aws_region}:${var.aws_account_id}:task-definition/${data.aws_ecs_task_definition.atlas_backup.family}"
+    task_definition_arn = "arn:aws:ecs:${var.aws_region}:${var.aws_account_id}:task-definition/${data.aws_ecs_task_definition.task_def.family}"
   }
 }
 
@@ -219,7 +219,7 @@ data "aws_iam_policy_document" "run_task_policy_document" {
     ]
 
     resources = [
-      "arn:aws:ecs:${var.aws_region}:${var.aws_account_id}:task-definition/${data.aws_ecs_task_definition.atlas_backup.family}"
+      "arn:aws:ecs:${var.aws_region}:${var.aws_account_id}:task-definition/${data.aws_ecs_task_definition.task_def.family}"
     ]
 
     effect = "Allow"
