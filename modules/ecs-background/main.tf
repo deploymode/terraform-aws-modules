@@ -132,7 +132,7 @@ module "ecs_task" {
 // Allow ECS task to access SSM parameters
 resource "aws_iam_role_policy_attachment" "ecs_task" {
   count      = module.this.enabled ? 1 : 0
-  role       = module.ecs_alb_service_task.task_role_name
+  role       = module.ecs_task.task_role_name
   policy_arn = join("", aws_iam_policy.ecs_task.*.arn)
 }
 
