@@ -6,6 +6,13 @@ variable "aws_region" {
   type = string
 }
 
+
+variable "vpc_id" {
+  type        = string
+  description = "VPC ID - must be specified if `create_service_discovery_namespace` is true"
+  default     = null
+}
+
 variable "default_capacity_provider" {
   type        = string
   description = "Cluster capacity provider to use as default"
@@ -21,5 +28,5 @@ variable "container_insights_enabled" {
 variable "create_service_discovery_namespace" {
   type        = bool
   description = "If true, create service discovery DNS namespace"
-  default     = true
+  default     = false
 }
