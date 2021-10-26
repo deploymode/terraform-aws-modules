@@ -326,9 +326,9 @@ module "codebuild_label" {
 }
 
 resource "aws_iam_policy" "codebuild" {
-  count  = module.this.enabled && var.container_image == null ? 1 : 0
+  count  = (module.this.enabled && var.container_image == null) ? 1 : 0
   name   = module.codebuild_label.id
-  policy = data.aws_iam_policy_document.codebuild.json
+  policy = join("", data.aws_iam_policy_document.codebuild.*.json)
 }
 
 data "aws_iam_policy_document" "codebuild" {
