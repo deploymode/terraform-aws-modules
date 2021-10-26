@@ -312,7 +312,7 @@ resource "aws_s3_bucket_public_access_block" "codepipeline_bucket_block_public" 
 // Allow pull permission to CodeBuild
 
 resource "aws_iam_role_policy_attachment" "codebuild" {
-  count      = module.this.enabled ? 1 : 0
+  count      = (module.this.enabled && var.container_image == null) ? 1 : 0
   role       = module.ecs_codepipeline.codebuild_role_id
   policy_arn = join("", aws_iam_policy.codebuild.*.arn)
 }
