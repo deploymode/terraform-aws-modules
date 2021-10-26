@@ -250,7 +250,7 @@ module "ecs_codepipeline" {
   local_cache_modes       = var.codebuild_local_cache_modes
   s3_bucket_force_destroy = true
 
-  environment_variables = var.container_image == null ? [] : concat(
+  environment_variables = concat(
     var.codepipeline_environment_variables,
     [
       {
@@ -265,7 +265,7 @@ module "ecs_codepipeline" {
       },
       {
         name  = "BACKGROUND_ECR_REPO_URL"
-        value = module.ecr.repository_url_map[module.this.id]
+        value = var.container_image == null ? module.ecr.repository_url_map[module.this.id] : ""
         type  = "PLAINTEXT"
       },
       {
