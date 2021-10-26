@@ -87,6 +87,7 @@ module "container" {
 module "ecs_task" {
   source  = "cloudposse/ecs-alb-service-task/aws"
   version = "0.55.0"
+
   context = module.this.context
 
   container_definition_json    = "[${module.container.json_map_encoded}]"
@@ -136,7 +137,7 @@ resource "aws_iam_role_policy_attachment" "ecs_task" {
 }
 
 module "ecs_task_label" {
-  source     = "cloudposse/null/label"
+  source     = "cloudposse/label/null"
   version    = "0.25.0"
   attributes = ["task"]
   context    = module.this.context
