@@ -128,6 +128,44 @@ module "ecs_task" {
   task_cpu      = var.ecs_task_cpu
 }
 
+// Allow ECS task to access SSM parameters
+resource "aws_iam_role_policy_attachment" "ecs_task" {
+  count      = module.this.enabled ? 1 : 0
+  role       = module.ecs_alb_service_task.task_role_name
+  policy_arn = join("", aws_iam_policy.ecs_task.*.arn)
+}
+
+module "ecs_task_label" {
+  source     = "cloudposse/null/label"
+  version    = "0.25.0"
+  attributes = ["task"]
+  context    = module.this.context
+}
+
+resource "aws_iam_policy" "ecs_task" {
+  count  = module.this.enabled ? 1 : 0
+  name   = module.ecs_task_label.id
+  policy = data.aws_iam_policy_document.ecs_task.json
+}
+
+data "aws_iam_policy_document" "ecs_task" {
+
+  # Allow ECS task to access SSM parameter store items
+  statement {
+    sid = ""
+
+    actions = [
+      "ssm:GetParameter"
+    ]
+
+    resources = [
+      "arn:aws:ssm:${var.aws_region}:${var.aws_account_id}:parameter/${module.this.namespace}/${module.this.stage}/${var.ssm_param_store_app_key}/*"
+    ]
+
+    effect = "Allow"
+  }
+}
+
 // Security Groups
 
 resource "aws_security_group_rule" "allowed_ingress" {

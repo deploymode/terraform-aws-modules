@@ -150,6 +150,12 @@ variable "log_driver" {
   default     = "awslogs"
 }
 
+variable "ssm_param_store_app_key" {
+  type        = string
+  default     = "app"
+  description = "App-level key in SSM Parameter Store path"
+}
+
 // Container
 
 variable "container_image" {
@@ -401,3 +407,5 @@ variable "dynamodb_table_name" {
   description = "Name of DynamoDB table used by application (if any)"
   default     = ""
 }
+
+
