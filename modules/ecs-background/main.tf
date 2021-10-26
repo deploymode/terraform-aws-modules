@@ -250,7 +250,7 @@ module "ecs_codepipeline" {
   local_cache_modes       = var.codebuild_local_cache_modes
   s3_bucket_force_destroy = true
 
-  environment_variables = concat(
+  environment_variables = var.container_image == null ? [] : concat(
     var.codepipeline_environment_variables,
     [
       {
