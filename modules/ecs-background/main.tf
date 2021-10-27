@@ -156,7 +156,8 @@ data "aws_iam_policy_document" "ecs_task" {
     sid = ""
 
     actions = [
-      "ssm:GetParameter"
+      "ssm:GetParameter",
+      "ssm:GetParameters"
     ]
 
     resources = [
