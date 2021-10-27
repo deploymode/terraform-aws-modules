@@ -32,6 +32,12 @@ variable "container_command" {
   default     = ["azcopy"]
 }
 
+variable "container_secret_names" {
+  type        = list(string)
+  description = "List of secret names to add as container secrets"
+  default     = []
+}
+
 # https://registry.terraform.io/providers/hashicorp/aws/latest/docs/resources/cloudwatch_event_rule#schedule_expression
 variable "backup_schedule" {
   type        = string

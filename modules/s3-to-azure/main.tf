@@ -82,11 +82,11 @@ module "service" {
     # }
   ]
 
-  container_secrets = [
-    # {
-    #   "name" : "AZURE_STORAGE_CONTAINER_SAS_ENDPOINT"
-    #   "valueFrom" : "arn:aws:ssm:${var.aws_region}:${var.aws_account_id}:parameter/${module.this.namespace}/${module.this.stage}/${module.this.name}/AZURE_STORAGE_CONTAINER_SAS_ENDPOINT"
-    # }
+  container_secrets = [for secret_name in var.container_secret_names :
+    {
+      name      = secret_name
+      valueFrom = "arn:aws:ssm:${var.aws_region}:${var.aws_account_id}:parameter/${module.this.namespace}/${module.this.stage}/${module.this.name}/${secret_name}"
+    }
   ]
 
   // CodePipeline
