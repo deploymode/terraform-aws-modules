@@ -562,6 +562,12 @@ variable "external_app_buckets" {
 
 // CDN / CloudFront
 
+variable "use_cdn" {
+  type        = bool
+  default     = false
+  description = "Whether to create a CloudFront distro in front of the ALB endpoint or not"
+}
+
 variable "cdn_viewer_min_protocol_version" {
   type        = string
   description = "Minimum TLS standard for clients"
