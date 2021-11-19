@@ -5,7 +5,7 @@
 
 module "ses" {
   source  = "cloudposse/ses/aws"
-  version = "0.20.2"
+  version = "0.20.6"
 
   domain            = var.domain
   zone_id           = var.zone_id
