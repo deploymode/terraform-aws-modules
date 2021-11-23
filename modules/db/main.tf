@@ -72,7 +72,7 @@ module "rds_instance" {
   multi_az           = false
   storage_type       = var.storage_type
   allocated_storage  = var.allocated_storage
-  storage_encrypted  = true
+  storage_encrypted  = var.storage_encrypted
   engine             = var.engine
   engine_version     = var.engine_version
   instance_class     = var.instance_class
