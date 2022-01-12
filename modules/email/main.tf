@@ -7,12 +7,18 @@ module "ses" {
   source  = "cloudposse/ses/aws"
   version = "0.22.1"
 
-  domain            = var.domain
-  zone_id           = var.zone_id
-  verify_dkim       = var.verify_dkim
-  verify_domain     = var.verify_domain
-  ses_user_enabled  = false
-  ses_group_enabled = false
+  domain           = var.domain
+  zone_id          = var.zone_id
+  verify_dkim      = var.verify_dkim
+  verify_domain    = var.verify_domain
+  ses_user_enabled = var.ses_user_enabled
+  iam_permissions = [
+    "ses:SendEmail",
+    "ses:SendRawEmail"
+  ]
+  iam_allowed_resources  = ["*"]
+  iam_access_key_max_age = var.iam_access_key_max_age
+  ses_group_enabled      = false
 
   context = module.this.context
 }
@@ -20,12 +26,12 @@ module "ses" {
 // Role to allow sending email via SES domain
 module "send_email_role" {
   source  = "cloudposse/iam-role/aws"
-  version = "0.13.0"
+  version = "0.14.1"
 
   context = module.this.context
   name    = "email"
 
-  enabled = module.this.enabled
+  enabled = module.this.enabled && var.create_iam_role
 
   policy_document_count = 1
 
@@ -52,7 +58,7 @@ data "aws_iam_policy_document" "send_email_policy" {
     ]
 
     resources = [
-      "*"
+      module.ses.ses_domain_identity_arn
     ]
   }
 }

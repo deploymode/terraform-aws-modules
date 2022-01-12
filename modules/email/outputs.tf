@@ -22,3 +22,34 @@ output "email_domain" {
   value       = var.domain
   description = "Email domain configured in SES"
 }
+
+output "user_name" {
+  value       = try(module.ses.user_name, "")
+  description = "Normalized IAM user name."
+}
+
+output "user_arn" {
+  value       = try(module.ses.user_arn, "")
+  description = "The ARN assigned by AWS for this user."
+}
+
+output "user_unique_id" {
+  value       = try(module.ses.user_unique_id, "")
+  description = "The unique ID assigned by AWS."
+}
+
+output "secret_access_key" {
+  sensitive   = true
+  value       = try(module.ses.secret_access_key, "")
+  description = "The IAM secret for usage with SES API. This will be written to the state file in plain text."
+}
+output "ses_smtp_password" {
+  sensitive   = true
+  value       = try(module.ses.ses_smtp_password, "")
+  description = "The SMTP password. This will be written to the state file in plain text."
+}
+
+output "access_key_id" {
+  value       = try(module.ses.access_key_id, "")
+  description = "The SMTP user which is access key ID."
+}
