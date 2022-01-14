@@ -53,3 +53,13 @@ output "access_key_id" {
   value       = try(module.ses.access_key_id, "")
   description = "The SMTP user which is access key ID."
 }
+
+output "iam_key_id_ssm_param_path" {
+  value       = var.iam_key_id_ssm_param_path
+  description = "The SSM parameter store path where the SMTP user access key ID is stored."
+}
+
+output "iam_key_secret_ssm_param_path" {
+  value       = var.iam_key_secret_ssm_param_path
+  description = "The SSM parameter store path where the SMTP user access key secret is stored."
+}
