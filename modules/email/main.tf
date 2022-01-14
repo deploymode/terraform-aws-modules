@@ -62,3 +62,30 @@ data "aws_iam_policy_document" "send_email_policy" {
     ]
   }
 }
+
+
+module "store_write" {
+  source  = "cloudposse/ssm-parameter-store/aws"
+  version = "0.8.4"
+
+  enabled = module.this.enabled && var.iam_key_id_ssm_param_path != ""
+
+  parameter_write = [
+    {
+      name        = var.iam_key_id_ssm_param_path
+      value       = module.ses.access_key_id
+      type        = "SecureString"
+      overwrite   = "true"
+      description = "${module.this.stage} SES user IAM key ID"
+    },
+    {
+      name        = var.iam_key_secret_ssm_param_path
+      value       = module.ses.secret_access_key
+      type        = "SecureString"
+      overwrite   = "true"
+      description = "${module.this.stage} SES user IAM key secret"
+    }
+  ]
+
+  context = module.this.context
+}

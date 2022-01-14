@@ -27,9 +27,9 @@ variable "verify_dkim" {
 }
 
 variable "create_iam_role" {
-  type = bool
+  type        = bool
   description = "Creates an IAM role with permission to send emails from SES domain. Probably not required if `ses_user_enabled` is true."
-  default = false
+  default     = false
 }
 
 variable "ses_user_enabled" {
@@ -37,6 +37,28 @@ variable "ses_user_enabled" {
   description = "Creates user with permission to send emails from SES domain"
   default     = false
 }
+
+variable "iam_key_id_ssm_param_path" {
+  type        = string
+  default     = ""
+  description = "SSM param store path for IAM key ID"
+
+  validation {
+    condition     = var.ses_user_enabled && iam_key_ide_ssm_param_path != ""
+    error_message = "The iam_key_id_ssm_param_path must be specified if ses_user_enabled is true."
+  }
+}
+variable "iam_key_secret_ssm_param_path" {
+  type        = string
+  default     = ""
+  description = "SSM param store path for IAM key secret"
+
+  validation {
+    condition     = var.ses_user_enabled && iam_key_secret_ssm_param_path != ""
+    error_message = "The iam_key_secret_ssm_param_path must be specified if ses_user_enabled is true."
+  }
+}
+
 
 variable "iam_access_key_max_age" {
   type        = number
