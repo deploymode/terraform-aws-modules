@@ -433,11 +433,11 @@ module "ecs_codepipeline" {
 
 module "codepipeline_notifications" {
   source  = "kjagiello/codepipeline-slack-notifications/aws"
-  version = "1.1.4"
+  version = "1.1.5"
 
   count = (module.this.enabled && var.codepipeline_slack_notification_webhook_url == "") ? 0 : 1
 
-  name           = module.this.id
+  name           = "web" # module.this.id
   namespace      = module.this.namespace
   stage          = module.this.stage
   attributes     = [module.this.environment]
