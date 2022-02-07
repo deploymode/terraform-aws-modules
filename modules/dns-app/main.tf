@@ -17,7 +17,10 @@ module "acm_request_certificate" {
   domain_name                       = var.cert_domain_name
   process_domain_validation_options = var.auto_verify
   ttl                               = "300"
-  subject_alternative_names         = compact(concat(formatlist("%s.%s", var.alternative_domain_prefixes, var.cert_domain_name), var.alternative_domains))
-  wait_for_certificate_issued       = var.wait_for_certificate_issued
-  zone_name                         = data.aws_route53_zone.existing.name
+  subject_alternative_names = compact(concat(
+    formatlist("%s.%s", var.alternative_domain_prefixes, var.cert_domain_name),
+    formatlist("%s.%s", var.alternative_domain_prefixes, var.alternative_domains)
+  ))
+  wait_for_certificate_issued = var.wait_for_certificate_issued
+  zone_name                   = data.aws_route53_zone.existing.name
 }
