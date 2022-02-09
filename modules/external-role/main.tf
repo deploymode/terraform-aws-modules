@@ -5,7 +5,7 @@
 
 data "aws_iam_policy_document" "aws_managed_policies" {
   for_each = var.aws_policy_names
-  arn      = "arn:aws:iam::aws:policy/${each.value}"
+  arn      = "arn:aws:iam::aws:policy/${each.key}"
 }
 
 module "role" {
