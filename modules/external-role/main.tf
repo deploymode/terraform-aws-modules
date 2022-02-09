@@ -3,12 +3,6 @@
 #
 ###
 
-data "aws_iam_policy_document" "aws_managed_policies" {
-  for_each = var.aws_policy_names
-
-  arn = "arn:aws:iam::aws:policy/${each.key}"
-}
-
 module "role" {
   source  = "cloudposse/iam-role/aws"
   version = "0.15.0"
@@ -18,8 +12,7 @@ module "role" {
   }
   use_fullname = false
 
-  policy_documents      = data.aws_iam_policy_document.aws_managed_policies.*.json
-  policy_document_count = length(var.aws_policy_names)
+  managed_policy_arns = var.aws_policy_names
 
   policy_description = "External access policy providing read only access"
   role_description   = "External access role for account id ${var.aws_account_id}"
