@@ -3,12 +3,9 @@
 #
 ###
 
-data "aws_iam_policy_document" "read_only" {
-  arn = "arn:aws:iam::aws:policy/ReadOnlyAccess"
-}
-
-data "aws_iam_policy_document" "read_only_kinesis" {
-  arn = "arn:aws:iam::aws:policy/AmazonKinesisReadOnlyAccess"
+data "aws_iam_policy_document" "aws_managed_policies" {
+  for_each = var.aws_policy_names
+  arn      = "arn:aws:iam::aws:policy/${each.value}"
 }
 
 module "role" {
@@ -20,14 +17,11 @@ module "role" {
   }
   use_fullname = false
 
-  policy_documents = [
-    data.aws_iam_policy_document.read_only.json,
-    data.aws_iam_policy_document.read_only_kinesis.json
-  ]
+  policy_documents      = data.aws_iam_policy_document.aws_managed_policies.*.json
+  policy_document_count = count(var.aws_policy_names)
 
-  policy_document_count = 2
-  policy_description    = "External access policy providing read only access"
-  role_description      = "External access role for account id ${var.aws_account_id}"
+  policy_description = "External access policy providing read only access"
+  role_description   = "External access role for account id ${var.aws_account_id}"
 
   assume_role_conditions = [
     {
