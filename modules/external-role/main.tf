@@ -12,7 +12,8 @@ module "role" {
   }
   use_fullname = false
 
-  managed_policy_arns = formatlist("arn:aws:iam::aws:policy/%s", var.aws_policy_names)
+  managed_policy_arns   = formatlist("arn:aws:iam::aws:policy/%s", var.aws_policy_names)
+  policy_document_count = 0
 
   policy_description = "External access policy providing read only access"
   role_description   = "External access role for account id ${var.aws_account_id}"
