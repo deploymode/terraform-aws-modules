@@ -223,7 +223,7 @@ module "alb" {
 
 module "ecs_task" {
   source  = "cloudposse/ecs-alb-service-task/aws"
-  version = "0.55.0"
+  version = "0.63.1"
   context = module.this.context
   # attributes             = compact(concat(module.this.attributes, ["service"]))
   alb_security_group     = module.alb.security_group_id # var.alb_security_group_id
@@ -260,10 +260,15 @@ module "ecs_task" {
   propagate_tags   = "TASK_DEFINITION"
   # deployment_minimum_healthy_percent = var.deployment_minimum_healthy_percent
   # deployment_maximum_percent         = var.deployment_maximum_percent
-  deployment_controller_type = "ECS"
-  desired_count              = var.ecs_task_desired_count
-  task_memory                = var.ecs_task_memory
-  task_cpu                   = var.ecs_task_cpu
+  deployment_controller_type         = "ECS"
+  circuit_breaker_deployment_enabled = var.ecs_circuit_breaker_deployment_enabled
+  circuit_breaker_rollback_enabled   = var.ecs_circuit_breaker_rollback_enabled
+
+  desired_count = var.ecs_task_desired_count
+  task_memory   = var.ecs_task_memory
+  task_cpu      = var.ecs_task_cpu
+
+
 }
 
 module "email_policy_label" {
@@ -298,7 +303,7 @@ data "aws_iam_policy_document" "send_email_policy" {
 resource "aws_route53_record" "default" {
   count   = (var.hosted_zone_id != "" && var.create_alb_dns_record) ? 1 : 0
   zone_id = var.hosted_zone_id
-  name    = local.app_fqdn // join(".", [local.app_fqdnvar.app_dns_name, var.domain_name]) // module.this.name, module.this.environment, var.domain_name])
+  name    = local.app_fqdn
   type    = "A"
 
   alias {

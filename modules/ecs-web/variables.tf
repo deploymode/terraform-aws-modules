@@ -597,3 +597,15 @@ variable "cdn_logging_enabled" {
   default     = false
   description = "When true, access logs will be sent to a newly created s3 bucket"
 }
+
+variable "ecs_circuit_breaker_deployment_enabled" {
+  type        = bool
+  description = "If `true`, enable the deployment circuit breaker logic for the service"
+  default     = true
+}
+
+variable "ecs_circuit_breaker_rollback_enabled" {
+  type        = bool
+  description = "If `true`, Amazon ECS will roll back the service if a service deployment fails"
+  default     = true
+}

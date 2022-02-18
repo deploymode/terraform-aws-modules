@@ -12,4 +12,11 @@ variable "external_id" {
 variable "aws_policy_names" {
   description = "Built-in policies to attach to role"
   type        = list(string)
+  default     = []
+}
+
+variable "iam_permissions" {
+  description = "IAM permissions to attach to role"
+  type        = list(string)
+  default     = []
 }
