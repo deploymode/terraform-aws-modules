@@ -136,6 +136,19 @@ variable "ecs_task_desired_count" {
   default     = 0
 }
 
+variable "ecs_circuit_breaker_deployment_enabled" {
+  type        = bool
+  description = "If `true`, enable the deployment circuit breaker logic for the service"
+  default     = true
+}
+
+variable "ecs_circuit_breaker_rollback_enabled" {
+  type        = bool
+  description = "If `true`, Amazon ECS will roll back the service if a service deployment fails"
+  default     = true
+}
+
+
 variable "assign_public_ip" {
   type        = bool
   description = "Should containers have public IPs assigned? Setting this to true avoids needing a NAT gateway."

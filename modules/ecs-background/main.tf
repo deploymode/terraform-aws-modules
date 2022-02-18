@@ -86,7 +86,7 @@ module "container" {
 
 module "ecs_task" {
   source  = "cloudposse/ecs-alb-service-task/aws"
-  version = "0.55.0"
+  version = "0.63.1"
 
   context = module.this.context
 
@@ -122,7 +122,9 @@ module "ecs_task" {
   propagate_tags = "TASK_DEFINITION"
   # deployment_minimum_healthy_percent = var.deployment_minimum_healthy_percent
   # deployment_maximum_percent         = var.deployment_maximum_percent
-  deployment_controller_type = "ECS"
+  deployment_controller_type         = "ECS"
+  circuit_breaker_deployment_enabled = var.ecs_circuit_breaker_deployment_enabled
+  circuit_breaker_rollback_enabled   = var.ecs_circuit_breaker_rollback_enabled
 
   desired_count = var.ecs_task_desired_count
   task_memory   = var.ecs_task_memory
