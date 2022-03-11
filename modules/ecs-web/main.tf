@@ -308,7 +308,7 @@ module "ecs_task" {
       module.container_php-fpm.json_map_object
       ],
       var.monitoring_image_name != null ?
-      [module.container_monitoring.*.json_map_object] : []
+      [module.container_monitoring[0].json_map_object] : [P{}]
     )
   )
   ecs_cluster_arn              = var.ecs_cluster_arn
