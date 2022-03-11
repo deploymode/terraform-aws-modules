@@ -203,7 +203,7 @@ module "monitoring_container_label" {
   context    = module.container_label.context
 }
 
-module "container_monitoring-daemon" {
+module "container_monitoring" {
   source                       = "cloudposse/ecs-container-definition/aws"
   version                      = "0.58.1"
   count                        = var.monitoring_image_name != null ? 1 : 0
@@ -308,7 +308,7 @@ module "ecs_task" {
       module.container_php-fpm.json_map_object
       ],
       var.monitoring_image_name != null ?
-      [module.container_monitoring.json_map_object] : []
+      [module.container_monitoring.*.json_map_object] : []
     )
   )
   ecs_cluster_arn              = var.ecs_cluster_arn
