@@ -12,17 +12,26 @@ module "php-fpm_image_label" {
   context    = module.this.context
 }
 
+module "monitoring_image_label" {
+  source     = "cloudposse/label/null"
+  version    = "0.25.0"
+  attributes = ["monitoring"]
+  context    = module.this.context
+}
+
 locals {
   app_fqdn = join(".", [var.app_dns_name, var.domain_name])
 
   image_names_map = {
-    "nginx" = module.nginx_image_label.id   # format("%s-%s-%s", "nginx", module.this.stage, module.this.environment)
-    "php"   = module.php-fpm_image_label.id # format("%s-%s-%s", "php-fpm", module.this.stage, module.this.environment)
+    "nginx"      = module.nginx_image_label.id
+    "php"        = module.php-fpm_image_label.id
+    "monitoring" = module.monitoring_image_label.id
   }
 
   log_groups = {
-    nginx = "/ecs/${module.container_label.id}/${local.image_names_map.nginx}"
-    php   = "/ecs/${module.container_label.id}/${local.image_names_map.php}"
+    nginx      = "/ecs/${module.container_label.id}/${local.image_names_map.nginx}"
+    php        = "/ecs/${module.container_label.id}/${local.image_names_map.php}"
+    monitoring = "/ecs/${module.container_label.id}/${local.image_names_map.monitoring}"
   }
 
   queue_env_vars = var.queue_name != "" ? [
@@ -179,6 +188,62 @@ module "container_php-fpm" {
     "secretOptions" : null,
     "options" : {
       "awslogs-group" : local.log_groups.php // "/ecs/${module.container_label.id}/${local.image_names_map.php}",
+      "awslogs-region" : var.aws_region,
+      "awslogs-stream-prefix" : "ecs",
+      "awslogs-create-group" : "true"
+    }
+  }
+}
+
+module "monitoring_container_label" {
+  source     = "cloudposse/label/null"
+  version    = "0.25.0"
+  attributes = ["monitoring"]
+  enabled    = var.monitoring_image_name != null
+  context    = module.container_label.context
+}
+
+module "container_monitoring-daemon" {
+  source                       = "cloudposse/ecs-container-definition/aws"
+  version                      = "0.58.1"
+  count                        = var.monitoring_image_name != null ? 1 : 0
+  container_name               = module.monitoring_container_label.id
+  container_image              = var.monitoring_image_name
+  container_memory             = var.monitoring_container_memory
+  container_memory_reservation = var.monitoring_container_memory_reservation
+  container_cpu                = var.monitoring_container_cpu
+  start_timeout                = var.container_start_timeout
+  stop_timeout                 = var.container_stop_timeout
+  # Task will stop if this container fails
+  essential                = false
+  readonly_root_filesystem = false
+  environment = [
+    {
+      name  = "STAGE"
+      value = module.this.stage
+    },
+    {
+      name  = "ENVIRONMENT"
+      value = module.this.environment
+    },
+  ]
+  # secrets = var.container_ssm_secrets_php
+
+  port_mappings = [
+    {
+      containerPort = var.monitoring_container_port
+      hostPort      = var.monitoring_container_port
+      protocol      = "tcp"
+    }
+  ]
+
+  # command         = [""]
+
+  log_configuration = {
+    "logDriver" : var.log_driver,
+    "secretOptions" : null,
+    "options" : {
+      "awslogs-group" : local.log_groups.monitoring
       "awslogs-region" : var.aws_region,
       "awslogs-stream-prefix" : "ecs",
       "awslogs-create-group" : "true"

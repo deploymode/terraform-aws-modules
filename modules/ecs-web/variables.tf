@@ -609,3 +609,34 @@ variable "ecs_circuit_breaker_rollback_enabled" {
   description = "If `true`, Amazon ECS will roll back the service if a service deployment fails"
   default     = true
 }
+
+# Monitoring container (optional)
+variable "monitoring_image_name" {
+  type        = string
+  default     = null
+  description = "Docker Hub image name"
+}
+
+variable "monitoring_container_memory" {
+  type        = number
+  default     = 128
+  description = "Memory hard-limit for monitoring container"
+}
+
+variable "monitoring_container_memory_reservation" {
+  type        = number
+  default     = 64
+  description = "Memory soft-limit for monitoring container"
+}
+
+variable "monitoring_container_cpu" {
+  type        = number
+  default     = 0.25
+  description = "Memory soft-limit for monitoring container"
+}
+
+variable "monitoring_container_port" {
+  type        = number
+  default     = 8080
+  description = "Container port to expose for monoitoring container"
+}
