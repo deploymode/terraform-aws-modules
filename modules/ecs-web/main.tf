@@ -302,10 +302,15 @@ module "ecs_task" {
       target_group_arn = module.alb.default_target_group_arn # var.alb_target_group_arn
     }
   ]
-  container_definition_json = jsonencode([
-    module.container_nginx.json_map_object,
-    module.container_php-fpm.json_map_object
-  ])
+  container_definition_json = jsonencode(
+    concat([
+      module.container_nginx.json_map_object,
+      module.container_php-fpm.json_map_object
+      ],
+      var.monitoring_image_name != null ?
+      [module.container_monitoring.json_map_object] : []
+    )
+  )
   ecs_cluster_arn              = var.ecs_cluster_arn
   capacity_provider_strategies = var.ecs_capacity_provider_strategies
   launch_type                  = var.ecs_launch_type
