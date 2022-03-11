@@ -631,7 +631,7 @@ variable "monitoring_container_memory_reservation" {
 
 variable "monitoring_container_cpu" {
   type        = number
-  default     = 0.25
+  default     = 256
   description = "Memory soft-limit for monitoring container"
 }
 
