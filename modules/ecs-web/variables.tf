@@ -640,3 +640,9 @@ variable "monitoring_container_port" {
   default     = 8080
   description = "Container port to expose for monoitoring container"
 }
+
+variable "monitoring_container_dependency" {
+  type        = bool
+  default     = false
+  description = "If true, the php container will depend on the monitoring container. This is necessary in some cases where the monitoring daemon must be up before the agent in the app container tries to connect."
+}
