@@ -65,22 +65,23 @@ module "rds_instance" {
   # ))
   ca_cert_identifier = "rds-ca-2019"
   # allowed_cidr_blocks         = ["XXX.XXX.XXX.XXX/32"]
-  database_name      = var.database_name
-  database_user      = local.database_username
-  database_password  = var.database_password == "" ? random_password.password[0].result : var.database_password
-  database_port      = var.database_port
-  multi_az           = false
-  storage_type       = var.storage_type
-  allocated_storage  = var.allocated_storage
-  storage_encrypted  = var.storage_encrypted
-  engine             = var.engine
-  engine_version     = var.engine_version
-  instance_class     = var.instance_class
-  db_parameter_group = var.db_parameter_group
-  # option_group_name           = "mysql-options"
-  publicly_accessible = false
-  subnet_ids          = var.subnet_ids
-  vpc_id              = var.vpc_id
+  database_name        = var.database_name
+  database_user        = local.database_username
+  database_password    = var.database_password == "" ? random_password.password[0].result : var.database_password
+  database_port        = var.database_port
+  multi_az             = false
+  storage_type         = var.storage_type
+  allocated_storage    = var.allocated_storage
+  storage_encrypted    = var.storage_encrypted
+  engine               = var.engine
+  engine_version       = var.engine_version
+  instance_class       = var.instance_class
+  db_parameter_group   = var.db_parameter_group
+  parameter_group_name = var.parameter_group_name
+  option_group_name    = var.option_group_name
+  publicly_accessible  = false
+  subnet_ids           = var.subnet_ids
+  vpc_id               = var.vpc_id
   # snapshot_identifier         = "rds:production-2015-06-26-06-05"
   deletion_protection         = var.deletion_protection
   auto_minor_version_upgrade  = true

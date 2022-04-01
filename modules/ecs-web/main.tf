@@ -220,6 +220,15 @@ module "container_monitoring" {
   stop_timeout                 = var.container_stop_timeout
   # Task will stop if this container fails
   essential                = false
+  healthcheck = {
+    command     = [
+      "netstat -an | grep ${var.monitoring_container_port} > /dev/null"
+    ]
+    retries     = 1
+    timeout     = 5
+    interval    = 3
+    startPeriod = 30
+  }
   readonly_root_filesystem = false
   environment = [
     {

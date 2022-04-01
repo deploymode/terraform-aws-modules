@@ -160,7 +160,7 @@ variable "hosted_zone_id" {
 
 variable "app_dns_name" {
   type        = string
-  description = "Subdomain prepended to `domain_name`"
+  description = "Subdomain prepended to `domain_name`. Typically \"app\"."
   default     = "app"
 }
 
