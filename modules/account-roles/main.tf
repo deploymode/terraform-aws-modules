@@ -66,6 +66,13 @@ module "admin_role" {
     AWS = var.admin_assume_role_arns
   }
 
+  assume_role_conditions = [{
+    test     = "Bool"
+    variable = "aws:MultiFactorAuthPresent"
+    values   = ["true"]
+  }]
+
+  policy_document_count = 0
   managed_policy_arns = [
     "arn:aws:iam::aws:policy/AdministratorAccess"
   ]
