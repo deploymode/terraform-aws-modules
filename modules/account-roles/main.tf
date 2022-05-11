@@ -2,7 +2,7 @@
 // Role to allow primary account role to assume role in this account for managing DNS
 module "dns_role" {
   source  = "cloudposse/iam-role/aws"
-  version = "0.13.0"
+  version = "0.16.02"
 
   context = module.this.context
   name    = "dns"
@@ -14,9 +14,7 @@ module "dns_role" {
 
   # Roles allowed to assume role
   principals = {
-    AWS = [
-      var.dns_role_arn
-    ]
+    AWS = var.dns_assume_role_arns
   }
 
   policy_documents = [
@@ -48,4 +46,27 @@ data "aws_iam_policy_document" "dns_policy" {
     ]
   }
 
+}
+
+// Role to allow primary account role to assume role in this account for managing DNS
+module "admin_role" {
+  source  = "cloudposse/iam-role/aws"
+  version = "0.16.2"
+
+  context = module.this.context
+  name    = "admin"
+
+  enabled = module.this.enabled && var.provision_admin_role
+
+  policy_description = "Admin access"
+  role_description   = "IAM role with permissions to perform admin functions"
+
+  # Roles/users allowed to assume role
+  principals = {
+    AWS = var.admin_assume_role_arns
+  }
+
+  managed_policy_arns = [
+    "arn:aws:iam::aws:policy/AdministratorAccess"
+  ]
 }
