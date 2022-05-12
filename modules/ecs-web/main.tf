@@ -219,9 +219,9 @@ module "container_monitoring" {
   start_timeout                = var.container_start_timeout
   stop_timeout                 = var.container_stop_timeout
   # Task will stop if this container fails
-  essential                = false
+  essential = false
   healthcheck = {
-    command     = [
+    command = [
       "netstat -an | grep ${var.monitoring_container_port} > /dev/null"
     ]
     retries     = 1
@@ -418,7 +418,7 @@ locals {
 
 module "cdn" {
   source  = "cloudposse/cloudfront-cdn/aws"
-  version = "0.22.0"
+  version = "0.82.4"
   enabled = module.this.enabled && var.use_cdn
 
   aliases                         = [local.app_fqdn]
