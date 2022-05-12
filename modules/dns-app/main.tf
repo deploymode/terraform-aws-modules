@@ -19,7 +19,8 @@ module "acm_request_certificate" {
   ttl                               = "300"
   subject_alternative_names = compact(concat(
     formatlist("%s.%s", var.alternative_domain_prefixes, var.cert_domain_name),
-    formatlist("%s.%s", var.alternative_domain_prefixes, var.alternative_domains)
+    formatlist("%s.%s", var.alternative_domain_prefixes, var.alternative_domains),
+    var.alternative_domains
   ))
   wait_for_certificate_issued = var.wait_for_certificate_issued
   zone_name                   = data.aws_route53_zone.existing.name
