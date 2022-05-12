@@ -12,14 +12,14 @@ data "aws_route53_zone" "existing" {
 }
 
 module "acm_request_certificate" {
-  source                            = "git::https://github.com/cloudposse/terraform-aws-acm-request-certificate.git?ref=tags/0.13.1"
+  source                            = "git::https://github.com/cloudposse/terraform-aws-acm-request-certificate.git?ref=tags/0.16.0"
   enabled                           = module.this.enabled
   domain_name                       = var.cert_domain_name
   process_domain_validation_options = var.auto_verify
   ttl                               = "300"
   subject_alternative_names = compact(concat(
     formatlist("%s.%s", var.alternative_domain_prefixes, var.cert_domain_name),
-    formatlist("%s.%s", var.alternative_domain_prefixes, var.alternative_domains),
+    count(var.alternative_domains) > 0 ? formatlist("%s.%s", var.alternative_domain_prefixes, var.alternative_domains) : [],
     var.alternative_domains
   ))
   wait_for_certificate_issued = var.wait_for_certificate_issued
