@@ -19,7 +19,7 @@ module "acm_request_certificate" {
   ttl                               = "300"
   subject_alternative_names = formatlist("%s.%s", var.alternative_domain_prefixes,
     compact(concat(
-      var.alternative_domains
+      var.alternative_domains,
       [var.cert_domain_name]
     ))
   )
