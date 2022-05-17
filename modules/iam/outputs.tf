@@ -25,8 +25,9 @@ output "user_groups" {
 output "user_access_keys" {
   description = "User access keys"
   value = { for u, user_data in aws_iam_access_key.user_key : u => {
-    encrypted_password = user_data.encrypted_secret
-    key_fingerprint    = user_data.key_fingerprint
+    key_id               = user_data.id
+    encrypted_key_secret = user_data.encrypted_secret
+    key_fingerprint      = user_data.key_fingerprint
     }
   }
   sensitive = true
