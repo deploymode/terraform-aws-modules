@@ -38,13 +38,13 @@ resource "aws_iam_user" "user" {
 resource "aws_iam_user_login_profile" "user_login" {
   for_each = aws_iam_user.user
   user     = each.value.name
-  pgp_key  = "keybase:${var.keybase_user}"
+  pgp_key  = var.encryption_key
 }
 
 resource "aws_iam_access_key" "user_key" {
   for_each = { for u, user_data in var.users : u => user_data if user_data.generate_access_key }
   user     = each.key
-  pgp_key  = "keybase:${var.keybase_user}"
+  pgp_key  = var.encryption_key
 }
 
 resource "aws_iam_group_membership" "group_membership" {
@@ -91,7 +91,7 @@ resource "aws_iam_role_policy_attachment" "role_policy_attachment_admin" {
 // Role to allow users in the master account to assume role
 module "master_admin_role" {
   source  = "cloudposse/iam-role/aws"
-  version = "0.13.0"
+  version = "0.16.2"
 
   context = module.this.context
   name    = "admin"

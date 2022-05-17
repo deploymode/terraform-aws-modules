@@ -31,10 +31,10 @@ variable "users" {
   description = "List of IAM users with assigned groups to create in account"
 }
 
-variable "keybase_user" {
+variable "encryption_key" {
   type        = string
-  default     = ""
-  description = "Keybase username for encrypting IAM user passwords"
+  default     = null
+  description = "PGP key or keybase user name for encrypting passwords and credentials. Specify keybase string as `keybase:username`."
 }
 
 variable "provision_master_admin_role" {
