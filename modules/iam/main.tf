@@ -218,24 +218,24 @@ data "aws_iam_policy_document" "manage_mfa_policy" {
       values   = ["true"]
     }
   }
-  statement {
-    effect = "Deny"
-    actions = [
-      "iam:CreateVirtualMFADevice",
-      "iam:EnableMFADevice",
-      "iam:GetUser",
-      "iam:ListMFADevices",
-      "iam:ListVirtualMFADevices",
-      "iam:ResyncMFADevice",
-      "sts:GetSessionToken"
-    ]
-    resources = ["*"]
-    condition {
-      test     = "BoolIfExists"
-      variable = "aws:MultiFactorAuthPresent"
-      values   = ["false"]
-    }
-  }
+  # statement {
+  #   effect = "Deny"
+  #   actions = [
+  #     "iam:CreateVirtualMFADevice",
+  #     "iam:EnableMFADevice",
+  #     "iam:GetUser",
+  #     "iam:ListMFADevices",
+  #     "iam:ListVirtualMFADevices",
+  #     "iam:ResyncMFADevice",
+  #     "sts:GetSessionToken"
+  #   ]
+  #   resources = ["*"]
+  #   condition {
+  #     test     = "BoolIfExists"
+  #     variable = "aws:MultiFactorAuthPresent"
+  #     values   = ["false"]
+  #   }
+  # }
 }
 
 resource "aws_iam_group_membership" "master_account_users_group_membership" {
