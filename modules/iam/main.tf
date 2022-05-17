@@ -138,11 +138,12 @@ data "aws_iam_policy_document" "change_password_policy" {
   }
   statement {
     actions = [
-      "iam:ChangePassword"
+      "iam:ChangePassword",
+      "iam:GetUser"
     ]
 
     resources = [
-      "arn:aws:iam::${local.master_account_with_role.account_id}:user/$${aws:username}"
+      "arn:aws:iam::${local.master_account_with_role.account_id}:user/&{aws:username}"
     ]
   }
 }
