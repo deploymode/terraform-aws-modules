@@ -190,7 +190,7 @@ data "aws_iam_policy_document" "managed_mfa_policy" {
       "sts:GetSessionToken"
     ]
     resources = ["*"]
-    condition = {
+    condition {
       test     = "BoolIfExists"
       variable = "aws:MultiFactorAuthPresent"
       values   = ["false"]
