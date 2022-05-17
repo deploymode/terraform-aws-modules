@@ -147,40 +147,80 @@ data "aws_iam_policy_document" "change_password_policy" {
   }
 }
 
+resource "aws_iam_group_policy" "master_users_manage_keys_policy" {
+  name   = "master-account-users-manage-keys-policy"
+  group  = aws_iam_group.master_account_users.name
+  policy = data.aws_iam_policy_document.manage_keys_policy.json
+}
+
+data "aws_iam_policy_document" "manage_keys_policy" {
+  statement {
+    actions = [
+      "iam:DeleteAccessKey",
+      "iam:GetAccessKeyLastUsed",
+      "iam:UpdateAccessKey",
+      "iam:GetUser",
+      "iam:CreateAccessKey",
+      "iam:ListAccessKeys",
+    ]
+
+    resources = ["arn:aws:iam::${local.master_account_with_role.account_id}:user/&{aws:username}"]
+
+    condition {
+      test     = "Bool"
+      variable = "aws:MultiFactorAuthPresent"
+      values   = ["true"]
+    }
+  }
+}
+
 resource "aws_iam_group_policy" "master_users_manage_mfa_policy" {
   name   = "master-account-users-manage-mfa-policy"
   group  = aws_iam_group.master_account_users.name
-  policy = data.aws_iam_policy_document.managed_mfa_policy.json
+  policy = data.aws_iam_policy_document.manage_mfa_policy.json
 }
 
-data "aws_iam_policy_document" "managed_mfa_policy" {
+data "aws_iam_policy_document" "manage_mfa_policy" {
   statement {
-    effect    = "Allow"
-    action    = "iam:ListVirtualMFADevices"
+    effect = "Allow"
+    actions = [
+      "iam:ListMFADevices",
+      "iam:ListVirtualMFADevices",
+      "iam:ListUsers"
+    ]
     resources = ["*"]
   }
   statement {
     effect = "Allow"
-    action = [
+    actions = [
       "iam:CreateVirtualMFADevice",
-      "iam:DeleteVirtualMFADevice"
+      "iam:EnableMFADevice",
+      "iam:ResyncMFADevice"
     ]
-    resources = ["arn:aws:iam::*:mfa/$${aws:username}"]
+    resources = [
+      "arn:aws:iam::${local.master_account_with_role.account_id}:mfa/&{aws:username}",
+      "arn:aws:iam::${local.master_account_with_role.account_id}:user/&{aws:username}"
+    ]
   }
   statement {
     effect = "Allow"
-    action = [
+    actions = [
       "iam:DeactivateMFADevice",
-      "iam:EnableMFADevice",
-      "iam:GetUser",
-      "iam:ListMFADevices",
-      "iam:ResyncMFADevice"
+      "iam:DeleteVirtualMFADevice"
     ]
-    resources = ["arn:aws:iam::*:user/$${aws:username}"]
+    resources = [
+      "arn:aws:iam::${local.master_account_with_role.account_id}:mfa/&{aws:username}",
+      "arn:aws:iam::${local.master_account_with_role.account_id}:user/&{aws:username}"
+    ]
+    condition {
+      test     = "Bool"
+      variable = "aws:MultiFactorAuthPresent"
+      values   = ["true"]
+    }
   }
   statement {
     effect = "Deny"
-    action = [
+    actions = [
       "iam:CreateVirtualMFADevice",
       "iam:EnableMFADevice",
       "iam:GetUser",
