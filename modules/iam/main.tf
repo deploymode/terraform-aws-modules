@@ -120,8 +120,8 @@ resource "aws_iam_group" "master_account_users" {
   name = "master-account-users"
 }
 
-resource "aws_iam_group_policy" "master_users_policy" {
-  name   = "master-account-users-policy"
+resource "aws_iam_group_policy" "master_users_change_password_policy" {
+  name   = "master-account-users-change-password-policy"
   group  = aws_iam_group.master_account_users.name
   policy = data.aws_iam_policy_document.change_password_policy.json
 }
@@ -144,6 +144,57 @@ data "aws_iam_policy_document" "change_password_policy" {
     resources = [
       "arn:aws:iam::${local.master_account_with_role.account_id}:user/$${aws:username}"
     ]
+  }
+}
+
+resource "aws_iam_group_policy" "master_users_manage_mfa_policy" {
+  name   = "master-account-users-manage-mfa-policy"
+  group  = aws_iam_group.master_account_users.name
+  policy = data.aws_iam_policy_document.managed_mfa_policy.json
+}
+
+data "aws_iam_policy_document" "managed_mfa_policy" {
+  statement {
+    effect    = "Allow"
+    action    = "iam:ListVirtualMFADevices"
+    resources = ["*"]
+  }
+  statement {
+    effect = "Allow"
+    action = [
+      "iam:CreateVirtualMFADevice",
+      "iam:DeleteVirtualMFADevice"
+    ]
+    resources = ["arn:aws:iam::*:mfa/$${aws:username}"]
+  }
+  statement {
+    effect = "Allow"
+    action = [
+      "iam:DeactivateMFADevice",
+      "iam:EnableMFADevice",
+      "iam:GetUser",
+      "iam:ListMFADevices",
+      "iam:ResyncMFADevice"
+    ]
+    resources = ["arn:aws:iam::*:user/$${aws:username}"]
+  }
+  statement {
+    effect = "Deny"
+    action = [
+      "iam:CreateVirtualMFADevice",
+      "iam:EnableMFADevice",
+      "iam:GetUser",
+      "iam:ListMFADevices",
+      "iam:ListVirtualMFADevices",
+      "iam:ResyncMFADevice",
+      "sts:GetSessionToken"
+    ]
+    resources = ["*"]
+    condition = {
+      test     = "BoolIfExists"
+      variable = "aws:MultiFactorAuthPresent"
+      values   = ["false"]
+    }
   }
 }
 
