@@ -1,4 +1,4 @@
-
+# Primary DNS zone to be delegated to other accounts
 locals {
   dns_soa_config = "awsdns-hostmaster.amazon.com. 1 7200 900 1209600 86400"
   domains_set    = toset(var.domains)

@@ -48,7 +48,7 @@ data "aws_iam_policy_document" "dns_policy" {
 
 }
 
-// Role to allow primary account role to assume role in this account for managing DNS
+// Role to allow primary account role to assume role in this account for performing Admin functions 
 module "admin_role" {
   source  = "cloudposse/iam-role/aws"
   version = "0.16.2"
