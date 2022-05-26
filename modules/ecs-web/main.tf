@@ -226,7 +226,7 @@ module "container_monitoring" {
     ]
     retries     = 1
     timeout     = 5
-    interval    = 3
+    interval    = 5
     startPeriod = 30
   }
   readonly_root_filesystem = false
