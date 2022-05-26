@@ -418,7 +418,7 @@ locals {
 
 module "cdn" {
   source  = "cloudposse/cloudfront-cdn/aws"
-  version = "0.82.4"
+  version = "0.24.1"
   enabled = module.this.enabled && var.use_cdn
 
   aliases                         = [local.app_fqdn]
