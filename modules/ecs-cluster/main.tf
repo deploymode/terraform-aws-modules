@@ -2,13 +2,6 @@ resource "aws_ecs_cluster" "fargate_cluster" {
   count = module.this.enabled ? 1 : 0
   name  = module.this.id
 
-  capacity_providers = ["FARGATE_SPOT", "FARGATE"]
-
-  default_capacity_provider_strategy {
-    capacity_provider = var.default_capacity_provider
-    weight            = 100
-  }
-
   setting {
     name  = "containerInsights"
     value = var.container_insights_enabled ? "enabled" : "disabled"
@@ -16,6 +9,17 @@ resource "aws_ecs_cluster" "fargate_cluster" {
 
   lifecycle {
     create_before_destroy = true
+  }
+}
+
+resource "aws_ecs_cluster_capacity_providers" "default" {
+  cluster_name = aws_ecs_cluster.fargate_cluster.default
+
+  capacity_providers = ["FARGATE_SPOT", "FARGATE"]
+
+  default_capacity_provider_strategy {
+    capacity_provider = var.default_capacity_provider
+    weight            = 100
   }
 }
 
