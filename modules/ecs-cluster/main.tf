@@ -13,7 +13,7 @@ resource "aws_ecs_cluster" "fargate_cluster" {
 }
 
 resource "aws_ecs_cluster_capacity_providers" "default" {
-  cluster_name = aws_ecs_cluster.fargate_cluster.default
+  cluster_name = aws_ecs_cluster.fargate_cluster
 
   capacity_providers = ["FARGATE_SPOT", "FARGATE"]
 
