@@ -112,6 +112,11 @@ output "codepipeline_arn" {
   value       = module.ecs_codepipeline.codepipeline_arn
 }
 
+output "codestar_connection_arn" {
+  description = "Codestar connection ARN"
+  value       = coalesce(var.codestar_connection_arn, join("", aws_codestarconnections_connection.default.*.arn))
+}
+
 // IAM
 
 output "app_bucket_policy_arn" {
