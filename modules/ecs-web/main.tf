@@ -320,8 +320,7 @@ module "ecs_task" {
       module.container_nginx.json_map_object,
       module.container_php-fpm.json_map_object
       ],
-      var.monitoring_image_name != null ?
-      [module.container_monitoring[0].json_map_object] : null
+      var.monitoring_image_name != null ? [module.container_monitoring[0].json_map_object] : []
     )
   )
   ecs_cluster_arn              = var.ecs_cluster_arn
@@ -521,7 +520,7 @@ module "ecs_codepipeline" {
 
 module "codepipeline_notifications" {
   source  = "kjagiello/codepipeline-slack-notifications/aws"
-  version = "1.1.5"
+  version = "1.1.6"
 
   count = (module.this.enabled && var.codepipeline_slack_notification_webhook_url == "") ? 0 : 1
 
