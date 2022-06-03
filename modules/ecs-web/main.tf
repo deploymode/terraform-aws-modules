@@ -462,10 +462,9 @@ resource "aws_codestarconnections_connection" "default" {
 }
 
 module "ecs_codepipeline" {
-  # source = "git::https://github.com/joe-niland/terraform-aws-ecs-codepipeline.git?ref=support-type-attr-in-codebuild-env"
-  source                  = "cloudposse/ecs-codepipeline/aws"
-  version                 = "0.28.6"
-  context                 = module.this.context
+  source  = "cloudposse/ecs-codepipeline/aws"
+  version = "0.28.6"
+
   region                  = var.aws_region
   codestar_connection_arn = coalesce(var.codestar_connection_arn, join("", aws_codestarconnections_connection.default.*.arn))
   repo_owner              = var.codepipeline_repo_owner
@@ -522,6 +521,8 @@ module "ecs_codepipeline" {
   github_oauth_token    = ""
   github_webhooks_token = ""
   codebuild_vpc_config  = var.codebuild_vpc_config
+
+  context = module.this.context
 }
 
 module "codepipeline_notifications" {

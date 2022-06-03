@@ -217,9 +217,8 @@ resource "aws_service_discovery_service" "service_discovery" {
 
 // CodePipeline using ECS Deploy
 module "ecs_codepipeline" {
-  # source = "git::https://github.com/joe-niland/terraform-aws-ecs-codepipeline.git?ref=support-type-attr-in-codebuild-env"
   source  = "cloudposse/ecs-codepipeline/aws"
-  version = "0.28.1"
+  version = "0.28.6"
 
   enabled = var.container_image == null
 
