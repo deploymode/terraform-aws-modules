@@ -467,7 +467,7 @@ module "ecs_codepipeline" {
   version                 = "0.28.6"
   context                 = module.this.context
   region                  = var.aws_region
-  codestar_connection_arn = coalesce(var.codestar_connection_arn, aws_codestarconnections_connection.default.arn)
+  codestar_connection_arn = coalesce(var.codestar_connection_arn, join("", aws_codestarconnections_connection.default.*.arn))
   repo_owner              = var.codepipeline_repo_owner
   repo_name               = var.codepipeline_repo_name
   branch                  = var.codepipeline_branch
