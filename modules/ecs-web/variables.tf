@@ -371,10 +371,16 @@ variable "container_ssm_secrets_php" {
 }
 
 // CodePipeline
+
+variable "codestar_provider_type" {
+  type        = string
+  description = "Specified provider type if you wish the module to create a Codestar connection. Valid values: Bitbucket, GitHub or GitHubEnterpriseServer. Note the connection is created in a PENDING state and must be manually authorised. Ignored if `codestar_connection_arn` provided."
+}
+
 variable "codestar_connection_arn" {
   type        = string
-  description = "Bitbucket connection"
-  default     = ""
+  description = "OAuth2 Codestar connection ARN"
+  default     = null
 }
 
 variable "codepipeline_repo_owner" {

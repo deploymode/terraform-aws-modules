@@ -455,13 +455,19 @@ module "cdn" {
 
 // CodePipeline
 
+resource "aws_codestarconnections_connection" "default" {
+  count         = var.codestar_connection_arn == null ? 1 : 0
+  name          = module.this.id
+  provider_type = var.codestar_provider_type
+}
+
 module "ecs_codepipeline" {
   # source = "git::https://github.com/joe-niland/terraform-aws-ecs-codepipeline.git?ref=support-type-attr-in-codebuild-env"
   source                  = "cloudposse/ecs-codepipeline/aws"
-  version                 = "0.28.1"
+  version                 = "0.28.6"
   context                 = module.this.context
   region                  = var.aws_region
-  codestar_connection_arn = var.codestar_connection_arn
+  codestar_connection_arn = coalesce(var.codestar_connection_arn, aws_codestarconnections_connection.default.arn)
   repo_owner              = var.codepipeline_repo_owner
   repo_name               = var.codepipeline_repo_name
   branch                  = var.codepipeline_branch
