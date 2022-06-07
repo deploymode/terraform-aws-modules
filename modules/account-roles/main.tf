@@ -66,6 +66,8 @@ module "admin_role" {
     AWS = var.admin_assume_role_arns
   }
 
+  max_session_duration = var.admin_session_duration
+
   assume_role_conditions = [{
     test     = "Bool"
     variable = "aws:MultiFactorAuthPresent"

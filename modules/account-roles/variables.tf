@@ -21,3 +21,9 @@ variable "provision_admin_role" {
   description = "If true, create a role that can perform Admin functions in this account"
   default     = false
 }
+
+variable "admin_session_duration" {
+  type        = number
+  description = "The maximum session duration (in seconds) for the role. Can have a value from 1 hour to 12 hours"
+  default     = 3600
+}
