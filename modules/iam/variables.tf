@@ -7,13 +7,13 @@ variable "accounts" {
 }
 
 // TODO
-# variable "account_settings" {
-#   type = map(object({
-#     max_session_duration = number
-#   }))
-#   description = "Map of account names to account-specific settings"
-#   default     = {}
-# }
+variable "account_settings" {
+  type = map(object({
+    max_session_duration = number
+  }))
+  description = "Map of account names to account-specific settings"
+  default     = {}
+}
 
 variable "groups" {
   type        = list(string)

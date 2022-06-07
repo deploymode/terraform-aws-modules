@@ -5,6 +5,11 @@
 #################################################################
 
 locals {
+
+  defaults = {
+    max_session_duration = 3600
+  }
+
   group_names = {
     for tuple in setproduct(keys(var.accounts), toset(var.groups)) : "${tuple[0]}-${tuple[1]}" => {
       account = tuple[0]
@@ -110,9 +115,7 @@ module "master_admin_role" {
     ]
   }
 
-  # policy_documents = [
-  #   data.aws_iam_policy_document.dns_policy.json
-  # ]
+  max_session_duration = lookup(var.account_settings, "master", { max_session_duration = local.defaults.max_session_duration }).max_session_duration
 }
 
 # Group to control password policy for users in master account
