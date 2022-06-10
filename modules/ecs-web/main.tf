@@ -456,7 +456,7 @@ module "cdn" {
 // CodePipeline
 
 resource "aws_codestarconnections_connection" "default" {
-  count         = var.codestar_connection_arn == null ? 1 : 0
+  count         = module.this.enabled && var.codepipeline_enabled && var.codestar_connection_arn == null ? 1 : 0
   name          = module.this.id
   provider_type = var.codestar_provider_type
 }
@@ -465,6 +465,7 @@ module "ecs_codepipeline" {
   source  = "cloudposse/ecs-codepipeline/aws"
   version = "0.28.6"
 
+  enabled                 = var.codepipeline_enabled
   region                  = var.aws_region
   codestar_connection_arn = coalesce(var.codestar_connection_arn, join("", aws_codestarconnections_connection.default.*.arn))
   repo_owner              = var.codepipeline_repo_owner
@@ -529,9 +530,9 @@ module "codepipeline_notifications" {
   source  = "kjagiello/codepipeline-slack-notifications/aws"
   version = "1.1.6"
 
-  count = (module.this.enabled && var.codepipeline_slack_notification_webhook_url == "") ? 0 : 1
+  count = module.this.enabled && var.codepipeline_enabled && var.codepipeline_slack_notification_webhook_url == "" ? 0 : 1
 
-  name           = "web" # module.this.id
+  name           = "web"
   namespace      = module.this.namespace
   stage          = module.this.stage
   attributes     = [module.this.environment]
@@ -546,15 +547,14 @@ module "codepipeline_notifications" {
 // Allow pull permission to CodeBuild
 
 resource "aws_iam_role_policy_attachment" "codebuild" {
-  count      = module.this.enabled ? 1 : 0
+  count      = module.this.enabled && var.codepipeline_enabled ? 1 : 0
   role       = module.ecs_codepipeline.codebuild_role_id
   policy_arn = join("", aws_iam_policy.codebuild.*.arn)
 }
 
 # Allow Codebuild to read/write from S3 buckets
 resource "aws_iam_role_policy_attachment" "codebuild_app_bucket" {
-  # count      = module.this.enabled && length(var.external_app_buckets) > 0 ? 1 : 0
-  for_each   = toset(var.external_app_buckets)
+  for_each   = toset(module.this.enabled && var.codepipeline_enabled ? var.external_app_buckets : [])
   role       = module.ecs_codepipeline.codebuild_role_id
   policy_arn = aws_iam_policy.app_bucket_iam_policy[each.key].arn
 }
@@ -567,7 +567,7 @@ module "codebuild_label" {
 }
 
 resource "aws_iam_policy" "codebuild" {
-  count  = module.this.enabled ? 1 : 0
+  count  = module.this.enabled && var.codepipeline_enabled ? 1 : 0
   name   = module.codebuild_label.id
   policy = data.aws_iam_policy_document.codebuild.json
 }
