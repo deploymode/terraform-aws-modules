@@ -11,7 +11,7 @@ module "subnets" {
   availability_zones   = var.zones
   vpc_id               = module.vpc.vpc_id
   igw_id               = module.vpc.igw_id
-  cidr_block           = module.vpc.vpc_cidr_block
+  ipv4_cidr_block      = module.vpc.vpc_cidr_block
   nat_gateway_enabled  = var.enable_nat_gateway
   nat_instance_enabled = var.enable_nat_instance
   nat_instance_type    = var.nat_instance_type
