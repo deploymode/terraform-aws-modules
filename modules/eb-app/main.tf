@@ -1,16 +1,37 @@
+locals {
+  secrets = var.secrets_file != null ? [
+    for secret in jsondecode(file(var.secrets_file)) : {
+      for k, v in secret : k => v # format("{{resolve:ssm-secure:/${module.this.namespace}/${module.this.stage}/${module.this.environment}/app/%s}}", k)
+    }
+  ] : []
+
+  queue_env_vars = var.queue_name != "" ? {
+    SQS_QUEUE  = var.queue_name
+    SQS_REGION = var.region
+    SQS_PREFIX = "https://sqs.${var.region}.amazonaws.com/${data.aws_caller_identity.current.account_id}"
+  } : {}
+}
+
+data "aws_caller_identity" "current" {}
+
 module "elastic_beanstalk_application" {
-  source      = "cloudposse/elastic-beanstalk-application/aws"
+  source  = "cloudposse/elastic-beanstalk-application/aws"
+  version = "0.11.1"
+
   description = var.description
 
   context = module.this.context
 }
 
 data "aws_vpc" "default" {
-  vpc_id = var.vpc_id
+  id = var.vpc_id
 }
 
 module "elastic_beanstalk_environment" {
-  source = "cloudposse/elastic-beanstalk-environment/aws"
+  source  = "cloudposse/elastic-beanstalk-environment/aws"
+  version = "0.46.0"
+
+  name = coalesce(var.environment_name, module.this.name)
 
   description                = var.description
   region                     = var.region
@@ -46,47 +67,34 @@ module "elastic_beanstalk_environment" {
 
   allow_all_egress = true
 
-  additional_security_group_rules = [
-    {
-      type                     = "ingress"
-      from_port                = 0
-      to_port                  = 65535
-      protocol                 = "-1"
-      source_security_group_id = data.aws_vpc.default.vpc_default_security_group_id
-      description              = "Allow all inbound traffic from trusted Security Groups"
-    }
-  ]
+  additional_security_group_rules = var.allowed_inbound_security_groups
 
   rolling_update_enabled  = var.rolling_update_enabled
   rolling_update_type     = var.rolling_update_type
   updating_min_in_service = var.updating_min_in_service
   updating_max_batch      = var.updating_max_batch
 
-  healthcheck_url  = var.healthcheck_url
-  application_port = var.application_port
+  healthcheck_url    = var.healthcheck_url
+  enable_stream_logs = var.enable_stream_logs
+  application_port   = var.application_port
 
   # https://docs.aws.amazon.com/elasticbeanstalk/latest/platforms/platforms-supported.html
   # https://docs.aws.amazon.com/elasticbeanstalk/latest/platforms/platforms-supported.html#platforms-supported.docker
   solution_stack_name = var.solution_stack_name
 
   additional_settings = var.additional_settings
-  env_vars            = var.env_vars
+  env_vars            = merge(var.env_vars, local.queue_env_vars, local.secrets...)
 
-  extended_ec2_policy_document = data.aws_iam_policy_document.minimal_s3_permissions.json
+  extended_ec2_policy_document = jsonencode(
+    {
+      "Version"   = "2012-10-17"
+      "Statement" = flatten(concat(values({ for i, v in values(var.ec2_policy_documents) : "Statement${i}" => jsondecode(v).Statement })))
+    }
+  )
+  # join("", values(var.ec2_policy_documents))
   prefer_legacy_ssm_policy     = false
   prefer_legacy_service_policy = false
   scheduled_actions            = var.scheduled_actions
 
   context = module.this.context
-}
-
-data "aws_iam_policy_document" "minimal_s3_permissions" {
-  statement {
-    sid = "AllowS3OperationsOnElasticBeanstalkBuckets"
-    actions = [
-      "s3:ListAllMyBuckets",
-      "s3:GetBucketLocation"
-    ]
-    resources = ["*"]
-  }
 }

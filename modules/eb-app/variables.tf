@@ -4,14 +4,20 @@ variable "description" {
   default     = ""
 }
 
+variable "environment_name" {
+  type        = string
+  description = "Name of EB environment"
+  default     = null
+}
+
 variable "region" {
   type        = string
   description = "AWS region"
 }
 
 variable "vpc_id" {
-  type        = list(string)
-  description = "List of availability zones"
+  type        = string
+  description = "AWS VPC ID"
 }
 
 variable "public_subnet_ids" {
@@ -52,6 +58,30 @@ variable "availability_zone_selector" {
 variable "instance_type" {
   type        = string
   description = "Instances type"
+}
+
+variable "enable_spot_instances" {
+  type        = bool
+  default     = false
+  description = "Enable Spot Instance requests for your environment"
+}
+
+variable "spot_fleet_on_demand_base" {
+  type        = number
+  default     = 0
+  description = "The minimum number of On-Demand Instances that your Auto Scaling group provisions before considering Spot Instances as your environment scales up. This option is relevant only when enable_spot_instances is true."
+}
+
+variable "spot_fleet_on_demand_above_base_percentage" {
+  type        = number
+  default     = -1
+  description = "The percentage of On-Demand Instances as part of additional capacity that your Auto Scaling group provisions beyond the SpotOnDemandBase instances. This option is relevant only when enable_spot_instances is true."
+}
+
+variable "spot_max_price" {
+  type        = number
+  default     = -1
+  description = "The maximum price per unit hour, in US$, that you're willing to pay for a Spot Instance. This option is relevant only when enable_spot_instances is true. Valid values are between 0.001 and 20.0"
 }
 
 variable "autoscale_min" {
@@ -114,6 +144,12 @@ variable "healthcheck_url" {
   description = "Application Health Check URL. Elastic Beanstalk will call this URL to check the health of the application running on EC2 instances"
 }
 
+variable "enable_stream_logs" {
+  type        = bool
+  default     = false
+  description = "Whether to create groups in CloudWatch Logs for proxy and deployment logs, and stream logs from each instance in your environment"
+}
+
 variable "application_port" {
   type        = number
   description = "Port application is listening on"
@@ -167,8 +203,16 @@ variable "autoscale_upper_increment" {
 variable "elb_scheme" {
   type        = string
   description = "Specify `internal` if you want to create an internal load balancer in your Amazon VPC so that your Elastic Beanstalk application cannot be accessed from outside your Amazon VPC"
+  default     = "public"
 }
 
+variable "allowed_inbound_security_groups" {
+  type        = list(string)
+  description = "Security groups allowed access to EB app"
+  default     = []
+}
+
+# Options: https://docs.aws.amazon.com/elasticbeanstalk/latest/dg/command-options-specific.html
 variable "additional_settings" {
   type = list(object({
     namespace = string
@@ -186,6 +230,12 @@ variable "env_vars" {
   description = "Map of custom ENV variables to be provided to the application running on Elastic Beanstalk, e.g. env_vars = { DB_USER = 'admin' DB_PASS = 'xxxxxx' }"
 }
 
+variable "secrets_file" {
+  type        = string
+  default     = null
+  description = "Path to JSON file containing a list of maps. The keys of these values will be added as EB env vars. It is assumed the values are already in SSM Param Store."
+}
+
 variable "scheduled_actions" {
   type = list(object({
     name            = string
@@ -199,4 +249,20 @@ variable "scheduled_actions" {
   }))
   default     = []
   description = "Define a list of scheduled actions"
+}
+
+# IAM
+
+variable "ec2_policy_documents" {
+  type        = map(any)
+  default     = {}
+  description = "Additional policy document JSON for the EC2 instances within the EB App"
+}
+
+# SQS
+
+variable "queue_name" {
+  type        = string
+  description = "SQS queue name for app"
+  default     = ""
 }
