@@ -775,7 +775,7 @@ resource "aws_iam_role_policy_attachment" "ecs_task_dynamodb" {
 // Bucket access
 module "app_bucket_iam_policy" {
   source  = "cloudposse/iam-policy/aws"
-  version = "0.2.1"
+  version = "0.3.0"
 
   for_each = toset(var.external_app_buckets)
 
