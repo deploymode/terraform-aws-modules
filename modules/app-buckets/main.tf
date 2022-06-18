@@ -1,6 +1,6 @@
 module "s3_bucket" {
   source  = "cloudposse/s3-bucket/aws"
-  version = "0.43.0"
+  version = "2.0.1"
 
   for_each = var.buckets
 
@@ -15,6 +15,57 @@ module "s3_bucket" {
   versioning_enabled = each.value.versioning_enabled
 
   cors_rule_inputs = each.value.cors_rules
+
+  context = module.this.context
+}
+
+module "app_bucket_iam_policy" {
+  source  = "cloudposse/iam-policy/aws"
+  version = "0.3.0"
+
+  for_each = var.create_policy ? var.buckets : {}
+
+  name       = "policy"
+  attributes = [each.key, "s3"]
+
+  iam_policy_enabled = true
+  description        = "Allows app-level access to ${module.s3_bucket[each.key].bucket_id}"
+
+  iam_policy_statements = [
+    {
+      sid        = "ListBucket"
+      effect     = "Allow"
+      actions    = ["s3:ListBucket"]
+      resources  = ["arn:aws:s3:::${module.s3_bucket[each.key].bucket_id}"]
+      conditions = []
+    },
+    {
+      sid    = "WriteBucket"
+      effect = "Allow"
+      actions = [
+        "s3:PutObject",
+        "s3:PutObjectVersionAcl",
+        "s3:PutObjectAcl",
+        "s3:GetObjectAcl",
+        "s3:GetObject",
+        "s3:GetObjectVersionAcl",
+        "s3:GetObjectVersion"
+      ]
+      resources  = ["arn:aws:s3:::${module.s3_bucket[each.key].bucket_id}/*"]
+      conditions = []
+    },
+    # TODO: move this out so it's not duplicated
+    {
+      sid    = "ListBuckets"
+      effect = "Allow"
+      actions = [
+        "s3:ListAllMyBuckets",
+        "s3:HeadBucket"
+      ]
+      resources  = ["*"]
+      conditions = []
+    }
+  ]
 
   context = module.this.context
 }

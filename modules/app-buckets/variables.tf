@@ -22,3 +22,9 @@ variable "generate_s3_backup_policy" {
   default     = false
   description = "Create a policy to allow readonly access to S3 buckets for backup purposes"
 }
+
+variable "create_policy" {
+  type        = bool
+  default     = false
+  description = "If true, creates an IAM policy & permissions to allow application-level access to each bucket. The policy ARN is output."
+}
