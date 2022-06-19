@@ -97,3 +97,25 @@ output "elastic_beanstalk_environment_triggers" {
   description = "Autoscaling triggers in use by this environment"
   value       = module.elastic_beanstalk_environment.triggers
 }
+
+// SSH keypair
+
+output "key_name" {
+  value       = var.create_key_pair ? module.ssh_key_pair.key_name : ""
+  description = "Name of SSH key"
+}
+
+output "public_key" {
+  value       = var.create_key_pair ? module.ssh_key_pair.public_key : ""
+  description = "Content of the generated public key"
+}
+
+output "public_key_filename" {
+  value       = var.create_key_pair ? module.ssh_key_pair.public_key_filename : ""
+  description = "Public Key Filename"
+}
+
+output "private_key_filename" {
+  value       = var.create_key_pair ? module.ssh_key_pair.private_key_filename : ""
+  description = "Private Key Filename"
+}
