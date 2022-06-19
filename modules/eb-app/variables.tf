@@ -212,6 +212,12 @@ variable "elb_scheme" {
   default     = "public"
 }
 
+variable "loadbalancer_certificate_arn" {
+  type        = string
+  default     = ""
+  description = "Load Balancer SSL certificate ARN. The certificate must be present in AWS Certificate Manager"
+}
+
 variable "allowed_inbound_security_groups" {
   type        = list(string)
   description = "Security groups allowed access to EB app"
