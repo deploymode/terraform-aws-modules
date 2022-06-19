@@ -14,6 +14,20 @@ locals {
 
 data "aws_caller_identity" "current" {}
 
+module "ssh_key_pair" {
+  source  = "cloudposse/key-pair/aws"
+  version = "0.18.3"
+
+  enabled = module.this.enabled && var.create_key_pair
+
+  ssh_public_key_path   = "/secrets"
+  generate_ssh_key      = "true"
+  private_key_extension = ".pem"
+  public_key_extension  = ".pub"
+
+  context = module.this.context
+}
+
 module "elastic_beanstalk_application" {
   source  = "cloudposse/elastic-beanstalk-application/aws"
   version = "0.11.1"
@@ -51,6 +65,8 @@ module "elastic_beanstalk_environment" {
   instance_type    = var.instance_type
   root_volume_size = var.root_volume_size
   root_volume_type = var.root_volume_type
+
+  keypair = var.create_key_pair ? module.ssh_key_pair.key_name : ""
 
   autoscale_min             = var.autoscale_min
   autoscale_max             = var.autoscale_max
