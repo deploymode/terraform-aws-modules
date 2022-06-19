@@ -66,6 +66,12 @@ variable "instance_type" {
   description = "Instances type"
 }
 
+variable "create_key_pair" {
+  type        = bool
+  description = "Create EC2 keypair and ssh keys locally"
+  default     = false
+}
+
 variable "enable_spot_instances" {
   type        = bool
   default     = false
