@@ -72,6 +72,12 @@ variable "create_key_pair" {
   default     = false
 }
 
+variable "ssh_key_path" {
+  type        = string
+  default     = "~/.ssh"
+  description = "Path for SSH key storage"
+}
+
 variable "enable_spot_instances" {
   type        = bool
   default     = false

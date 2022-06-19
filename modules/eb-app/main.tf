@@ -20,7 +20,7 @@ module "ssh_key_pair" {
 
   enabled = module.this.enabled && var.create_key_pair
 
-  ssh_public_key_path   = "/secrets"
+  ssh_public_key_path   = var.ssh_key_path
   generate_ssh_key      = "true"
   private_key_extension = ".pem"
   public_key_extension  = ".pub"
