@@ -67,6 +67,7 @@ module "elastic_beanstalk_environment" {
   application_subnets  = var.private_subnet_ids
 
   loadbalancer_certificate_arn = var.loadbalancer_certificate_arn
+  loadbalancer_ssl_policy      = var.loadbalancer_ssl_policy
 
   allow_all_egress = true
 
