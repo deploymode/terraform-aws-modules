@@ -218,6 +218,12 @@ variable "loadbalancer_certificate_arn" {
   description = "Load Balancer SSL certificate ARN. The certificate must be present in AWS Certificate Manager"
 }
 
+variable "loadbalancer_ssl_policy" {
+  type        = string
+  default     = "ELBSecurityPolicy-2016-08"
+  description = "Specify a security policy to apply to the listener. This option is only applicable to environments with an application load balancer, and is required if `loadbalancer_certificate_arn` is set."
+}
+
 variable "allowed_inbound_security_groups" {
   type        = list(string)
   description = "Security groups allowed access to EB app"
