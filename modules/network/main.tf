@@ -51,3 +51,29 @@ resource "aws_vpc_endpoint" "s3" {
 
   tags = module.s3_endpoint_label.tags
 }
+
+# module "vpc_endpoints" {
+#   source = "cloudposse/vpc/aws//modules/vpc-endpoints"
+#   version     = "1.1.0"
+
+#   vpc_id = module.vpc.vpc_id
+
+#   gateway_vpc_endpoints = {
+#     "s3" = {
+#       name = "s3"
+#       policy = jsonencode({
+#         Version = "2012-10-17"
+#         Statement = [
+#           {
+#             Action = [
+#               "s3:*",
+#             ]
+#             Effect    = "Allow"
+#             Principal = "*"
+#             Resource  = "*"
+#           },
+#         ]
+#       })
+#     }
+#   }
+# }

@@ -37,6 +37,7 @@ module "elastic_beanstalk_environment" {
   region                     = var.region
   availability_zone_selector = var.availability_zone_selector
   dns_zone_id                = var.dns_zone_id
+  dns_subdomain              = var.dns_subdomain
 
   wait_for_ready_timeout             = var.wait_for_ready_timeout
   elastic_beanstalk_application_name = module.elastic_beanstalk_application.elastic_beanstalk_application_name
