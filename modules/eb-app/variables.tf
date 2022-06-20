@@ -157,6 +157,12 @@ variable "updating_max_batch" {
   description = "Maximum number of instances to update at once"
 }
 
+variable "deployment_ignore_health_check" {
+  type        = bool
+  default     = false
+  description = "Do not cancel a deployment due to failed health checks. Useful to set to `true` when first stabilising app config."
+}
+
 variable "healthcheck_url" {
   type        = string
   description = "Application Health Check URL. Elastic Beanstalk will call this URL to check the health of the application running on EC2 instances"
