@@ -53,6 +53,8 @@ module "elastic_beanstalk_environment" {
   dns_zone_id                = var.dns_zone_id
   dns_subdomain              = var.dns_subdomain
 
+  associated_security_group_ids = var.associated_security_group_ids
+
   wait_for_ready_timeout             = var.wait_for_ready_timeout
   elastic_beanstalk_application_name = module.elastic_beanstalk_application.elastic_beanstalk_application_name
   environment_type                   = var.environment_type
