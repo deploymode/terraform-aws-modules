@@ -53,16 +53,22 @@ module "elastic_beanstalk_environment" {
   dns_zone_id                = var.dns_zone_id
   dns_subdomain              = var.dns_subdomain
 
+  elastic_beanstalk_application_name = module.elastic_beanstalk_application.elastic_beanstalk_application_name
+
   associated_security_group_ids = var.associated_security_group_ids
 
-  wait_for_ready_timeout             = var.wait_for_ready_timeout
-  elastic_beanstalk_application_name = module.elastic_beanstalk_application.elastic_beanstalk_application_name
-  environment_type                   = var.environment_type
-  loadbalancer_type                  = var.loadbalancer_type
-  elb_scheme                         = var.elb_scheme
-  tier                               = var.tier
-  version_label                      = var.version_label
-  force_destroy                      = var.force_destroy
+  wait_for_ready_timeout = var.wait_for_ready_timeout
+
+  healthcheck_url                = var.healthcheck_url
+  deployment_ignore_health_check = var.deployment_ignore_health_check
+
+  environment_type  = var.environment_type
+  tier              = var.tier
+  loadbalancer_type = var.loadbalancer_type
+  elb_scheme        = var.elb_scheme
+  application_port  = var.application_port
+  version_label     = var.version_label
+  force_destroy     = var.force_destroy
 
   instance_type    = var.instance_type
   root_volume_size = var.root_volume_size
@@ -96,9 +102,9 @@ module "elastic_beanstalk_environment" {
   updating_min_in_service = var.updating_min_in_service
   updating_max_batch      = var.updating_max_batch
 
-  healthcheck_url    = var.healthcheck_url
+
   enable_stream_logs = var.enable_stream_logs
-  application_port   = var.application_port
+
 
   # https://docs.aws.amazon.com/elasticbeanstalk/latest/platforms/platforms-supported.html
   # https://docs.aws.amazon.com/elasticbeanstalk/latest/platforms/platforms-supported.html#platforms-supported.docker
