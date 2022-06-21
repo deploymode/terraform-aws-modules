@@ -44,7 +44,7 @@ output "option_group_id" {
 }
 
 output "hostname" {
-  value       = module.rds_instance.hostname
+  value       = length(var.dns_zone_id) > 0 ? module.rds_instance.hostname : module.rds_instance.instance_address
   description = "DNS host name of the instance"
 }
 
