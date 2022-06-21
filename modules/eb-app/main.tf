@@ -45,7 +45,7 @@ module "elastic_beanstalk_environment" {
   source  = "cloudposse/elastic-beanstalk-environment/aws"
   version = "0.46.0"
 
-  name = coalesce(var.environment_name, module.this.name)
+  attributes = [coalesce(var.environment_name, module.this.name)]
 
   description                = var.description
   region                     = var.region

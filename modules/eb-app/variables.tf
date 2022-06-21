@@ -163,9 +163,21 @@ variable "deployment_ignore_health_check" {
   description = "Do not cancel a deployment due to failed health checks. Useful to set to `true` when first stabilising app config."
 }
 
+variable "deployment_timeout" {
+  type        = number
+  default     = 600
+  description = "Number of seconds to wait for an instance to complete executing commands"
+}
+
 variable "healthcheck_url" {
   type        = string
   description = "Application Health Check URL. Elastic Beanstalk will call this URL to check the health of the application running on EC2 instances"
+}
+
+variable "monitoring_ignore_app_4xx" {
+  type        = bool
+  description = "Ignore HTTP 4xx errors in EB monitoring"
+  default     = false
 }
 
 variable "enable_stream_logs" {
