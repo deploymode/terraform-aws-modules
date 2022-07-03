@@ -55,7 +55,8 @@ module "elastic_beanstalk_environment" {
 
   elastic_beanstalk_application_name = module.elastic_beanstalk_application.elastic_beanstalk_application_name
 
-  associated_security_group_ids = var.associated_security_group_ids
+  associated_security_group_ids        = var.associated_security_group_ids
+  security_group_create_before_destroy = true
 
   wait_for_ready_timeout = var.wait_for_ready_timeout
 
