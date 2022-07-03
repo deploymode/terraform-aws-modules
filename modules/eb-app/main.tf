@@ -43,7 +43,7 @@ data "aws_vpc" "default" {
 
 module "elastic_beanstalk_environment" {
   source  = "cloudposse/elastic-beanstalk-environment/aws"
-  version = "0.46.0"
+  version = "0.47.0"
 
   attributes = [coalesce(var.environment_name, module.this.name)]
 
