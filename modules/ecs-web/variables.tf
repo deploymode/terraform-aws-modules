@@ -517,21 +517,22 @@ variable "redis_cluster_size" {
   description = "Number of nodes in cluster. *Ignored when `cluster_mode_enabled` == `true`*"
 }
 
+# https://docs.aws.amazon.com/AmazonElastiCache/latest/red-ug/CacheNodes.SupportedTypes.html
 variable "redis_instance_type" {
   type        = string
-  default     = "cache.t3.micro"
+  default     = "cache.t4g.micro"
   description = "Elastic cache instance type"
 }
 
 variable "redis_family" {
   type        = string
-  default     = "redis5.0"
+  default     = "redis6.x"
   description = "Redis family"
 }
 
 variable "redis_engine_version" {
   type        = string
-  default     = "5.0.6"
+  default     = "6.2"
   description = "Redis engine version"
 }
 

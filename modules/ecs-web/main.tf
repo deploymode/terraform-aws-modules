@@ -631,7 +631,7 @@ module "vpc_peering" {
 
 module "redis" {
   source                 = "cloudposse/elasticache-redis/aws"
-  version                = "0.40.1"
+  version                = "0.44.0"
   enabled                = (module.this.enabled && var.provision_redis_cache)
   attributes             = compact(concat(module.this.attributes, ["cache"]))
   availability_zones     = var.redis_availability_zones
