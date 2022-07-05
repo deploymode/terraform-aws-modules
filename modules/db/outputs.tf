@@ -74,7 +74,7 @@ output "database_password_ssm_param_arn" {
   description = "Database user password SSM param store item ARN"
 }
 
-# output "database_name" {
-#   value       = module.rds_instance.database_name
-#   description = "Name of database created with instance"
-# }
+output "database_name" {
+  value       = coalesce(var.database_name, "")
+  description = "Name of database created with instance"
+}
