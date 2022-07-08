@@ -301,12 +301,18 @@ module "alb" {
 
 module "ecs_task" {
   source  = "cloudposse/ecs-alb-service-task/aws"
-  version = "0.63.1"
-  context = module.this.context
-  # attributes             = compact(concat(module.this.attributes, ["service"]))
-  alb_security_group     = module.alb.security_group_id # var.alb_security_group_id
+  version = "0.64.1"
+
+  # Network
+  vpc_id             = var.vpc_id
+  network_mode       = var.ecs_network_mode
+  assign_public_ip   = var.assign_public_ip
+  subnet_ids         = var.private_subnet_ids
+  security_group_ids = var.ecs_security_group_ids
+
+  # ALB
+  alb_security_group     = module.alb.security_group_id
   use_alb_security_group = var.use_alb_security_group
-  security_group_ids     = var.ecs_security_group_ids
   ecs_load_balancers = [
     {
       container_name   = join("-", [module.container_label.id, "nginx"])
@@ -327,8 +333,6 @@ module "ecs_task" {
   capacity_provider_strategies = var.ecs_capacity_provider_strategies
   launch_type                  = var.ecs_launch_type
   platform_version             = var.ecs_platform_version
-  vpc_id                       = var.vpc_id
-  subnet_ids                   = var.private_subnet_ids
   task_policy_arns = concat(
     var.ecs_task_policy_arns,
     aws_iam_policy.email_policy.*.arn,
@@ -337,20 +341,21 @@ module "ecs_task" {
   exec_enabled                   = var.ecs_enable_exec
   ignore_changes_task_definition = var.ecs_ignore_changes_task_definition
 
-  network_mode     = var.ecs_network_mode
-  assign_public_ip = var.assign_public_ip
-  propagate_tags   = "TASK_DEFINITION"
+  propagate_tags = "TASK_DEFINITION"
+
+  # Deployment
   # deployment_minimum_healthy_percent = var.deployment_minimum_healthy_percent
   # deployment_maximum_percent         = var.deployment_maximum_percent
   deployment_controller_type         = "ECS"
   circuit_breaker_deployment_enabled = var.ecs_circuit_breaker_deployment_enabled
   circuit_breaker_rollback_enabled   = var.ecs_circuit_breaker_rollback_enabled
+  force_new_deployment               = var.service_force_new_deployment
 
   desired_count = var.ecs_task_desired_count
   task_memory   = var.ecs_task_memory
   task_cpu      = var.ecs_task_cpu
 
-
+  context = module.this.context
 }
 
 module "email_policy_label" {

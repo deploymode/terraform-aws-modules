@@ -204,6 +204,12 @@ variable "ecs_platform_version" {
   description = "Fargate version"
 }
 
+variable "service_force_new_deployment" {
+  type        = bool
+  description = "Enable to force a new task deployment of the service."
+  default     = false
+}
+
 variable "ecs_capacity_provider_strategies" {
   type = list(object({
     capacity_provider = string
