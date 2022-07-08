@@ -716,7 +716,7 @@ module "redis_allowed_sg" {
 
   vpc_id = var.vpc_id
 
-  context = module.label.context
+  context = module.this.context
 }
 
 # module "redis_sg_label" {
