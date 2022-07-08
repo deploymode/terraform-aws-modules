@@ -635,87 +635,117 @@ module "vpc_peering" {
 }
 
 module "redis" {
-  source                        = "cloudposse/elasticache-redis/aws"
-  version                       = "0.44.0"
-  enabled                       = (module.this.enabled && var.provision_redis_cache)
-  attributes                    = compact(concat(module.this.attributes, ["cache"]))
-  availability_zones            = var.redis_availability_zones
-  zone_id                       = var.hosted_zone_id
-  vpc_id                        = var.vpc_id
+  source     = "cloudposse/elasticache-redis/aws"
+  version    = "0.44.0"
+  enabled    = (module.this.enabled && var.provision_redis_cache)
+  attributes = compact(concat(module.this.attributes, ["cache"]))
+
+  # Networking
+  availability_zones = var.redis_availability_zones
+  vpc_id             = var.vpc_id
+  subnets            = var.private_subnet_ids
+
+  # DNS
+  zone_id = var.hosted_zone_id
+
+  # Security groups
   create_security_group         = true
   allowed_security_group_ids    = [module.ecs_task.service_security_group_id]
-  associated_security_group_ids = aws_security_group.redis_allowed.*.id
-  additional_security_group_rules = [
-    {
-      type                     = "egress"
-      from_port                = 0
-      to_port                  = 65535
-      protocol                 = "-1"
-      cidr_blocks              = ["0.0.0.0/0"]
-      source_security_group_id = null
-      description              = "Allow all outbound traffic"
-    },
-    # {
-    #   type                     = "ingress"
-    #   from_port                = 6379
-    #   to_port                  = 6379
-    #   protocol                 = "-1"
-    #   cidr_blocks              = []
-    #   source_security_group_id = module.ecs_task.service_security_group_id
-    #   description              = "Allow all inbound traffic from ECS service Security Group"
-    # },
-    # {
-    #   type                     = "ingress"
-    #   from_port                = 6379
-    #   to_port                  = 6379
-    #   protocol                 = "-1"
-    #   cidr_blocks              = []
-    #   source_security_group_id = join("", aws_security_group.redis_allowed.*.id)
-    #   description              = "Allow all inbound traffic from generic Redis access Security Group"
-    # },
-  ]
-  subnets                    = var.private_subnet_ids
+  associated_security_group_ids = [module.redis_allowed_sg.id] # aws_security_group.redis_allowed.*.id
+  # additional_security_group_rules = [
+  #   {
+  #     type                     = "egress"
+  #     from_port                = 0
+  #     to_port                  = 65535
+  #     protocol                 = "-1"
+  #     cidr_blocks              = ["0.0.0.0/0"]
+  #     source_security_group_id = null
+  #     description              = "Allow all outbound traffic"
+  #   },
+  #   # {
+  #   #   type                     = "ingress"
+  #   #   from_port                = 6379
+  #   #   to_port                  = 6379
+  #   #   protocol                 = "-1"
+  #   #   cidr_blocks              = []
+  #   #   source_security_group_id = module.ecs_task.service_security_group_id
+  #   #   description              = "Allow all inbound traffic from ECS service Security Group"
+  #   # },
+  #   # {
+  #   #   type                     = "ingress"
+  #   #   from_port                = 6379
+  #   #   to_port                  = 6379
+  #   #   protocol                 = "-1"
+  #   #   cidr_blocks              = []
+  #   #   source_security_group_id = join("", aws_security_group.redis_allowed.*.id)
+  #   #   description              = "Allow all inbound traffic from generic Redis access Security Group"
+  #   # },
+  # ]
+
+  # Redis infra
   cluster_mode_enabled       = var.redis_cluster_mode_enabled
   cluster_size               = var.redis_cluster_size
   instance_type              = var.redis_instance_type
   apply_immediately          = true
   automatic_failover_enabled = false
-  engine_version             = var.redis_engine_version
-  family                     = var.redis_family
   at_rest_encryption_enabled = false
   transit_encryption_enabled = true
-  auth_token                 = var.redis_password
+
+  # Redis settings
+  engine_version = var.redis_engine_version
+  family         = var.redis_family
+  auth_token     = var.redis_password
 
   context = module.this.context
 }
 
-module "redis_sg_label" {
-  source     = "cloudposse/label/null"
-  version    = "0.25.0"
+module "redis_allowed_sg" {
+  source  = "cloudposse/security-group/aws"
+  version = "2.0.0-rc1"
+
+  enabled = module.this.enabled && var.provision_redis_cache
+
   attributes = ["redis", "allowed"]
-  enabled    = module.this.enabled && var.provision_redis_cache
-  context    = module.this.context
+
+  security_group_description = "Services which need Redis access can be assigned this security group"
+
+  # Allow unlimited egress
+  allow_all_egress = true
+
+  rules = []
+
+  vpc_id = var.vpc_id
+
+  context = module.label.context
 }
 
-resource "aws_security_group" "redis_allowed" {
-  count = module.this.enabled && var.provision_redis_cache ? 1 : 0
+# module "redis_sg_label" {
+#   source     = "cloudposse/label/null"
+#   version    = "0.25.0"
+#   attributes = ["redis", "allowed"]
+#   enabled    = module.this.enabled && var.provision_redis_cache
+#   context    = module.this.context
+# }
 
-  name        = module.redis_sg_label.id
-  description = "Services which need Redis access can be assigned this security group"
-  vpc_id      = var.vpc_id
-  tags        = module.this.tags
-}
+# resource "aws_security_group" "redis_allowed" {
+#   count = module.this.enabled && var.provision_redis_cache ? 1 : 0
 
-resource "aws_security_group_rule" "redis_egress" {
-  count             = module.this.enabled && var.provision_redis_cache ? 1 : 0
-  description       = "Allow all egress traffic"
-  type              = "egress"
-  from_port         = 0
-  to_port           = 0
-  protocol          = "-1"
-  cidr_blocks       = ["0.0.0.0/0"]
-  security_group_id = join("", aws_security_group.redis_allowed.*.id)
-}
+#   name        = module.redis_sg_label.id
+#   description = "Services which need Redis access can be assigned this security group"
+#   vpc_id      = var.vpc_id
+#   tags        = module.this.tags
+# }
+
+# resource "aws_security_group_rule" "redis_egress" {
+#   count             = module.this.enabled && var.provision_redis_cache ? 1 : 0
+#   description       = "Allow all egress traffic"
+#   type              = "egress"
+#   from_port         = 0
+#   to_port           = 0
+#   protocol          = "-1"
+#   cidr_blocks       = ["0.0.0.0/0"]
+#   security_group_id = join("", aws_security_group.redis_allowed.*.id)
+# }
 
 // DynamoDB Cache
 module "dynamodb" {
