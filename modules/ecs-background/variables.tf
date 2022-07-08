@@ -92,6 +92,12 @@ variable "ecs_capacity_provider_strategies" {
   default     = []
 }
 
+variable "service_force_new_deployment" {
+  type        = bool
+  description = "Enable to force a new task deployment of the service."
+  default     = false
+}
+
 variable "service_discovery_private_dns_namespace_id" {
   type        = string
   description = "The service discovery private DNS namespace ID"

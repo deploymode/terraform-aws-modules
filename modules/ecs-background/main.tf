@@ -97,6 +97,7 @@ module "ecs_task" {
   platform_version             = var.ecs_platform_version
   vpc_id                       = var.vpc_id
   exec_enabled                 = var.ecs_enable_exec
+  force_new_deployment         = var.service_force_new_deployment
 
   service_registries = var.use_service_discovery == false ? [] : [
     {
