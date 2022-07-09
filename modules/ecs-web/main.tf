@@ -649,7 +649,7 @@ module "redis" {
   zone_id = var.hosted_zone_id
 
   # Security groups
-  create_security_group         = true
+  create_security_group         = false
   allowed_security_group_ids    = [module.ecs_task.service_security_group_id]
   associated_security_group_ids = [module.redis_allowed_sg.id] # aws_security_group.redis_allowed.*.id
   # additional_security_group_rules = [
@@ -708,6 +708,8 @@ module "redis_allowed_sg" {
   attributes = ["redis", "allowed"]
 
   security_group_description = "Services which need Redis access can be assigned this security group"
+
+  create_before_destroy = true
 
   # Allow unlimited egress
   allow_all_egress = true
