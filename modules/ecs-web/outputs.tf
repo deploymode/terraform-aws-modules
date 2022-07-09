@@ -123,3 +123,42 @@ output "app_bucket_policy_arn" {
   description = "ARN of IAM policy allowing access to S3 buckets used by app"
   value       = [for v in aws_iam_policy.app_bucket_iam_policy : v.arn]
 }
+
+// Frontend website
+
+
+
+output "frontend_hostname" {
+  value       = local.app_fqdn
+  description = "Frontend hostname"
+}
+
+output "frontend_bucket_name" {
+  description = "Name of S3 bucket used to store frontend website"
+  value       = var.create_frontend_website ? module.frontend_web.s3_bucket_name : ""
+}
+
+output "s3_bucket_domain_name" {
+  value       = var.create_frontend_website ? module.frontend_web.s3_bucket_domain_name : ""
+  description = "Name of website bucket"
+}
+
+output "s3_bucket_arn" {
+  value       = var.create_frontend_website ? module.frontend_web.s3_bucket_arn : ""
+  description = "ARN of website bucket"
+}
+
+output "s3_bucket_website_endpoint" {
+  value       = var.create_frontend_website ? module.frontend_web.s3_bucket_website_endpoint : ""
+  description = "The website endpoint URL"
+}
+
+output "s3_bucket_website_domain" {
+  value       = var.create_frontend_website ? module.frontend_web.s3_bucket_website_domain : ""
+  description = "The domain of the website endpoint"
+}
+
+output "s3_bucket_hosted_zone_id" {
+  value       = var.create_frontend_website ? module.frontend_web.s3_bucket_hosted_zone_id : ""
+  description = "The Route 53 Hosted Zone ID for this bucket's region"
+}
