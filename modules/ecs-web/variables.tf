@@ -617,6 +617,14 @@ variable "cdn_logging_enabled" {
   description = "When true, access logs will be sent to a newly created s3 bucket"
 }
 
+variable "create_frontend_website" {
+  type        = bool
+  default     = false
+  description = "Provision a CDN in front of an S3 bucket. Bucket provide in `external_app_buckets` with key 'public'."
+}
+
+// ECS Deployment
+
 variable "ecs_circuit_breaker_deployment_enabled" {
   type        = bool
   description = "If `true`, enable the deployment circuit breaker logic for the service"
