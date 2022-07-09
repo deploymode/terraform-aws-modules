@@ -304,11 +304,14 @@ module "ecs_task" {
   version = "0.64.1"
 
   # Network
-  vpc_id             = var.vpc_id
-  network_mode       = var.ecs_network_mode
-  assign_public_ip   = var.assign_public_ip
-  subnet_ids         = var.private_subnet_ids
-  security_group_ids = var.ecs_security_group_ids
+  vpc_id           = var.vpc_id
+  network_mode     = var.ecs_network_mode
+  assign_public_ip = var.assign_public_ip
+  subnet_ids       = var.private_subnet_ids
+  security_group_ids = concat(
+    var.ecs_security_group_ids,
+    var.provision_redis_cache ? [module.redis_allowed_sg.id] : []
+  )
 
   # ALB
   alb_security_group     = module.alb.security_group_id
@@ -649,9 +652,9 @@ module "redis" {
   zone_id = var.hosted_zone_id
 
   # Security groups
-  create_security_group         = false
-  allowed_security_group_ids    = [module.ecs_task.service_security_group_id]
-  associated_security_group_ids = [module.redis_allowed_sg.id] # aws_security_group.redis_allowed.*.id
+  create_security_group      = true
+  allowed_security_group_ids = [module.redis_allowed_sg.id] #module.ecs_task.service_security_group_id]
+  # associated_security_group_ids = [module.redis_allowed_sg.id] # aws_security_group.redis_allowed.*.id
   # Redis infra
   cluster_mode_enabled       = var.redis_cluster_mode_enabled
   cluster_size               = var.redis_cluster_size
@@ -669,6 +672,8 @@ module "redis" {
   context = module.this.context
 }
 
+# Security group which is allowed access to redis
+# This can be assigned to other resources, such as the ECS task
 module "redis_allowed_sg" {
   source  = "cloudposse/security-group/aws"
   version = "2.0.0-rc1"

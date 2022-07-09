@@ -70,7 +70,7 @@ output "redis_security_group_id" {
 }
 
 output "redis_access_security_group_id" {
-  value       = var.provision_redis_cache ? module.redis_allowed_sg.id : "" # aws_security_group.redis_allowed.*.id) : ""
+  value       = var.provision_redis_cache ? module.redis_allowed_sg.id : ""
   description = "ID of the security group for use by services which need access to Redis"
 }
 
