@@ -841,21 +841,12 @@ module "frontend_web" {
   context = module.this.context
 }
 
-module "ssm_param_frontend_bucket" {
-  source  = "cloudposse/ssm-parameter-store/aws"
-  version = "0.10.0"
-
-  enabled = module.this.enabled && var.create_frontend_website
-
-  parameter_write = [
-    {
-      name        = "/${module.this.namespace}/${module.this.stage}/${module.this.environment}/build/FRONTEND_BUCKET"
-      value       = module.frontend_web.s3_bucket
-      type        = "String"
-      overwrite   = "true"
-      description = "Frontend bucket name"
-    }
-  ]
-
-  context = module.this.context
+resource "aws_ssm_parameter" "ssm_param_frontend_bucket" {
+  count       = module.this.enabled && var.create_frontend_website ? 1 : 0
+  name        = "/${module.this.namespace}/${module.this.stage}/${module.this.environment}/build/FRONTEND_BUCKET"
+  description = "Frontend bucket name"
+  type        = "String"
+  value       = module.frontend_web.s3_bucket
+  overwrite   = true
+  tags        = module.this.tags
 }
