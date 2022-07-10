@@ -129,7 +129,7 @@ output "app_bucket_policy_arn" {
 
 
 output "frontend_hostname" {
-  value       = local.app_fqdn
+  value       = var.create_frontend_website ? local.app_fqdn : ""
   description = "Frontend hostname"
 }
 
