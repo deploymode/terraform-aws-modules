@@ -817,8 +817,9 @@ resource "aws_iam_policy" "app_bucket_iam_policy" {
 }
 
 module "frontend_web" {
-  source  = "cloudposse/cloudfront-s3-cdn/aws"
-  version = "0.82.4"
+  # source  = "cloudposse/cloudfront-s3-cdn/aws"
+  # version = "0.82.4"
+  source = "git::https://github.com/deploymode/terraform-aws-cloudfront-s3-cdn?ref=update-aws-provider-to-v4"
 
   enabled = module.this.enabled && var.create_frontend_website
 
