@@ -821,10 +821,10 @@ module "frontend_web" {
   # version = "0.82.4"
   source = "git::https://github.com/deploymode/terraform-aws-cloudfront-s3-cdn?ref=update-aws-provider-to-v4"
 
-  enabled = module.this.enabled && var.create_frontend_website
+  enabled         = module.this.enabled && var.create_frontend_website
+  website_enabled = true
 
-  hostname = local.app_fqdn
-  # aliases           = ["web.${local.app_fqdn}"]
+  aliases           = [local.app_fqdn]
   dns_alias_enabled = true
   parent_zone_id    = var.dns_zone_id
 
@@ -837,7 +837,8 @@ module "frontend_web" {
   }
 
   versioning_enabled = false
-  force_destroy      = true
+  # only built assets should be in this bucket
+  origin_force_destroy = true
 
   context = module.this.context
 }
