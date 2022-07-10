@@ -826,14 +826,14 @@ module "frontend_web" {
 
   aliases           = [local.app_fqdn]
   dns_alias_enabled = true
-  parent_zone_id    = var.dns_zone_id
+  parent_zone_id    = var.hosted_zone_id
 
   allow_ssl_requests_only = true
 
   deployment_principal_arns = {
     # Role -> prefix
     # No prefix restriction
-    module.ecs_codepipeline.codebuild_role_id = [""]
+    (module.ecs_codepipeline.codebuild_role_id) = [""]
   }
 
   versioning_enabled = false
