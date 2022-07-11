@@ -475,19 +475,21 @@ resource "aws_codestarconnections_connection" "default" {
 }
 
 module "ecs_codepipeline" {
-  source  = "cloudposse/ecs-codepipeline/aws"
-  version = "0.28.6"
+  # source  = "cloudposse/ecs-codepipeline/aws"
+  # version = "0.28.7"
+  source = "git::https://github.com/deploymode/terraform-aws-ecs-codepipeline-1?ref=codestar-source-output-artifact-type-var"
 
-  enabled                 = var.codepipeline_enabled
-  region                  = var.aws_region
-  codestar_connection_arn = coalesce(var.codestar_connection_arn, join("", aws_codestarconnections_connection.default.*.arn))
-  repo_owner              = var.codepipeline_repo_owner
-  repo_name               = var.codepipeline_repo_name
-  branch                  = var.codepipeline_branch
-  build_image             = var.codepipeline_build_image
-  build_timeout           = var.codepipeline_build_timeout
-  build_compute_type      = "BUILD_GENERAL1_SMALL"
-  poll_source_changes     = false
+  enabled                         = var.codepipeline_enabled
+  region                          = var.aws_region
+  codestar_connection_arn         = coalesce(var.codestar_connection_arn, join("", aws_codestarconnections_connection.default.*.arn))
+  codestar_output_artifact_format = var.codestar_output_artifact_format
+  repo_owner                      = var.codepipeline_repo_owner
+  repo_name                       = var.codepipeline_repo_name
+  branch                          = var.codepipeline_branch
+  build_image                     = var.codepipeline_build_image
+  build_timeout                   = var.codepipeline_build_timeout
+  build_compute_type              = "BUILD_GENERAL1_SMALL"
+  poll_source_changes             = false
   // True required to build docker containers
   privileged_mode         = true
   image_repo_name         = split("/", module.ecr.repository_url)[0]
