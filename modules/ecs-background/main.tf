@@ -62,10 +62,6 @@ module "container" {
         name  = "ENVIRONMENT"
         value = module.this.environment
       },
-      {
-        name  = "TIER"
-        value = "web"
-      },
     ],
     var.container_environment,
     local.queue_env_vars,
@@ -268,11 +264,6 @@ module "ecs_codepipeline" {
       {
         name  = "ENVIRONMENT"
         value = module.this.environment
-        type  = "PLAINTEXT"
-      },
-      {
-        name  = "TIER"
-        value = "web"
         type  = "PLAINTEXT"
       },
       {
