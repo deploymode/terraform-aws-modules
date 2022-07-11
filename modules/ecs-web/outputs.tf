@@ -126,11 +126,9 @@ output "app_bucket_policy_arn" {
 
 // Frontend website
 
-
-
 output "frontend_hostname" {
-  value       = var.create_frontend_website ? local.app_fqdn : ""
-  description = "Frontend hostname"
+  value       = var.create_frontend_website ? local.frontend_fqdn : ""
+  description = "Frontend web endpoint"
 }
 
 output "frontend_bucket_name" {

@@ -20,7 +20,10 @@ module "monitoring_image_label" {
 }
 
 locals {
+  # ECS app
   app_fqdn = join(".", [var.app_dns_name, var.domain_name])
+  # Frontend (S3) app
+  frontend_fqdn = join(".", [var.frontend_dns_name, var.domain_name])
 
   image_names_map = {
     "nginx"      = module.nginx_image_label.id
@@ -824,7 +827,7 @@ module "frontend_web" {
   enabled         = module.this.enabled && var.create_frontend_website
   website_enabled = true
 
-  aliases           = [local.app_fqdn]
+  aliases           = [local.frontend_fqdn]
   dns_alias_enabled = true
   parent_zone_id    = var.hosted_zone_id
 

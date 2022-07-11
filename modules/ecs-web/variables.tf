@@ -623,6 +623,12 @@ variable "create_frontend_website" {
   description = "Provision a CDN in front of an S3 bucket. Bucket provide in `external_app_buckets` with key 'public'."
 }
 
+variable "frontend_dns_name" {
+  type        = string
+  default     = "www"
+  descritpion = "Used if `create_frontend_website` is true. DNS name used for frontend CDN."
+}
+
 // ECS Deployment
 
 variable "ecs_circuit_breaker_deployment_enabled" {
