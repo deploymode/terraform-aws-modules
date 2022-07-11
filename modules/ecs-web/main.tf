@@ -278,7 +278,7 @@ module "alb_label" {
 
 module "alb" {
   source             = "cloudposse/alb/aws"
-  version            = "1.4.0"
+  version            = "1.3.0"
   vpc_id             = var.vpc_id
   security_group_ids = var.alb_security_group_ids
   subnet_ids         = var.public_subnet_ids
@@ -295,11 +295,12 @@ module "alb" {
   health_check_interval                   = var.alb_healthcheck_interval
   certificate_arn                         = var.certificate_arn
   access_logs_enabled                     = false
-  alb_access_logs_s3_bucket_force_destroy = true
-  cross_zone_load_balancing_enabled       = true
-  http2_enabled                           = true
-  deletion_protection_enabled             = false
-  context                                 = module.alb_label.context
+  alb_access_logs_s3_bucket_force_destroy = var.alb_access_logs_s3_bucket_force_destroy
+  # alb_access_logs_s3_bucket_force_destroy_enabled = var.alb_access_logs_s3_bucket_force_destroy ? "true" : "false"
+  cross_zone_load_balancing_enabled = true
+  http2_enabled                     = true
+  deletion_protection_enabled       = false
+  context                           = module.alb_label.context
 }
 
 module "ecs_task" {

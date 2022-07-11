@@ -164,6 +164,12 @@ variable "app_dns_name" {
   default     = "app"
 }
 
+variable "alb_access_logs_s3_bucket_force_destroy" {
+  type        = bool
+  default     = True
+  description = "A boolean that indicates all objects should be deleted from the ALB access logs S3 bucket so that the bucket can be destroyed without error"
+}
+
 // ECR
 
 variable "ecr_max_image_count" {
