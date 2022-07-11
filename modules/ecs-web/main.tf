@@ -1,3 +1,5 @@
+data "aws_caller_identity" "current" {}
+
 module "nginx_image_label" {
   source     = "cloudposse/label/null"
   version    = "0.25.0"
@@ -836,7 +838,7 @@ module "frontend_web" {
   deployment_principal_arns = {
     # Role -> prefix
     # No prefix restriction
-    (module.ecs_codepipeline.codebuild_role_id) = [""]
+    "arn:aws:iam::${data.aws_caller_identity.current.account_id}:role/${module.ecs_codepipeline.codebuild_role_id}" = [""]
   }
 
   versioning_enabled = false
