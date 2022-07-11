@@ -277,26 +277,24 @@ module "alb_label" {
 }
 
 module "alb" {
-  source  = "cloudposse/alb/aws"
-  version = "0.32.0"
-  # source             = "git::https://github.com/joe-niland/terraform-aws-alb.git?ref=fix-access-logs-disabled"
+  source             = "cloudposse/alb/aws"
+  version            = "1.40.0"
   vpc_id             = var.vpc_id
   security_group_ids = var.alb_security_group_ids
   subnet_ids         = var.public_subnet_ids
   target_group_name  = module.this.id
   # target_group_port                       = var.target_group_port
-  internal              = false
-  http_port             = var.http_port
-  https_port            = var.https_port
-  http_enabled          = var.http_enabled
-  https_enabled         = var.https_enabled
-  http_redirect         = var.http_to_https_redirect
-  health_check_path     = var.alb_healthcheck_path
-  health_check_timeout  = var.alb_healthcheck_timeout
-  health_check_interval = var.alb_healthcheck_interval
-  certificate_arn       = var.certificate_arn
-  access_logs_enabled   = false
-  # access_logs_s3_bucket_id                = ""
+  internal                                = false
+  http_port                               = var.http_port
+  https_port                              = var.https_port
+  http_enabled                            = var.http_enabled
+  https_enabled                           = var.https_enabled
+  http_redirect                           = var.http_to_https_redirect
+  health_check_path                       = var.alb_healthcheck_path
+  health_check_timeout                    = var.alb_healthcheck_timeout
+  health_check_interval                   = var.alb_healthcheck_interval
+  certificate_arn                         = var.certificate_arn
+  access_logs_enabled                     = false
   alb_access_logs_s3_bucket_force_destroy = true
   cross_zone_load_balancing_enabled       = true
   http2_enabled                           = true
@@ -396,7 +394,7 @@ data "aws_iam_policy_document" "send_email_policy" {
 
 
 resource "aws_route53_record" "default" {
-  count   = (var.hosted_zone_id != "" && var.create_alb_dns_record) ? 1 : 0
+  count   = var.hosted_zone_id != "" && var.create_alb_dns_record ? 1 : 0
   zone_id = var.hosted_zone_id
   name    = local.app_fqdn
   type    = "A"
@@ -417,7 +415,7 @@ locals {
     min_ttl                     = 0
     max_ttl                     = 86400
     compress                    = true
-    target_origin_id            = module.this.id # module.alb_label.id # .alb_dns_name #  join("", aws_route53_record.default.*.fqdn)
+    target_origin_id            = module.this.id
     forward_cookies             = "all"
     forward_header_values       = ["*"]
     forward_query_string        = true
