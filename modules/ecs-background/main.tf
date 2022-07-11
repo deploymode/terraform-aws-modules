@@ -67,7 +67,7 @@ module "container" {
     local.queue_env_vars,
     local.dynamodb_cache_env_vars
   )
-  secrets       = var.container_secrets
+  secrets       = var.container_ssm_secrets
   port_mappings = var.container_port_mappings
   command       = var.container_command
   entrypoint    = var.container_entrypoint
