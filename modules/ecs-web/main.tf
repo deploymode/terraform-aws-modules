@@ -169,6 +169,10 @@ module "container_php-fpm" {
       name  = "ENVIRONMENT"
       value = module.this.environment
     },
+    {
+      name  = "TIER"
+      value = "web"
+    },
     ],
     var.container_environment_php,
     local.dynamodb_cache_env_vars,
@@ -498,6 +502,11 @@ module "ecs_codepipeline" {
     {
       name  = "ENVIRONMENT"
       value = module.this.environment
+      type  = "PLAINTEXT"
+    },
+    {
+      name  = "TIER"
+      value = "web"
       type  = "PLAINTEXT"
     },
     {
