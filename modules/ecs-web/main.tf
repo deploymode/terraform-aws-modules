@@ -278,7 +278,7 @@ module "alb_label" {
 
 module "alb" {
   source             = "cloudposse/alb/aws"
-  version            = "1.40.0"
+  version            = "1.4.0"
   vpc_id             = var.vpc_id
   security_group_ids = var.alb_security_group_ids
   subnet_ids         = var.public_subnet_ids
