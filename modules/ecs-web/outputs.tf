@@ -124,6 +124,13 @@ output "app_bucket_policy_arn" {
   value       = [for v in aws_iam_policy.app_bucket_iam_policy : v.arn]
 }
 
+// App
+
+output "application_endpoint" {
+  description = "HTTP endpoint for application"
+  value       = local.app_fqdn
+}
+
 // Frontend website
 
 output "frontend_hostname" {
