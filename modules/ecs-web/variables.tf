@@ -626,7 +626,7 @@ variable "create_frontend_website" {
 variable "frontend_dns_name" {
   type        = string
   default     = "www"
-  descritpion = "Used if `create_frontend_website` is true. DNS name used for frontend CDN."
+  description = "Used if `create_frontend_website` is true. DNS name used for frontend CDN."
 }
 
 // ECS Deployment
