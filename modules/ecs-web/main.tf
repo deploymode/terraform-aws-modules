@@ -828,24 +828,36 @@ module "frontend_web" {
   # version = "0.82.4"
   source = "git::https://github.com/deploymode/terraform-aws-cloudfront-s3-cdn?ref=update-aws-provider-to-v4"
 
-  enabled         = module.this.enabled && var.create_frontend_website
-  website_enabled = true
+  enabled = module.this.enabled && var.create_frontend_website
 
+  # Use S3 origin
+  website_enabled         = false
+  allow_ssl_requests_only = true
+
+  # For SPA routing - use CloudFront error handling
+  custom_error_response = [
+    {
+      error_caching_min_ttl = 0
+      error_code            = "404"
+      response_code         = "200"
+      response_page_path    = "/index.html"
+    }
+  ]
+
+  # DNS/SSL
+  parent_zone_id      = var.hosted_zone_id
   aliases             = [local.frontend_fqdn]
   dns_alias_enabled   = true
   acm_certificate_arn = var.cdn_certificate_arn
-  parent_zone_id      = var.hosted_zone_id
-
-  allow_ssl_requests_only = true
 
   deployment_principal_arns = {
     # Role -> prefix
-    # No prefix restriction
+    # Allow codebuild to deploy files to S3, with no prefix restriction
     "arn:aws:iam::${data.aws_caller_identity.current.account_id}:role/${module.ecs_codepipeline.codebuild_role_id}" = [""]
   }
 
-  versioning_enabled = false
   # only built assets should be in this bucket
+  versioning_enabled   = false
   origin_force_destroy = true
 
   context = module.this.context
