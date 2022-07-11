@@ -831,9 +831,10 @@ module "frontend_web" {
   enabled         = module.this.enabled && var.create_frontend_website
   website_enabled = true
 
-  aliases           = [local.frontend_fqdn]
-  dns_alias_enabled = true
-  parent_zone_id    = var.hosted_zone_id
+  aliases             = [local.frontend_fqdn]
+  dns_alias_enabled   = true
+  acm_certificate_arn = var.cdn_certificate_arn
+  parent_zone_id      = var.hosted_zone_id
 
   allow_ssl_requests_only = true
 
