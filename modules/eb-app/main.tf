@@ -5,11 +5,29 @@ locals {
     }
   ] : []
 
-  queue_env_vars = var.queue_name != "" ? {
+  queue_enabled = var.queue_name != "" && var.queue_name != null
+
+  # For Laravel to access the queue
+  queue_env_vars = local.queue_enabled ? {
     SQS_QUEUE  = var.queue_name
     SQS_REGION = var.region
     SQS_PREFIX = "https://sqs.${var.region}.amazonaws.com/${data.aws_caller_identity.current.account_id}"
   } : {}
+
+  # For ElasticBeanstalk worker tier
+  additional_settings_worker = local.queue_enabled ? [
+    {
+      namespace = "aws:elasticbeanstalk:sqsd"
+      name      = "WorkerQueueURL"
+      value     = "https://sqs.${var.region}.amazonaws.com/${data.aws_caller_identity.current.account_id}/${var.queue_name}"
+    },
+    {
+      namespace = "aws:elasticbeanstalk:sqsd"
+      name      = "HttpPath"
+      value     = var.queue_http_url
+
+    }
+  ] : []
 }
 
 data "aws_caller_identity" "current" {}
@@ -45,7 +63,9 @@ module "elastic_beanstalk_environment" {
   source  = "cloudposse/elastic-beanstalk-environment/aws"
   version = "0.47.0"
 
-  attributes = [coalesce(var.environment_name, module.this.name)]
+  for_each = var.environment_settings
+
+  attributes = [each.value.tier]
 
   description                = var.description
   region                     = var.region
@@ -60,20 +80,25 @@ module "elastic_beanstalk_environment" {
 
   wait_for_ready_timeout = var.wait_for_ready_timeout
 
-  healthcheck_url                = var.healthcheck_url
+  healthcheck_url                = each.value.tier == "WebServer" ? var.healthcheck_url : ""
   deployment_ignore_health_check = var.deployment_ignore_health_check
 
-  environment_type  = var.environment_type
-  tier              = var.tier
-  loadbalancer_type = var.loadbalancer_type
-  elb_scheme        = var.elb_scheme
-  application_port  = var.application_port
+  environment_type  = each.value.environment_type # var.environment_type
+  tier              = each.value.tier
+  loadbalancer_type = each.value.environment_type == "LoadBalanced" ? var.loadbalancer_type : null
+  elb_scheme        = each.value.environment_type == "LoadBalanced" ? var.elb_scheme : null
+  application_port  = each.value.tier == "WebServer" ? var.application_port : null
   version_label     = var.version_label
   force_destroy     = var.force_destroy
 
   instance_type    = var.instance_type
   root_volume_size = var.root_volume_size
   root_volume_type = var.root_volume_type
+
+  enable_spot_instances                      = each.value.enable_spot_instances
+  spot_fleet_on_demand_base                  = each.value.enable_spot_instances ? each.value.spot_fleet_on_demand_base : 0
+  spot_fleet_on_demand_above_base_percentage = each.value.enable_spot_instances ? each.value.spot_fleet_on_demand_above_base_percentage : -1
+  spot_max_price                             = each.value.enable_spot_instances ? each.value.spot_max_price : -1
 
   keypair = var.create_key_pair ? module.ssh_key_pair.key_name : ""
 
@@ -88,11 +113,11 @@ module "elastic_beanstalk_environment" {
   autoscale_upper_increment = var.autoscale_upper_increment
 
   vpc_id               = var.vpc_id
-  loadbalancer_subnets = var.public_subnet_ids
+  loadbalancer_subnets = each.value.environment_type == "LoadBalanced" ? var.public_subnet_ids : []
   application_subnets  = var.private_subnet_ids
 
-  loadbalancer_certificate_arn = var.loadbalancer_certificate_arn
-  loadbalancer_ssl_policy      = var.loadbalancer_ssl_policy
+  loadbalancer_certificate_arn = each.value.environment_type == "LoadBalanced" ? var.loadbalancer_certificate_arn : null
+  loadbalancer_ssl_policy      = each.value.environment_type == "LoadBalanced" ? var.loadbalancer_ssl_policy : null
 
   allow_all_egress = true
 
@@ -103,16 +128,17 @@ module "elastic_beanstalk_environment" {
   updating_min_in_service = var.updating_min_in_service
   updating_max_batch      = var.updating_max_batch
 
-
   enable_stream_logs = var.enable_stream_logs
-
 
   # https://docs.aws.amazon.com/elasticbeanstalk/latest/platforms/platforms-supported.html
   # https://docs.aws.amazon.com/elasticbeanstalk/latest/platforms/platforms-supported.html#platforms-supported.docker
   solution_stack_name = var.solution_stack_name
 
-  additional_settings = var.additional_settings
-  env_vars            = merge(var.env_vars, local.queue_env_vars, local.secrets...)
+  additional_settings = concat(
+    each.value.tier == "Worker" ? local.additional_settings_worker : [],
+    var.additional_settings
+  )
+  env_vars = merge(var.env_vars, local.queue_env_vars, each.value.env_vars, local.secrets...)
 
   extended_ec2_policy_document = jsonencode(
     {

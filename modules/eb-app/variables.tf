@@ -35,9 +35,50 @@ variable "availability_zones" {
   description = "List of availability zones"
 }
 
-variable "environment_type" {
-  type        = string
-  description = "Environment type, e.g. 'LoadBalanced' or 'SingleInstance'.  If setting to 'SingleInstance', `rolling_update_type` must be set to 'Time', `updating_min_in_service` must be set to 0, and `loadbalancer_subnets` will be unused (it applies to the ELB, which does not exist in SingleInstance environments)"
+variable "environment_settings" {
+  // @todo: use optional() when it's no longer experimental
+  type = map(object({
+    tier                                       = string
+    environment_type                           = string
+    enable_spot_instances                      = bool
+    spot_fleet_on_demand_base                  = number
+    spot_fleet_on_demand_above_base_percentage = number
+    spot_max_price                             = number
+    env_vars                                   = map(string)
+  }))
+  description = <<EOT
+  A map of environment name to a settings object:
+
+  - tier: "WebServer" or "Worker" (https://docs.aws.amazon.com/AWSCloudFormation/latest/UserGuide/aws-properties-beanstalk-environment-tier.html)
+  - environment_type: "Environment type, e.g. 'LoadBalanced' or 'SingleInstance'.  If setting to 'SingleInstance', `rolling_update_type` must be set to 'Time', `updating_min_in_service` must be set to 0, and `loadbalancer_subnets` will be unused (it applies to the ELB, which does not exist in SingleInstance environments)"
+  - enable_spot_instances: Allow use of spot instances
+  - spot_fleet_on_demand_base: Used by auto-scaling - number of on-demand EC2 instances to maintain
+  - spot_fleet_on_demand_above_base_percentage: Used by auto-scaling - basically an on-demand buffer above base to maintain before using spot instances
+  
+  e.g.
+  {
+    "web" = {
+      tier = "WebServer"
+      environment_type = "LoadBalanced"
+      enable_spot_instances = false
+      spot_fleet_on_demand_base                  = 0
+      spot_fleet_on_demand_above_base_percentage = -1
+      spot_max_price                             = -1
+      env_vars = {
+        SPECIFIC_WEB_VAR = "example"
+      }
+    }
+    "worker" = {
+      tier = "Worker"
+      environment_type = "LoadBalanced"
+      enable_spot_instances = true
+      spot_fleet_on_demand_base                  = 1
+      spot_fleet_on_demand_above_base_percentage = 70
+      spot_max_price                             = -1
+      env_vars = {}
+    }
+  }
+EOT
 }
 
 variable "loadbalancer_type" {
@@ -78,30 +119,6 @@ variable "ssh_key_path" {
   description = "Path for SSH key storage"
 }
 
-variable "enable_spot_instances" {
-  type        = bool
-  default     = false
-  description = "Enable Spot Instance requests for your environment"
-}
-
-variable "spot_fleet_on_demand_base" {
-  type        = number
-  default     = 0
-  description = "The minimum number of On-Demand Instances that your Auto Scaling group provisions before considering Spot Instances as your environment scales up. This option is relevant only when enable_spot_instances is true."
-}
-
-variable "spot_fleet_on_demand_above_base_percentage" {
-  type        = number
-  default     = -1
-  description = "The percentage of On-Demand Instances as part of additional capacity that your Auto Scaling group provisions beyond the SpotOnDemandBase instances. This option is relevant only when enable_spot_instances is true."
-}
-
-variable "spot_max_price" {
-  type        = number
-  default     = -1
-  description = "The maximum price per unit hour, in US$, that you're willing to pay for a Spot Instance. This option is relevant only when enable_spot_instances is true. Valid values are between 0.001 and 20.0"
-}
-
 variable "autoscale_min" {
   type        = number
   description = "Minumum instances to launch"
@@ -120,11 +137,6 @@ variable "solution_stack_name" {
 variable "wait_for_ready_timeout" {
   type        = string
   description = "The maximum duration to wait for the Elastic Beanstalk Environment to be in a ready state before timing out"
-}
-
-variable "tier" {
-  type        = string
-  description = "Elastic Beanstalk Environment tier, e.g. 'WebServer' or 'Worker'"
 }
 
 variable "version_label" {
@@ -269,7 +281,9 @@ variable "allowed_inbound_security_groups" {
   default     = []
 }
 
-# Options: https://docs.aws.amazon.com/elasticbeanstalk/latest/dg/command-options-specific.html
+# Options:
+#   - https://docs.aws.amazon.com/elasticbeanstalk/latest/dg/command-options-specific.html
+#   - https://docs.aws.amazon.com/elasticbeanstalk/latest/dg/command-options-general.html
 variable "additional_settings" {
   type = list(object({
     namespace = string
@@ -322,4 +336,10 @@ variable "queue_name" {
   type        = string
   description = "SQS queue name for app"
   default     = ""
+}
+
+variable "queue_http_url" {
+  type        = string
+  description = "SQS queue name for app"
+  default     = "/"
 }
