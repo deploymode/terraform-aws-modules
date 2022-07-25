@@ -47,32 +47,11 @@ variable "use_alb_security_group" {
   default     = false
 }
 
-# variable "alb_target_group_arn" {
-#   type        = string
-#   description = "ARN of load balancer target group"
-#   default     = null
-# }
-
-# variable "alb_security_group_id" {
-#   type        = string
-#   description = "Security group of the ALB"
-# }
-
 variable "alb_security_group_ids" {
   type        = list(string)
   description = "Additional Security Group IDs to allow access to ALB"
   default     = []
 }
-
-# variable "alb_dns_name" {
-#   type        = string
-#   description = "HTTP endpoint for ALB"
-# }
-
-# variable "alb_zone_id" {
-#   type        = string
-#   description = "Route 53 zone ID for ALB"
-# }
 
 variable "alb_healthcheck_path" {
   type        = string
@@ -162,6 +141,12 @@ variable "app_dns_name" {
   type        = string
   description = "Subdomain prepended to `domain_name`. Typically \"app\"."
   default     = "app"
+}
+
+variable "app_dns_aliases" {
+  type        = list(string)
+  description = "A list of FQDN's (e.g. vanity domains) to add as aliases to the CDN. Ignored for ALB domains."
+  default     = []
 }
 
 variable "alb_access_logs_s3_bucket_force_destroy" {
@@ -628,6 +613,51 @@ variable "cdn_logging_enabled" {
   default     = false
   description = "When true, access logs will be sent to a newly created s3 bucket"
 }
+
+variable "cdn_log_include_cookies" {
+  type        = bool
+  default     = false
+  description = "Include cookies in access logs"
+}
+
+variable "cdn_log_prefix" {
+  type        = string
+  default     = ""
+  description = "Path of logs in S3 bucket"
+}
+
+variable "cdn_log_bucket_fqdn" {
+  type        = string
+  default     = ""
+  description = "Optional fqdn of logging bucket, if not supplied a bucket will be generated."
+}
+
+variable "cdn_log_force_destroy" {
+  type        = bool
+  description = "Applies to log bucket created by this module only. If true, all objects will be deleted from the bucket on destroy, so that the bucket can be destroyed without error. These objects are not recoverable."
+  default     = false
+}
+
+variable "cdn_log_standard_transition_days" {
+  type        = number
+  description = "Number of days to persist in the standard storage tier before moving to the glacier tier"
+  default     = 30
+}
+
+variable "cdn_log_glacier_transition_days" {
+  type        = number
+  description = "Number of days after which to move the data to the glacier storage tier"
+  default     = 60
+}
+
+variable "cdn_log_expiration_days" {
+  type        = number
+  description = "Number of days after which to expunge the objects"
+  default     = 90
+}
+
+
+// Front-end static website
 
 variable "create_frontend_website" {
   type        = bool

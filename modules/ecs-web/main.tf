@@ -432,7 +432,7 @@ module "cdn" {
   version = "0.24.1"
   enabled = module.this.enabled && var.use_cdn
 
-  aliases                         = [local.app_fqdn]
+  aliases                         = concat([local.app_fqdn], var.app_dns_aliases)
   origin_domain_name              = module.alb.alb_dns_name
   origin_protocol_policy          = "match-viewer"
   viewer_protocol_policy          = "redirect-to-https"
@@ -442,16 +442,22 @@ module "cdn" {
   acm_certificate_arn             = var.cdn_certificate_arn
   forward_cookies                 = "all" #"whitelist"
   # forward_cookies_whitelisted_names = ["comment_author_*", "comment_author_email_*", "comment_author_url_*", "wordpress_logged_in_*", "wordpress_test_cookie", "wp-settings-*"]
-  forward_headers      = ["Host", "Origin", "Referer", "CloudFront-Forwarded-Proto", "Access-Control-Request-Headers", "Access-Control-Request-Method"]
-  forward_query_string = true
-  default_ttl          = var.cdn_default_ttl
-  min_ttl              = var.cdn_min_ttl
-  max_ttl              = var.cdn_max_ttl
-  compress             = true
-  cached_methods       = ["GET", "HEAD", "OPTIONS"]
-  allowed_methods      = ["GET", "HEAD", "OPTIONS", "PUT", "POST", "PATCH", "DELETE"]
-  price_class          = "PriceClass_All"
-  logging_enabled      = var.cdn_logging_enabled
+  forward_headers              = ["Host", "Origin", "Referer", "CloudFront-Forwarded-Proto", "Access-Control-Request-Headers", "Access-Control-Request-Method"]
+  forward_query_string         = true
+  default_ttl                  = var.cdn_default_ttl
+  min_ttl                      = var.cdn_min_ttl
+  max_ttl                      = var.cdn_max_ttl
+  compress                     = true
+  cached_methods               = ["GET", "HEAD", "OPTIONS"]
+  allowed_methods              = ["GET", "HEAD", "OPTIONS", "PUT", "POST", "PATCH", "DELETE"]
+  price_class                  = "PriceClass_All"
+  logging_enabled              = var.cdn_logging_enabled
+  log_prefix                   = var.cdn_log_prefix
+  log_force_destroy            = var.cdn_log_force_destroy
+  log_expiration_days          = var.cdn_log_expiration_days
+  log_include_cookies          = var.cdn_log_include_cookies
+  log_standard_transition_days = var.cdn_log_standard_transition_days
+  log_glacier_transition_days  = var.cdn_log_glacier_transition_days
 
   ordered_cache = [
     merge(local.app_cache_behavior, tomap({ "path_pattern" = "*" })),
