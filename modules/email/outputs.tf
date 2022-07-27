@@ -63,3 +63,18 @@ output "iam_key_secret_ssm_param_arn" {
   value       = lookup(module.store_write.arn_map, var.iam_key_secret_ssm_param_path, "")
   description = "The SSM parameter store path where the SMTP user access key secret is stored."
 }
+
+// Verification data
+
+output "ses_domain_identity_verification_dns_records" {
+  description = "These records are to be added as a CNAME record to the zone for `email_domain`"
+  value       = !var.verify_domain ? { "_amazonses.${var.domain}" = module.ses.ses_domain_identity_verification_token } : {}
+}
+
+output "ses_dkim_verification_dns_records" {
+  description = "These records are to be added as a TXT record to the zone for `email_domain`"
+  value = !var.verify_dkim ? [for token in module.ses.ses_dkim_tokens : {
+    "${token}._domainkey.${var.domain}" = "${token}.dkim.amazonses.com"
+    }
+  ] : []
+}
