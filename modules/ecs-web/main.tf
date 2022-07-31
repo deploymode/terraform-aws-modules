@@ -435,6 +435,8 @@ module "cdn" {
   aliases                         = concat([local.app_fqdn], var.app_dns_aliases)
   origin_domain_name              = module.alb.alb_dns_name
   origin_protocol_policy          = "match-viewer"
+  origin_keepalive_timeout        = var.cdn_origin_keepalive_timeout
+  origin_read_timeout             = var.cdn_origin_read_timeout
   viewer_protocol_policy          = "redirect-to-https"
   viewer_minimum_protocol_version = var.cdn_viewer_min_protocol_version
   parent_zone_name                = var.domain_name

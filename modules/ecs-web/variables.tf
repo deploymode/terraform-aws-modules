@@ -608,6 +608,18 @@ variable "cdn_max_ttl" {
   default     = 86400
 }
 
+variable "cdn_origin_keepalive_timeout" {
+  type        = number
+  description = "The Custom KeepAlive timeout, in seconds. By default, AWS enforces a limit of 60. But you can request an increase."
+  default     = 60
+}
+
+variable "cdn_origin_read_timeout" {
+  type        = number
+  description = "The Custom Read timeout, in seconds. By default, AWS enforces a limit of 60. But you can request an increase."
+  default     = 60
+}
+
 variable "cdn_logging_enabled" {
   type        = bool
   default     = false
