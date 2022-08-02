@@ -4,9 +4,10 @@ variable "description" {
   default     = ""
 }
 
+# More info: https://docs.aws.amazon.com/elasticbeanstalk/latest/dg/iam-servicerole.html
 variable "appversion_lifecycle_service_role_arn" {
   type        = string
-  description = "The service role ARN to use for application version cleanup. If left empty, the `appversion_lifecycle` block will not be created"
+  description = "The service role ARN to use for application version cleanup. If left empty, the `appversion_lifecycle` block will not be created. \"arn:aws:iam::${account_id}:role/aws-elasticbeanstalk-service-role\" can be used if you don't wish to create a custom role."
   default     = ""
 }
 
