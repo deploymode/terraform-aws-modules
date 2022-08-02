@@ -52,6 +52,10 @@ module "elastic_beanstalk_application" {
 
   description = var.description
 
+  appversion_lifecycle_service_role_arn      = var.appversion_lifecycle_service_role_arn
+  appversion_lifecycle_max_count             = var.appversion_lifecycle_max_count
+  appversion_lifecycle_delete_source_from_s3 = var.appversion_lifecycle_delete_source_from_s3
+
   context = module.this.context
 }
 
