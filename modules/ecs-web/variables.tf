@@ -608,15 +608,16 @@ variable "cdn_max_ttl" {
   default     = 86400
 }
 
+# https://docs.aws.amazon.com/AmazonCloudFront/latest/DeveloperGuide/distribution-web-values-specify.html#DownloadDistValuesOriginKeepaliveTimeout
 variable "cdn_origin_keepalive_timeout" {
   type        = number
-  description = "The Custom KeepAlive timeout, in seconds. By default, AWS enforces a limit of 60. But you can request an increase."
-  default     = 60
+  description = "The Custom KeepAlive timeout, in seconds. AWS defaults to 5 seconds. Values from 1-60s are supported, but a value above 60s requires a Support ticket."
+  default     = 5
 }
 
 variable "cdn_origin_read_timeout" {
   type        = number
-  description = "The Custom Read timeout, in seconds. By default, AWS enforces a limit of 60. But you can request an increase."
+  description = "The Custom Read timeout, in seconds. AWS defaults to 30s. Values from 1-180s are supported, but a value above 60s requires a Support ticket."
   default     = 60
 }
 
