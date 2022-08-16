@@ -54,6 +54,12 @@ variable "availability_zones" {
   description = "List of availability zones"
 }
 
+variable "set_dns_env_vars" {
+  type        = bool
+  description = "If true, will add env vars containing EB DNS Zone ID and EB web endpoint"
+  default     = false
+}
+
 variable "environment_settings" {
   // @todo: use optional() when it's no longer experimental
   type = map(object({

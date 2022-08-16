@@ -14,6 +14,13 @@ locals {
     SQS_PREFIX = "https://sqs.${var.region}.amazonaws.com/${data.aws_caller_identity.current.account_id}"
   } : {}
 
+  # @todo: make this generic
+  dns_env_vars = var.set_dns_env_vars ? {
+    ALIAS_TARGET_HOSTED_ZONE_ID = data.aws_elastic_beanstalk_hosted_zone.current.id
+    # Can't retrieve this from eb environment because the var is required to be defined before passing it to the env (i.e. cycle)
+    ALIAS_TARGET_DNS_NAME = "${module.this.id}.${data.aws_elastic_beanstalk_hosted_zone.current.region}.elasticbeanstalk.com"
+  } : {}
+
   # For ElasticBeanstalk worker tier
   additional_settings_worker = local.queue_enabled ? [
     {
@@ -31,6 +38,8 @@ locals {
 }
 
 data "aws_caller_identity" "current" {}
+
+data "aws_elastic_beanstalk_hosted_zone" "current" {}
 
 module "ssh_key_pair" {
   source  = "cloudposse/key-pair/aws"
@@ -87,7 +96,7 @@ module "elastic_beanstalk_environment" {
   healthcheck_url                = each.value.tier == "WebServer" ? var.healthcheck_url : ""
   deployment_ignore_health_check = var.deployment_ignore_health_check
 
-  environment_type  = each.value.environment_type # var.environment_type
+  environment_type  = each.value.environment_type
   tier              = each.value.tier
   loadbalancer_type = each.value.environment_type == "LoadBalanced" ? var.loadbalancer_type : null
   elb_scheme        = each.value.environment_type == "LoadBalanced" ? var.elb_scheme : null
@@ -142,7 +151,7 @@ module "elastic_beanstalk_environment" {
     each.value.tier == "Worker" ? local.additional_settings_worker : [],
     var.additional_settings
   )
-  env_vars = merge(var.env_vars, local.queue_env_vars, each.value.env_vars, local.secrets...)
+  env_vars = merge(var.env_vars, local.queue_env_vars, local.dns_env_vars, each.value.env_vars, local.secrets...)
 
   extended_ec2_policy_document = jsonencode(
     {
