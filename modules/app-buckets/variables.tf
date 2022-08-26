@@ -4,6 +4,7 @@ variable "buckets" {
       acl                = string
       versioning_enabled = bool
       block_public       = bool
+      bucket_name        = string
       cors_rules = list(object({
         allowed_headers = list(string)
         allowed_methods = list(string)
@@ -14,7 +15,7 @@ variable "buckets" {
     }
   ))
   default     = {}
-  description = "Map of bucket name fragment to config object"
+  description = "Map of bucket name fragment to config object. Set bucket_name to null unless overriding."
 }
 
 variable "generate_s3_backup_policy" {
@@ -27,4 +28,10 @@ variable "create_policy" {
   type        = bool
   default     = false
   description = "If true, creates an IAM policy & permissions to allow application-level access to each bucket. The policy ARN is output."
+}
+
+variable "use_bucket_name_only" {
+  type        = bool
+  default     = false
+  description = "If true, creates buckets using keys in `buckets` var, else names buckets using full context."
 }

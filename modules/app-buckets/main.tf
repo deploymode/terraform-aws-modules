@@ -6,6 +6,8 @@ module "s3_bucket" {
 
   name = each.key
 
+  bucket_name = var.use_bucket_name_only ? each.value.bucket_name : null
+
   acl                     = each.value.acl
   block_public_acls       = each.value.block_public
   block_public_policy     = each.value.block_public
