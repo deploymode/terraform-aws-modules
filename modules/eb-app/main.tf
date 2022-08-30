@@ -1,4 +1,6 @@
 locals {
+  EB_WEB_ENDPOINT = "/${module.this.namespace}/${module.this.stage}/${module.this.environment}/app/ALIAS_TARGET_DNS_NAME"
+
   secrets = var.secrets_file != null ? [
     for secret in jsondecode(file(var.secrets_file)) : {
       for k, v in secret : k => v # format("{{resolve:ssm-secure:/${module.this.namespace}/${module.this.stage}/${module.this.environment}/app/%s}}", k)
@@ -18,7 +20,7 @@ locals {
   dns_env_vars = var.set_dns_env_vars ? {
     ALIAS_TARGET_HOSTED_ZONE_ID = data.aws_elastic_beanstalk_hosted_zone.current.id
     # Can't retrieve this from eb environment because the var is required to be defined before passing it to the env (i.e. cycle)
-    ALIAS_TARGET_DNS_NAME = "${module.this.id}.${data.aws_elastic_beanstalk_hosted_zone.current.region}.elasticbeanstalk.com"
+    ALIAS_TARGET_DNS_NAME = "{{resolve:ssm:${local.EB_WEB_ENDPOINT}:1}}" # "${module.this.id}.${data.aws_elastic_beanstalk_hosted_zone.current.region}.elasticbeanstalk.com"
   } : {}
 
   # For ElasticBeanstalk worker tier
@@ -163,6 +165,24 @@ module "elastic_beanstalk_environment" {
   prefer_legacy_ssm_policy     = false
   prefer_legacy_service_policy = false
   scheduled_actions            = var.scheduled_actions
+
+  context = module.this.context
+}
+
+# Add web endpoint to SSM 
+module "store_write" {
+  source  = "cloudposse/ssm-parameter-store/aws"
+  version = "0.10.0"
+
+  parameter_write = [
+    {
+      name        = local.EB_WEB_ENDPOINT
+      value       = module.elastic_beanstalk_environment["web"].endpoint
+      type        = "String"
+      overwrite   = "true"
+      description = "Elastic Beanstalk web environment endpoint"
+    }
+  ]
 
   context = module.this.context
 }
