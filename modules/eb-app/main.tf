@@ -37,6 +37,10 @@ locals {
 
     }
   ] : []
+
+  web_environments = toset([for name, environment in var.environment_settings : name if environment.tier == "WebServer"])
+
+  redirect_http_to_https = module.this.enabled && var.redirect_http_to_https && length(local.web_environments) > 0
 }
 
 data "aws_caller_identity" "current" {}
@@ -167,6 +171,37 @@ module "elastic_beanstalk_environment" {
   scheduled_actions            = var.scheduled_actions
 
   context = module.this.context
+}
+
+data "aws_lb_listener" "http_listener" {
+  # count    = local.redirect_http_to_https ? 1 : 0
+  for_each = local.redirect_http_to_https ? local.web_environments : []
+
+  load_balancer_arn = one(module.elastic_beanstalk_environment[each.key].load_balancers)
+  port              = 80
+  depends_on        = [module.elastic_beanstalk_environment]
+}
+
+resource "aws_lb_listener_rule" "redirect_http_to_https" {
+  # count        = local.redirect_http_to_https ? 1 : 0
+  for_each = local.redirect_http_to_https ? local.web_environments : []
+
+  listener_arn = data.aws_lb_listener.http_listener[each.key].arn
+  priority     = 1
+  action {
+    type = "redirect"
+
+    redirect {
+      port        = "443"
+      protocol    = "HTTPS"
+      status_code = "HTTP_301"
+    }
+  }
+  condition {
+    path_pattern {
+      values = ["/*"]
+    }
+  }
 }
 
 # Add web endpoint to SSM 

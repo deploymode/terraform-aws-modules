@@ -300,6 +300,13 @@ variable "loadbalancer_ssl_policy" {
   description = "Specify a security policy to apply to the listener. This option is only applicable to environments with an application load balancer, and is required if `loadbalancer_certificate_arn` is set."
 }
 
+variable "redirect_http_to_https" {
+  type        = bool
+  default     = false
+  description = "Add a listener rule to the load balancer config to redirect HTTP requests to HTTPS"
+
+}
+
 variable "allowed_inbound_security_groups" {
   type        = list(string)
   description = "Security groups allowed access to EB app"
