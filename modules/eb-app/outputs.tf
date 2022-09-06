@@ -58,10 +58,10 @@ output "elastic_beanstalk_environment_setting" {
   value       = { for k in keys(var.environment_settings) : k => module.elastic_beanstalk_environment[k].setting }
 }
 
-output "elastic_beanstalk_environment_all_settings" {
-  description = "List of all option settings configured in the environment. These are a combination of default settings and their overrides from setting in the configuration"
-  value       = { for k in keys(var.environment_settings) : k => module.elastic_beanstalk_environment[k].all_settings }
-}
+# output "elastic_beanstalk_environment_all_settings" {
+#   description = "List of all option settings configured in the environment. These are a combination of default settings and their overrides from setting in the configuration"
+#   value       = { for k in keys(var.environment_settings) : k => module.elastic_beanstalk_environment[k].all_settings }
+# }
 
 output "elastic_beanstalk_environment_endpoint" {
   description = "Fully qualified DNS name for the environment"

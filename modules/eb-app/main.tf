@@ -212,7 +212,7 @@ module "store_write" {
   parameter_write = [
     {
       name        = local.EB_WEB_ENDPOINT
-      value       = module.elastic_beanstalk_environment["web"].endpoint
+      value       = module.elastic_beanstalk_environment[one(local.web_environments)].endpoint
       type        = "String"
       overwrite   = "true"
       description = "Elastic Beanstalk web environment endpoint"

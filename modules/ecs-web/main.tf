@@ -482,9 +482,9 @@ resource "aws_codestarconnections_connection" "default" {
 }
 
 module "ecs_codepipeline" {
-  # source  = "cloudposse/ecs-codepipeline/aws"
-  # version = "0.28.7"
-  source = "git::https://github.com/deploymode/terraform-aws-ecs-codepipeline-1?ref=codestar-source-output-artifact-type-var"
+  source  = "cloudposse/ecs-codepipeline/aws"
+  version = "0.29.0"
+  # source = "git::https://github.com/deploymode/terraform-aws-ecs-codepipeline-1?ref=codestar-source-output-artifact-type-var"
 
   enabled                         = var.codepipeline_enabled
   region                          = var.aws_region

@@ -129,7 +129,7 @@ variable "availability_zone_selector" {
 
 variable "instance_type" {
   type        = string
-  description = "Instances type"
+  description = "Instance types. This can be a CSV list of AWS EC2 instance types. If Spot is disabled, only the first item in the list will be used."
 }
 
 variable "create_key_pair" {
