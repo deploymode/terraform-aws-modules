@@ -488,6 +488,12 @@ variable "codebuild_vpc_config" {
   description = "Configuration for the builds to run inside a VPC."
 }
 
+variable "codebuild_policy_arns" {
+  type        = list(string)
+  description = "List of IAM policy ARNs to attach to the CodeBuild role"
+  default     = []
+}
+
 // Redis
 
 variable "provision_redis_cache" {
