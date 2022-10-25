@@ -575,7 +575,7 @@ resource "aws_iam_role_policy_attachment" "codebuild" {
 }
 
 resource "aws_iam_role_policy_attachment" "codebuild_additional_policies" {
-  for_each   = module.this.enabled && var.codepipeline_enabled ? var.codebuild_policy_arns : []
+  for_each   = module.this.enabled && var.codepipeline_enabled ? toset(var.codebuild_policy_arns) : []
   role       = module.ecs_codepipeline.codebuild_role_id
   policy_arn = each.value
 }
