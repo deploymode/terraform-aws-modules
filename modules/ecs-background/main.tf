@@ -5,6 +5,10 @@ locals {
       value = var.queue_name
     },
     {
+      name  = "SQS_REGION"
+      value = var.aws_region
+    },
+    {
       name  = "SQS_PREFIX"
       value = "https://sqs.${var.aws_region}.amazonaws.com/${var.aws_account_id}"
     },
