@@ -44,7 +44,7 @@ module "app_bucket_iam_policy" {
     {
       sid    = "WriteBucket"
       effect = "Allow"
-      actions = concat([
+      actions = compact(concat([
         "s3:PutObject",
         "s3:PutObjectVersionAcl",
         "s3:PutObjectAcl",
@@ -52,11 +52,12 @@ module "app_bucket_iam_policy" {
         "s3:GetObject",
         "s3:GetObjectVersionAcl",
         "s3:GetObjectVersion"
-        ], each.value.allow_delete ? [
+        ],
+        each.value.allow_delete ?
         [
           "s3:DeleteObject"
         ]
-      ] : [])
+      : []))
       resources  = ["arn:aws:s3:::${module.s3_bucket[each.key].bucket_id}/*"]
       conditions = []
     },
