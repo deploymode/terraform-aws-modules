@@ -4,7 +4,7 @@ variable "buckets" {
       acl                = string
       versioning_enabled = bool
       block_public       = bool
-      bucket_name        = string
+      bucket_name        = optional(string)
       cors_rules = list(object({
         allowed_headers = list(string)
         allowed_methods = list(string)
