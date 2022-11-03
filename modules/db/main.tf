@@ -3,14 +3,18 @@ locals {
   database_password = var.database_password == "" ? join("", random_password.password.*.result) : var.database_password
 }
 
+# taint this resource to create a new password
 resource "random_password" "password" {
   count            = var.database_password == "" ? 1 : 0
   length           = var.database_password_settings.length
-  number           = var.database_password_settings.number
+  numeric          = var.database_password_settings.numeric
+  min_numeric      = var.database_password_settings.min_numeric
   upper            = var.database_password_settings.upper
+  min_upper        = var.database_password_settings.min_upper
   lower            = var.database_password_settings.lower
+  min_lower        = var.database_password_settings.min_lower
   special          = var.database_password_settings.special
-  override_special = var.database_password_settings.length # 
+  override_special = var.database_password_settings.length
 }
 
 module "sg_label" {
@@ -62,7 +66,7 @@ module "rds_instance" {
   # allowed_cidr_blocks         = ["XXX.XXX.XXX.XXX/32"]
   database_name        = var.database_name
   database_user        = local.database_username
-  database_password    = var.database_password == "" ? random_password.password[0].result : var.database_password
+  database_password    = local.database_password
   database_port        = var.database_port
   multi_az             = false
   storage_type         = var.storage_type
