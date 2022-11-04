@@ -231,6 +231,12 @@ variable "apply_immediately" {
   default     = false
 }
 
+variable "enabled_cloudwatch_logs_exports" {
+  type        = list(string)
+  default     = []
+  description = "List of log types to enable for exporting to CloudWatch logs. If omitted, no logs will be exported. Valid values (depending on engine): alert, audit, error, general, listener, slowquery, trace, postgresql (PostgreSQL), upgrade (PostgreSQL)."
+}
+
 variable "maintenance_window" {
   type        = string
   description = "The window to perform maintenance in. Syntax: 'ddd:hh24:mi-ddd:hh24:mi' UTC "

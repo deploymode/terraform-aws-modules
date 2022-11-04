@@ -57,32 +57,36 @@ module "db_username_label" {
 
 module "rds_instance" {
   # source = "git::https://github.com/joe-niland/terraform-aws-rds.git?ref=avoid-sec-group-count-issue"
-  source             = "cloudposse/rds/aws"
-  version            = "0.38.7"
-  dns_zone_id        = var.dns_zone_id
-  host_name          = var.host_name
-  security_group_ids = aws_security_group.allowed.*.id
-  ca_cert_identifier = "rds-ca-2019"
+  source  = "cloudposse/rds/aws"
+  version = "0.38.7"
+
+  publicly_accessible = false
+  subnet_ids          = var.subnet_ids
+  vpc_id              = var.vpc_id
+  security_group_ids  = aws_security_group.allowed.*.id
   # allowed_cidr_blocks         = ["XXX.XXX.XXX.XXX/32"]
-  database_name        = var.database_name
-  database_user        = local.database_username
-  database_password    = local.database_password
-  database_port        = var.database_port
-  multi_az             = false
-  storage_type         = var.storage_type
-  allocated_storage    = var.allocated_storage
-  storage_encrypted    = var.storage_encrypted
-  engine               = var.engine
-  engine_version       = var.engine_version
-  instance_class       = var.instance_class
-  db_parameter_group   = var.db_parameter_group
-  parameter_group_name = var.parameter_group_name
-  option_group_name    = var.option_group_name
-  publicly_accessible  = false
-  subnet_ids           = var.subnet_ids
-  vpc_id               = var.vpc_id
+  ca_cert_identifier = "rds-ca-2019"
+
+  dns_zone_id = var.dns_zone_id
+  host_name   = var.host_name
+
+  engine         = var.engine
+  engine_version = var.engine_version
+  multi_az       = false
+
+  database_name     = var.database_name
+  database_user     = local.database_username
+  database_password = local.database_password
+  database_port     = var.database_port
+
+  storage_type      = var.storage_type
+  allocated_storage = var.allocated_storage
+  storage_encrypted = var.storage_encrypted
+  instance_class    = var.instance_class
+
   # snapshot_identifier         = "rds:production-2015-06-26-06-05"
-  deletion_protection         = var.deletion_protection
+  deletion_protection = var.deletion_protection
+
   auto_minor_version_upgrade  = true
   allow_major_version_upgrade = false
   apply_immediately           = true
@@ -91,6 +95,12 @@ module "rds_instance" {
   copy_tags_to_snapshot       = true
   backup_retention_period     = var.backup_retention_period
   backup_window               = var.backup_window
+
+  db_parameter_group   = var.db_parameter_group
+  parameter_group_name = var.parameter_group_name
+  option_group_name    = var.option_group_name
+
+  enabled_cloudwatch_logs_exports = var.enabled_cloudwatch_logs_exports
 
   # db_parameter = [
   #   { name  = "myisam_sort_buffer_size"   value = "1048576" },
