@@ -36,9 +36,10 @@ resource "aws_iam_policy" "sqs_policy" {
 }
 
 module "queue" {
-  source  = "terraform-aws-modules/sqs/aws"
-  version = ">= 3.0"
-  create  = module.this.enabled
-  name    = module.this.id
-  tags    = module.this.tags
+  source                     = "terraform-aws-modules/sqs/aws"
+  version                    = ">= 3.0"
+  create                     = module.this.enabled
+  name                       = module.this.id
+  visibility_timeout_seconds = var.visibility_timeout_seconds
+  tags                       = module.this.tags
 }
