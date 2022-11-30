@@ -4,8 +4,17 @@ variable "roles_for_queue_access" {
   default     = []
 }
 
-variable "visibility_timeout_seconds" {
-  description = "The visibility timeout for the queue. An integer from 0 to 43200 (12 hours)"
-  type        = number
-  default     = 30
+variable "queues" {
+  description = "Queues to create with settings"
+  type = map(object({
+    enabled    = optional(bool, true)
+    fifo_queue = optional(bool, false)
+    # Specifies whether message deduplication occurs at the message group or queue level. Valid values are messageGroup and queue.
+    deduplication_scope         = optional(string, "queue")
+    content_based_deduplication = optional(bool, false)
+    # The visibility timeout for the queue. An integer from 0 to 43200 (12 hours)
+    visibility_timeout_seconds = optional(number, 30)
+    message_retention_seconds  = optional(number, 345600)
+  }))
+  default = {}
 }

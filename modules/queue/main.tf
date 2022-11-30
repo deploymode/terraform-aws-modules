@@ -19,9 +19,7 @@ data "aws_iam_policy_document" "sqs" {
       "sqs:ChangeMessageVisibility"
     ]
 
-    resources = [
-      module.queue.sqs_queue_arn
-    ]
+    resources = module.queue.*.sqs_queue_arn
 
     effect = "Allow"
   }
@@ -36,10 +34,18 @@ resource "aws_iam_policy" "sqs_policy" {
 }
 
 module "queue" {
-  source                     = "terraform-aws-modules/sqs/aws"
-  version                    = ">= 3.0"
-  create                     = module.this.enabled
-  name                       = module.this.id
-  visibility_timeout_seconds = var.visibility_timeout_seconds
-  tags                       = module.this.tags
+  source  = "terraform-aws-modules/sqs/aws"
+  version = ">= 3.0"
+
+  for_each = var.queues
+
+  create                      = module.this.enabled && each.value.enabled
+  name                        = "${module.this.id}-${each.key}"
+  visibility_timeout_seconds  = each.value.visibility_timeout_seconds
+  fifo_queue                  = each.value.fifo_queue
+  deduplication_scope         = each.value.deduplication_scope
+  content_based_deduplication = each.value.content_based_deduplication
+  message_retention_seconds   = each.value.message_retention_seconds
+
+  tags = module.this.tags
 }
