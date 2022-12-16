@@ -63,7 +63,7 @@ resource "aws_iam_group_membership" "group_membership" {
 }
 
 resource "aws_iam_group_policy_attachment" "group_policy_attachment" {
-  for_each = local.group_policy_arns
+  for_each = merge(local.group_policy_arns, { for name, policy in module.group_assume_policy : name => { group = name, policy_arn = policy.policy_arn } })
 
   # Use this approach to create a dependency
   group      = aws_iam_group.group[each.value.group].name
@@ -205,7 +205,8 @@ data "aws_iam_policy_document" "manage_mfa_policy" {
       "iam:ListMFADevices",
       "iam:ListVirtualMFADevices",
       "iam:ResyncMFADevice",
-      "sts:GetSessionToken"
+      "sts:GetSessionToken",
+      "sts:AssumeRole"
     ]
     resources = ["*"]
     condition {
@@ -255,17 +256,29 @@ resource "aws_iam_account_password_policy" "account_password_policy" {
 #########
 # Roles
 
-# data "aws_iam_policy_document" "role_policies" {
-#   for_each = local.group_names
+module "group_assume_policy" {
+  source  = "cloudposse/iam-policy/aws"
+  version = "0.4.0"
 
-#   source_policy_documents = 
-# }
+  for_each = local.role_data
+
+  name               = "${each.key}-assume"
+  iam_policy_enabled = true
+
+  iam_policy_statements = {
+    AssumeRole = {
+      effect     = "Allow"
+      actions    = ["sts:AssumeRole"]
+      resources  = [module.group_role[each.key].arn]
+      conditions = []
+    }
+  }
+}
 
 module "group_role" {
   source  = "cloudposse/iam-role/aws"
   version = "0.17.0"
 
-  # for_each = { for group, users in local.groups_to_users : group => users if var.groups[group].create_role }
   for_each = local.role_data
 
   name       = each.key
