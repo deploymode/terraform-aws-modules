@@ -33,3 +33,8 @@ output "user_access_keys" {
   }
   sensitive = true
 }
+
+output "roles" {
+  description = "Role ARNs for group roles"
+  value       = { for role_name, data in module.group_role : role_name => data.arn }
+}

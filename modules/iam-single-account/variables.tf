@@ -7,14 +7,17 @@ variable "provision_account_settings" {
 // The additional_permissions map keys must be alpha-numeric
 variable "groups" {
   type = map(object({
-    policy_arns = list(string)
-    manage_keys = bool
-    additional_permissions = map(object(
+    policy_arns = optional(list(string), [])
+    manage_keys = optional(bool, false)
+    # Create a role with the same permissions, minus those related to user/key/MFA management:
+    # for assume-role purposes, e.g. local testing against AWS
+    create_role = optional(bool, false)
+    additional_permissions = optional(map(object(
       {
         permissions = list(string)
         resources   = list(string)
       }
-    ))
+    )), {})
   }))
   default     = {}
   description = "Map of IAM group names to policies and settings."

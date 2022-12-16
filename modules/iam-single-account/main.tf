@@ -6,6 +6,7 @@
 #################################################################
 
 locals {
+  # List of group + policy with a unique id for use in for_each
   group_policy_arns = merge([
     for group, group_data in var.groups : {
       for policy_arn in group_data.policy_arns : join("-", [group, policy_arn]) => {
@@ -14,6 +15,14 @@ locals {
       }
     }
   ]...)
+
+  groups_to_users = transpose({ for u, user_data in var.users : u => user_data.groups })
+
+  role_data = { for group, group_data in var.groups : group => {
+    policy_arns = group_data.policy_arns
+    users       = local.groups_to_users[group]
+    } if group_data.create_role
+  }
 
   account_users_group_name = "account-users"
 
@@ -241,4 +250,38 @@ resource "aws_iam_account_password_policy" "account_password_policy" {
   require_uppercase_characters   = true
   require_symbols                = true
   allow_users_to_change_password = var.allow_users_to_change_password
+}
+
+#########
+# Roles
+
+# data "aws_iam_policy_document" "role_policies" {
+#   for_each = local.group_names
+
+#   source_policy_documents = 
+# }
+
+module "group_role" {
+  source  = "cloudposse/iam-role/aws"
+  version = "0.17.0"
+
+  # for_each = { for group, users in local.groups_to_users : group => users if var.groups[group].create_role }
+  for_each = local.role_data
+
+  name       = each.key
+  attributes = ["role"]
+
+  role_description = "IAM role with same non-user management permissions as ${each.key} group"
+
+  # Roles/users allowed to assume role
+  principals = {
+    AWS = [for user in each.value.users : aws_iam_user.user[user].arn]
+  }
+
+  managed_policy_arns = each.value.policy_arns
+  policy_documents = [
+    data.aws_iam_policy_document.additional_policy[each.key].json
+  ]
+
+  context = module.this.context
 }
