@@ -1,6 +1,6 @@
 // SQS
 data "aws_iam_policy_document" "sqs" {
-  count = module.this.enabled ? 1 : 0
+  for_each = module.this.enabled ? var.queues : {}
 
   # Policy to allow access to queue messages
   statement {
@@ -19,31 +19,31 @@ data "aws_iam_policy_document" "sqs" {
       "sqs:ChangeMessageVisibility"
     ]
 
-    resources = module.queue.*.sqs_queue_arn
+    resources = [module.queue[each.key].sqs_queue_arn]
 
     effect = "Allow"
   }
 }
 
 resource "aws_iam_policy" "sqs_policy" {
-  count       = module.this.enabled ? 1 : 0
-  name        = module.this.id
+  for_each    = module.this.enabled ? var.queues : {}
+  name        = "${module.this.id}-${each.key}"
   path        = "/"
-  description = "Allow access to queue messages in ${module.this.id}"
-  policy      = join("", data.aws_iam_policy_document.sqs.*.json)
+  description = "Allow access to queue messages in ${module.this.id}-${each.key}"
+  policy      = data.aws_iam_policy_document.sqs[each.key].json
 }
 
 module "queue" {
   source  = "terraform-aws-modules/sqs/aws"
   version = ">= 3.0"
 
-  for_each = var.queues
+  for_each = module.this.enabled ? var.queues : {}
 
   create                      = module.this.enabled && each.value.enabled
   name                        = "${module.this.id}-${each.key}"
   visibility_timeout_seconds  = each.value.visibility_timeout_seconds
   fifo_queue                  = each.value.fifo_queue
-  deduplication_scope         = each.value.deduplication_scope
+  deduplication_scope         = each.value.fifo_queue ? each.value.deduplication_scope : null
   content_based_deduplication = each.value.content_based_deduplication
   message_retention_seconds   = each.value.message_retention_seconds
 
