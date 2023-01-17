@@ -206,6 +206,25 @@ variable "deployment_timeout" {
   description = "Number of seconds to wait for an instance to complete executing commands"
 }
 
+# https://docs.aws.amazon.com/elasticbeanstalk/latest/dg/using-features.rolling-version-deploy.html
+variable "deployment_policy" {
+  type        = string
+  default     = "Rolling"
+  description = "Use the DeploymentPolicy option to set the deployment type. The following values are supported: `AllAtOnce`, `Rolling`, `RollingWithAdditionalBatch`, `Immutable`, `TrafficSplitting`"
+}
+
+variable "deployment_batch_size_type" {
+  type        = string
+  default     = "Fixed"
+  description = "The type of number that is specified in deployment_batch_size_type. Valid values are `Fixed` or `Percentage`."
+}
+
+variable "deployment_batch_size" {
+  type        = number
+  default     = 1
+  description = "Percentage or fixed number of Amazon EC2 instances in the Auto Scaling group on which to simultaneously perform deployments. Valid values vary per deployment_batch_size_type setting"
+}
+
 variable "healthcheck_url" {
   type        = string
   description = "Application Health Check URL. Elastic Beanstalk will call this URL to check the health of the application running on EC2 instances"

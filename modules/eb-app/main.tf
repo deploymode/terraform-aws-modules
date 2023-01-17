@@ -99,8 +99,14 @@ module "elastic_beanstalk_environment" {
 
   wait_for_ready_timeout = var.wait_for_ready_timeout
 
-  healthcheck_url                = each.value.tier == "WebServer" ? var.healthcheck_url : ""
+  healthcheck_url = each.value.tier == "WebServer" ? var.healthcheck_url : ""
+
+
   deployment_ignore_health_check = var.deployment_ignore_health_check
+  deployment_policy              = var.deployment_policy
+  deployment_timeout             = var.deployment_timeout
+  deployment_batch_size          = var.deployment_batch_size
+  deployment_batch_size_type     = var.deployment_batch_size_type
 
   environment_type  = each.value.environment_type
   tier              = each.value.tier
