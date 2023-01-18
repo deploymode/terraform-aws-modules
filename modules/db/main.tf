@@ -88,7 +88,7 @@ module "rds_instance" {
   deletion_protection = var.deletion_protection
 
   auto_minor_version_upgrade  = true
-  allow_major_version_upgrade = false
+  allow_major_version_upgrade = var.allow_major_version_upgrade
   apply_immediately           = true
   maintenance_window          = var.maintenance_window
   skip_final_snapshot         = var.skip_final_snapshot
