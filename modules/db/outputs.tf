@@ -75,6 +75,7 @@ output "database_password_ssm_param_arn" {
 }
 
 output "database_name" {
-  value       = coalesce(var.database_name, "")
+  # Can't use coalesce here because both values can be empty, but we want to output "" instead of null
+  value       = var.database_name == null ? "" : var.database_name
   description = "Name of database created with instance"
 }
