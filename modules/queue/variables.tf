@@ -8,6 +8,7 @@ variable "queues" {
   description = "Queues to create with settings"
   type = map(object({
     enabled    = optional(bool, true)
+    name       = optional(string, null)
     fifo_queue = optional(bool, false)
     # Specifies whether message deduplication occurs at the message group or queue level. Valid values are messageGroup and queue.
     deduplication_scope         = optional(string, "queue")

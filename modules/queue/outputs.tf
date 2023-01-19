@@ -2,12 +2,12 @@
 
 output "queue_arn" {
   description = "The ARN of the SQS queues"
-  value       = module.this.enabled ? { for queue, queue_info in module.queue : queue => queue_info.sqs_queue_arn } : {}
+  value       = module.this.enabled ? { for queue, queue_info in module.queue : queue => queue_info.queue_arn } : {}
 }
 
 output "queue_name" {
   description = "The name of the SQS queue"
-  value       = module.this.enabled ? { for queue, queue_info in module.queue : queue => queue_info.sqs_queue_name } : {}
+  value       = module.this.enabled ? { for queue, queue_info in module.queue : queue => queue_info.queue_name } : {}
 }
 
 output "queue_access_policy_arn" {
