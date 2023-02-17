@@ -89,8 +89,10 @@ module "container" {
 }
 
 module "ecs_task" {
-  source  = "cloudposse/ecs-alb-service-task/aws"
-  version = "0.63.1"
+  # source  = "cloudposse/ecs-alb-service-task/aws"
+  # version = "0.63.1"
+  # source = "../../../cloudposse/terraform-aws-ecs-alb-service-task/"
+  source = "git::https://github.com/joe-niland/terraform-aws-ecs-alb-service-task.git?ref=trigger-redeployment"
 
   context = module.this.context
 
@@ -289,7 +291,7 @@ module "ecs_codepipeline" {
 
 module "codepipeline_notifications" {
   source  = "kjagiello/codepipeline-slack-notifications/aws"
-  version = "1.1.4"
+  version = "1.1.6"
 
   count = (module.this.enabled && var.codepipeline_slack_notification_webhook_url == "") ? 0 : 1
 
