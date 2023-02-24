@@ -305,7 +305,7 @@ module "alb" {
 
 module "ecs_task" {
   source  = "cloudposse/ecs-alb-service-task/aws"
-  version = "0.64.1"
+  version = "0.67.0"
 
   # Network
   vpc_id           = var.vpc_id
@@ -357,6 +357,7 @@ module "ecs_task" {
   circuit_breaker_deployment_enabled = var.ecs_circuit_breaker_deployment_enabled
   circuit_breaker_rollback_enabled   = var.ecs_circuit_breaker_rollback_enabled
   force_new_deployment               = var.service_force_new_deployment
+  redeploy_on_apply            = var.service_redeploy_on_apply
 
   desired_count = var.ecs_task_desired_count
   task_memory   = var.ecs_task_memory

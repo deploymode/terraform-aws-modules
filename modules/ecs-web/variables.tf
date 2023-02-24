@@ -201,6 +201,12 @@ variable "service_force_new_deployment" {
   default     = false
 }
 
+variable "service_redeploy_on_apply" {
+  type        = bool
+  description = "Updates the service to the latest task definition on each apply"
+  default     = false
+}
+
 variable "ecs_capacity_provider_strategies" {
   type = list(object({
     capacity_provider = string
