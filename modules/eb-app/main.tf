@@ -80,7 +80,7 @@ data "aws_vpc" "default" {
 
 module "elastic_beanstalk_environment" {
   source  = "cloudposse/elastic-beanstalk-environment/aws"
-  version = "0.47.0"
+  version = "0.49.0"
 
   for_each = var.environment_settings
 
@@ -101,6 +101,7 @@ module "elastic_beanstalk_environment" {
 
   healthcheck_url = each.value.tier == "WebServer" ? var.healthcheck_url : ""
 
+  loadbalancer_redirect_http_to_https = each.value.tier == "WebServer" ? true : false
 
   deployment_ignore_health_check = var.deployment_ignore_health_check
   deployment_policy              = var.deployment_policy
@@ -177,37 +178,6 @@ module "elastic_beanstalk_environment" {
   scheduled_actions            = var.scheduled_actions
 
   context = module.this.context
-}
-
-data "aws_lb_listener" "http_listener" {
-  # count    = local.redirect_http_to_https ? 1 : 0
-  for_each = local.redirect_http_to_https ? local.web_environments : []
-
-  load_balancer_arn = one(module.elastic_beanstalk_environment[each.key].load_balancers)
-  port              = 80
-  depends_on        = [module.elastic_beanstalk_environment]
-}
-
-resource "aws_lb_listener_rule" "redirect_http_to_https" {
-  # count        = local.redirect_http_to_https ? 1 : 0
-  for_each = local.redirect_http_to_https ? local.web_environments : []
-
-  listener_arn = data.aws_lb_listener.http_listener[each.key].arn
-  priority     = 1
-  action {
-    type = "redirect"
-
-    redirect {
-      port        = "443"
-      protocol    = "HTTPS"
-      status_code = "HTTP_301"
-    }
-  }
-  condition {
-    path_pattern {
-      values = ["/*"]
-    }
-  }
 }
 
 # Add web endpoint to SSM 
