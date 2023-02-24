@@ -98,6 +98,12 @@ variable "service_force_new_deployment" {
   default     = false
 }
 
+variable "service_redeploy_on_apply" {
+  type        = bool
+  description = "Updates the service to the latest task definition on each apply"
+  default     = false
+}
+
 variable "service_discovery_private_dns_namespace_id" {
   type        = string
   description = "The service discovery private DNS namespace ID"

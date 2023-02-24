@@ -89,10 +89,8 @@ module "container" {
 }
 
 module "ecs_task" {
-  # source  = "cloudposse/ecs-alb-service-task/aws"
-  # version = "0.63.1"
-  # source = "../../../cloudposse/terraform-aws-ecs-alb-service-task/"
-  source = "git::https://github.com/joe-niland/terraform-aws-ecs-alb-service-task.git?ref=trigger-redeployment"
+  source  = "cloudposse/ecs-alb-service-task/aws"
+  version = "0.67.0"
 
   context = module.this.context
 
@@ -104,6 +102,7 @@ module "ecs_task" {
   vpc_id                       = var.vpc_id
   exec_enabled                 = var.ecs_enable_exec
   force_new_deployment         = var.service_force_new_deployment
+  redeploy_on_apply            = var.service_redeploy_on_apply
 
   service_registries = var.use_service_discovery == false ? [] : [
     {
