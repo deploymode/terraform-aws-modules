@@ -76,7 +76,7 @@ locals {
 // ECR Registry/Repo
 module "ecr" {
   source       = "cloudposse/ecr/aws"
-  version      = "0.32.3"
+  version      = "0.35.0"
   use_fullname = true
   image_names = [
     local.image_names_map.nginx,
@@ -305,7 +305,7 @@ module "alb" {
 
 module "ecs_task" {
   source  = "cloudposse/ecs-alb-service-task/aws"
-  version = "0.67.0"
+  version = "0.67.1"
 
   # Network
   vpc_id           = var.vpc_id
@@ -340,10 +340,10 @@ module "ecs_task" {
   capacity_provider_strategies = var.ecs_capacity_provider_strategies
   launch_type                  = var.ecs_launch_type
   platform_version             = var.ecs_platform_version
-  task_policy_arns = concat(
+  task_policy_arns_map = merge(
     var.ecs_task_policy_arns,
-    aws_iam_policy.email_policy.*.arn,
-    [for v in aws_iam_policy.app_bucket_iam_policy : v.arn]
+    var.allow_email_sending ? { email = join("", aws_iam_policy.email_policy.*.arn) } : {},
+    { for k, v in aws_iam_policy.app_bucket_iam_policy : k => v.arn }
   )
   exec_enabled                   = var.ecs_enable_exec
   ignore_changes_task_definition = var.ecs_ignore_changes_task_definition
@@ -357,7 +357,7 @@ module "ecs_task" {
   circuit_breaker_deployment_enabled = var.ecs_circuit_breaker_deployment_enabled
   circuit_breaker_rollback_enabled   = var.ecs_circuit_breaker_rollback_enabled
   force_new_deployment               = var.service_force_new_deployment
-  redeploy_on_apply            = var.service_redeploy_on_apply
+  redeploy_on_apply                  = var.service_redeploy_on_apply
 
   desired_count = var.ecs_task_desired_count
   task_memory   = var.ecs_task_memory

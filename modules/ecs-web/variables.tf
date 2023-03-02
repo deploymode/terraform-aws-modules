@@ -272,9 +272,9 @@ variable "ecs_enable_exec" {
 }
 
 variable "ecs_task_policy_arns" {
-  type        = list(string)
-  description = "List of IAM policy ARNs to attach to the ECS task role"
-  default     = []
+  type        = map(string)
+  description = "Map of policy name to IAM policy ARNs to attach to the ECS task role"
+  default     = {}
 }
 
 variable "allow_email_sending" {

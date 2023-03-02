@@ -27,7 +27,7 @@ locals {
 // ECR Registry/Repo
 module "ecr" {
   source               = "cloudposse/ecr/aws"
-  version              = "0.32.2"
+  version              = "0.35.0"
   use_fullname         = true
   scan_images_on_push  = true
   max_image_count      = var.ecr_max_image_count
@@ -90,7 +90,7 @@ module "container" {
 
 module "ecs_task" {
   source  = "cloudposse/ecs-alb-service-task/aws"
-  version = "0.67.0"
+  version = "0.67.1"
 
   context = module.this.context
 
@@ -116,7 +116,7 @@ module "ecs_task" {
   # Additional security groups to assign to service
   security_group_ids             = var.ecs_security_group_ids
   subnet_ids                     = var.subnet_ids
-  task_policy_arns               = var.ecs_task_policy_arns
+  task_policy_arns_map           = var.ecs_task_policy_arns
   assign_public_ip               = var.assign_public_ip
   enable_icmp_rule               = false
   tags                           = var.tags
