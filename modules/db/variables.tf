@@ -67,29 +67,17 @@ variable "db_password_ssm_param_path" {
 
 variable "database_password_settings" {
   type = object({
-    length           = number
-    numeric          = bool
-    min_numeric      = number
-    upper            = bool
-    min_upper        = number
-    lower            = bool
-    min_lower        = number
-    special          = bool
-    override_special = string
-    keepers          = map(string)
+    length           = optional(number, 16)
+    numeric          = optional(bool, true)
+    min_numeric      = optional(number, 0)
+    upper            = optional(bool, true)
+    min_upper        = optional(number, 0)
+    lower            = optional(bool, true)
+    min_lower        = optional(number, 0)
+    special          = optional(bool, false)
+    override_special = optional(string, "_-<>;()&#!^")
+    keepers          = optional(map(string), null)
   })
-  default = {
-    length           = 16
-    lower            = true
-    min_lower        = 0
-    numeric          = true
-    min_numeric      = 0
-    override_special = "/@\"' "
-    special          = false
-    upper            = true
-    min_upper        = 0
-    keepers          = {}
-  }
   description = "Database password characteristics"
 }
 

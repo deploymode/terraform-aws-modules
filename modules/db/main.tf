@@ -6,6 +6,7 @@ locals {
 # taint this resource to create a new password
 resource "random_password" "password" {
   count            = var.database_password == "" ? 1 : 0
+  keepers          = var.database_password_settings.keepers
   length           = var.database_password_settings.length
   numeric          = var.database_password_settings.numeric
   min_numeric      = var.database_password_settings.min_numeric
@@ -14,7 +15,7 @@ resource "random_password" "password" {
   lower            = var.database_password_settings.lower
   min_lower        = var.database_password_settings.min_lower
   special          = var.database_password_settings.special
-  override_special = var.database_password_settings.length
+  override_special = var.database_password_settings.override_special
 }
 
 module "sg_label" {
@@ -121,23 +122,27 @@ module "rds_instance" {
 
 module "store_write" {
   source  = "cloudposse/ssm-parameter-store/aws"
-  version = "0.8.0"
+  version = "0.10.0"
 
   enabled = module.this.enabled && var.db_username_ssm_param_path != ""
+
+  parameter_write_defaults = {
+    overwrite       = "true"
+    data_type       = "text"
+    type            = "SecureString"
+    allowed_pattern = null
+    tier            = "Standard"
+  }
 
   parameter_write = [
     {
       name        = var.db_username_ssm_param_path
       value       = local.database_username
-      type        = "SecureString"
-      overwrite   = "true"
       description = "${module.this.stage} database master user"
     },
     {
       name        = var.db_password_ssm_param_path
       value       = local.database_password
-      type        = "SecureString"
-      overwrite   = "true"
       description = "${module.this.stage} database master user password"
     }
   ]
