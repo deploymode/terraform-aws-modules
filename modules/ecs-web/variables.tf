@@ -77,6 +77,12 @@ variable "target_group_port" {
   description = "The port for target group traffic"
 }
 
+variable "cdn_http_version" {
+  type        = string
+  default     = "http2"
+  description = "The maximum HTTP version to support on the distribution. Allowed values are http1.1, http2, http2and3 and http3."
+}
+
 variable "http_port" {
   type        = number
   default     = 80
@@ -599,7 +605,7 @@ variable "use_cdn" {
 variable "cdn_viewer_min_protocol_version" {
   type        = string
   description = "Minimum TLS standard for clients"
-  default     = "TLSv1.2_2019"
+  default     = "TLSv1.2_2021"
 }
 
 variable "cdn_default_ttl" {
@@ -631,6 +637,13 @@ variable "cdn_origin_read_timeout" {
   type        = number
   description = "The Custom Read timeout, in seconds. AWS defaults to 30s. Values from 1-180s are supported, but a value above 60s requires a Support ticket."
   default     = 60
+}
+
+# https://docs.aws.amazon.com/AmazonCloudFront/latest/DeveloperGuide/secure-connections-supported-viewer-protocols-ciphers.html
+variable "cdn_origin_ssl_protocols" {
+  description = "The SSL/TLS protocols that you want CloudFront to use when communicating with your origin over HTTPS"
+  type        = list(string)
+  default     = ["TLSv1", "TLSv1.1", "TLSv1.2"]
 }
 
 variable "cdn_logging_enabled" {

@@ -407,69 +407,40 @@ resource "aws_route53_record" "default" {
     evaluate_target_health = true
   }
 }
-
-locals {
-  app_cache_behavior = {
-    viewer_protocol_policy      = "redirect-to-https"
-    cached_methods              = ["GET", "HEAD"]
-    allowed_methods             = ["HEAD", "DELETE", "POST", "GET", "OPTIONS", "PUT", "PATCH"]
-    default_ttl                 = 60
-    min_ttl                     = 0
-    max_ttl                     = 86400
-    compress                    = true
-    target_origin_id            = module.this.id
-    forward_cookies             = "all"
-    forward_header_values       = ["*"]
-    forward_query_string        = true
-    lambda_function_association = []
-    function_association        = []
-    cache_policy_id             = ""
-    origin_request_policy_id    = ""
-  }
-}
-
 module "cdn" {
   source  = "cloudposse/cloudfront-cdn/aws"
   version = "0.25.0"
   enabled = module.this.enabled && var.use_cdn
 
   aliases                         = concat([local.app_fqdn], var.app_dns_aliases)
+  http_version                    = var.cdn_http_version
   origin_domain_name              = module.alb.alb_dns_name
   origin_protocol_policy          = "match-viewer"
   origin_keepalive_timeout        = var.cdn_origin_keepalive_timeout
   origin_read_timeout             = var.cdn_origin_read_timeout
+  origin_ssl_protocols            = var.cdn_origin_ssl_protocols
   viewer_protocol_policy          = "redirect-to-https"
   viewer_minimum_protocol_version = var.cdn_viewer_min_protocol_version
   parent_zone_name                = var.domain_name
   default_root_object             = ""
   acm_certificate_arn             = var.cdn_certificate_arn
-  forward_cookies                 = "all" #"whitelist"
-  # forward_cookies_whitelisted_names = ["comment_author_*", "comment_author_email_*", "comment_author_url_*", "wordpress_logged_in_*", "wordpress_test_cookie", "wp-settings-*"]
-  forward_headers              = ["Host", "Origin", "Referer", "CloudFront-Forwarded-Proto", "Access-Control-Request-Headers", "Access-Control-Request-Method"]
-  forward_query_string         = true
-  default_ttl                  = var.cdn_default_ttl
-  min_ttl                      = var.cdn_min_ttl
-  max_ttl                      = var.cdn_max_ttl
-  compress                     = true
-  cached_methods               = ["GET", "HEAD", "OPTIONS"]
-  allowed_methods              = ["GET", "HEAD", "OPTIONS", "PUT", "POST", "PATCH", "DELETE"]
-  price_class                  = "PriceClass_All"
-  logging_enabled              = var.cdn_logging_enabled
-  log_prefix                   = var.cdn_log_prefix
-  log_force_destroy            = var.cdn_log_force_destroy
-  log_expiration_days          = var.cdn_log_expiration_days
-  log_include_cookies          = var.cdn_log_include_cookies
-  log_standard_transition_days = var.cdn_log_standard_transition_days
-  log_glacier_transition_days  = var.cdn_log_glacier_transition_days
-
-  ordered_cache = [
-    merge(local.app_cache_behavior, tomap({ "path_pattern" = "*" })),
-    #   # merge(local.wp_nocache_behavior, map("path_pattern", "wp-login.php")),
-    #   # merge(local.wp_nocache_behavior, map("path_pattern", "wp-signup.php")),
-    #   # merge(local.wp_nocache_behavior, map("path_pattern", "wp-trackback.php")),
-    #   # merge(local.wp_nocache_behavior, map("path_pattern", "wp-cron.php")),
-    #   # merge(local.wp_nocache_behavior, map("path_pattern", "xmlrpc.php"))
-  ]
+  forward_cookies                 = "all"
+  forward_headers                 = ["*"]
+  forward_query_string            = true
+  default_ttl                     = var.cdn_default_ttl
+  min_ttl                         = var.cdn_min_ttl
+  max_ttl                         = var.cdn_max_ttl
+  compress                        = true
+  cached_methods                  = ["GET", "HEAD"]
+  allowed_methods                 = ["HEAD", "DELETE", "POST", "GET", "OPTIONS", "PUT", "PATCH"]
+  price_class                     = "PriceClass_All"
+  logging_enabled                 = var.cdn_logging_enabled
+  log_prefix                      = var.cdn_log_prefix
+  log_force_destroy               = var.cdn_log_force_destroy
+  log_expiration_days             = var.cdn_log_expiration_days
+  log_include_cookies             = var.cdn_log_include_cookies
+  log_standard_transition_days    = var.cdn_log_standard_transition_days
+  log_glacier_transition_days     = var.cdn_log_glacier_transition_days
 
   context = module.this.context
 }
