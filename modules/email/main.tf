@@ -3,6 +3,10 @@
 #
 ###
 
+locals {
+  email_notification_topic_enabled = module.this.enabled && var.notification_email != null && var.notification_email != ""
+}
+
 module "ses" {
   source  = "cloudposse/ses/aws"
   version = "0.22.1"
@@ -86,6 +90,42 @@ module "store_write" {
       description = "${module.this.stage} SES user IAM key secret"
     }
   ]
+
+  context = module.this.context
+}
+
+resource "aws_ses_identity_notification_topic" "bounce" {
+  count                    = local.email_notification_topic_enabled ? 1 : 0
+  topic_arn                = module.email_notification_topic.sns_topic_arn
+  notification_type        = "Bounce"
+  identity                 = var.domain
+  include_original_headers = true
+}
+
+# Bounce and Complaints notification
+module "email_notification_topic" {
+  source  = "cloudposse/sns-topic/aws"
+  version = "0.20.3"
+
+  name       = "ses"
+  attributes = ["bounce"]
+
+  enabled = local.email_notification_topic_enabled
+
+  encryption_enabled = false
+
+  allowed_aws_services_for_sns_published = [
+    "ses.amazonaws.com"
+  ]
+
+  subscribers = {
+    email = {
+      protocol               = "email-json"
+      endpoint               = var.notification_email
+      endpoint_auto_confirms = false
+      raw_message_delivery   = false
+    }
+  }
 
   context = module.this.context
 }

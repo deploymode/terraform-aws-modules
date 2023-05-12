@@ -60,3 +60,9 @@ variable "iam_access_key_max_age" {
     error_message = "The iam_access_key_max_age must be 0 (disabled) or greater."
   }
 }
+
+variable "notification_email" {
+  type        = string
+  description = "Email address to send notifications to"
+  default     = null
+}
