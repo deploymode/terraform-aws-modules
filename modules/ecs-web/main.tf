@@ -1,3 +1,23 @@
+locals {
+  codepipeline_group_events_map = {
+    all = [
+      "codepipeline-pipeline-pipeline-execution-failed",
+      "codepipeline-pipeline-pipeline-execution-canceled",
+      "codepipeline-pipeline-pipeline-execution-started",
+      "codepipeline-pipeline-pipeline-execution-resumed",
+      "codepipeline-pipeline-pipeline-execution-succeeded",
+      "codepipeline-pipeline-pipeline-execution-superseded"
+    ]
+    errors = [
+      "codepipeline-pipeline-pipeline-execution-failed",
+    ]
+    minimal = [
+      "codepipeline-pipeline-pipeline-execution-failed",
+      "codepipeline-pipeline-pipeline-execution-succeeded",
+    ]
+  }
+}
+
 data "aws_caller_identity" "current" {}
 
 module "nginx_image_label" {
@@ -521,21 +541,44 @@ module "ecs_codepipeline" {
 }
 
 module "codepipeline_notifications" {
-  source  = "kjagiello/codepipeline-slack-notifications/aws"
-  version = "1.1.6"
+  # source  = "kjagiello/codepipeline-slack-notifications/aws"
+  # version = "1.1.6"
+  source = "git::https://github.com/deploymode/terraform-aws-codepipeline-slack-notifications?ref=unique-codestar-rule-name"
 
-  count = module.this.enabled && var.codepipeline_enabled && var.codepipeline_slack_notification_webhook_url == "" ? 0 : 1
+  for_each = module.this.enabled && var.codepipeline_enabled ? var.codepipeline_slack_notifications : {}
 
-  name           = "web"
-  namespace      = module.this.namespace
-  stage          = module.this.stage
-  attributes     = [module.this.environment]
-  slack_url      = var.codepipeline_slack_notification_webhook_url
-  slack_channel  = var.codepipeline_slack_notification_channel
-  event_type_ids = var.codepipeline_slack_notification_event_ids
+  name       = each.key
+  namespace  = module.this.namespace
+  stage      = module.this.stage
+  attributes = [module.this.environment]
+
+  slack_url     = each.value.webhook_url
+  slack_channel = each.value.channel
+  event_type_ids = tolist(distinct(concat(
+    flatten([for g in each.value.event_groups : local.codepipeline_group_events_map[g]]),
+    each.value.event_ids
+  )))
+
   codepipelines = [
     module.ecs_codepipeline.codepipeline_resource
   ]
+}
+
+data "aws_iam_policy_document" "s3_policy" {
+  statement {
+    actions = [
+      "s3:PutObject",
+      "s3:GetObjectAcl",
+      "s3:GetObject",
+      "s3:ListBucket",
+      "s3:PutObjectAcl"
+    ]
+
+    resources = [
+      "arn:aws:s3:::bucket_name/*",
+      "arn:aws:s3:::bucket_name/"
+    ]
+  }
 }
 
 // Allow pull permission to CodeBuild

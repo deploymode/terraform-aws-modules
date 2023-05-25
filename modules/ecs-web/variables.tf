@@ -447,29 +447,23 @@ variable "codepipeline_environment_variables" {
 
 // CodePipeline notifications
 
-variable "codepipeline_slack_notification_webhook_url" {
-  type        = string
-  description = "Slack webhook URL for receiving CodePipeline notifications"
-  default     = ""
-}
-
-variable "codepipeline_slack_notification_channel" {
-  type        = string
-  description = "Slack channel for receiving CodePipeline notifications"
-  default     = ""
-}
-
-variable "codepipeline_slack_notification_event_ids" {
-  type        = list(any)
-  description = "The list of event type to trigger a notification on"
-  default = [
-    "codepipeline-pipeline-pipeline-execution-failed",
-    "codepipeline-pipeline-pipeline-execution-canceled",
-    "codepipeline-pipeline-pipeline-execution-started",
-    "codepipeline-pipeline-pipeline-execution-resumed",
-    "codepipeline-pipeline-pipeline-execution-succeeded",
-    "codepipeline-pipeline-pipeline-execution-superseded"
-  ]
+variable "codepipeline_slack_notifications" {
+  type = map(object({
+    webhook_url  = string,
+    channel      = string,
+    event_groups = optional(list(string), ["all"]),
+    event_ids    = optional(list(string), [])
+  }))
+  description = <<EOT
+    Slack notification subscription details for receiving CodePipeline notifications.
+    The map key is the name of the notification subscription.
+    The intention of having multiple notification subscriptions is to direct different types of events
+    to different Slack channels.
+    Event groups are a convenience, instead of listing all the event IDs. Valid options for group
+    are: 'all', 'errors', 'minimal'.
+    If event_ids are specified they will be merged with the event groups list if it is supplied.
+EOT
+  default     = {}
 }
 
 variable "test_report_names" {

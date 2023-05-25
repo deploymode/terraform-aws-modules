@@ -1,4 +1,24 @@
 locals {
+
+  codepipeline_enabled = module.this.enabled && var.container_image == null
+
+  codepipeline_group_events_map = {
+    all = [
+      "codepipeline-pipeline-pipeline-execution-failed",
+      "codepipeline-pipeline-pipeline-execution-canceled",
+      "codepipeline-pipeline-pipeline-execution-started",
+      "codepipeline-pipeline-pipeline-execution-resumed",
+      "codepipeline-pipeline-pipeline-execution-succeeded",
+      "codepipeline-pipeline-pipeline-execution-superseded"
+    ]
+    errors = [
+      "codepipeline-pipeline-pipeline-execution-failed",
+    ]
+    minimal = [
+      "codepipeline-pipeline-pipeline-execution-failed",
+      "codepipeline-pipeline-pipeline-execution-succeeded",
+    ]
+  }
   queue_env_vars = var.queue_name != "" ? [
     {
       name  = "SQS_QUEUE"
@@ -289,18 +309,24 @@ module "ecs_codepipeline" {
 }
 
 module "codepipeline_notifications" {
-  source  = "kjagiello/codepipeline-slack-notifications/aws"
-  version = "1.1.6"
+  # source  = "kjagiello/codepipeline-slack-notifications/aws"
+  # version = "1.1.6"
+  source = "git::https://github.com/deploymode/terraform-aws-codepipeline-slack-notifications?ref=unique-codestar-rule-name"
 
-  count = (module.this.enabled && var.codepipeline_slack_notification_webhook_url == "") ? 0 : 1
+  for_each = local.codepipeline_enabled ? var.codepipeline_slack_notifications : {}
 
-  name           = module.this.name
-  namespace      = module.this.namespace
-  stage          = module.this.stage
-  attributes     = [module.this.environment]
-  slack_url      = var.codepipeline_slack_notification_webhook_url
-  slack_channel  = var.codepipeline_slack_notification_channel
-  event_type_ids = var.codepipeline_slack_notification_event_ids
+  name       = each.key
+  namespace  = module.this.namespace
+  stage      = module.this.stage
+  attributes = [module.this.environment]
+
+  slack_url     = each.value.webhook_url
+  slack_channel = each.value.channel
+  event_type_ids = tolist(distinct(concat(
+    flatten([for g in each.value.event_groups : local.codepipeline_group_events_map[g]]),
+    each.value.event_ids
+  )))
+
   codepipelines = [
     module.ecs_codepipeline.codepipeline_resource
   ]
