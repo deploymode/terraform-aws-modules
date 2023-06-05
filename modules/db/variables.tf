@@ -79,6 +79,9 @@ variable "database_password_settings" {
     keepers          = optional(map(string), null)
   })
   description = "Database password characteristics"
+  default = {
+    length = 16
+  }
 }
 
 variable "database_port" {

@@ -59,7 +59,7 @@ module "db_username_label" {
 module "rds_instance" {
   # source = "git::https://github.com/joe-niland/terraform-aws-rds.git?ref=avoid-sec-group-count-issue"
   source  = "cloudposse/rds/aws"
-  version = "0.38.7"
+  version = "0.43.0"
 
   publicly_accessible = false
   subnet_ids          = var.subnet_ids
