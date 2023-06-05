@@ -1,6 +1,6 @@
 module "vpc" {
   source                  = "cloudposse/vpc/aws"
-  version                 = "1.1.0"
+  version                 = "2.1.0"
   ipv4_primary_cidr_block = var.account_network_cidr
   context                 = module.this.context
 }
@@ -23,7 +23,7 @@ module "subnets" {
 
 resource "aws_eip" "nat_ips" {
   for_each = var.assign_elastic_ips ? toset(var.zones) : []
-  vpc      = true
+  domain   = "vpc"
 
   depends_on = [
     module.vpc
