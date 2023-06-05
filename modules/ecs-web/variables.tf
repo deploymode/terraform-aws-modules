@@ -584,7 +584,7 @@ variable "queue_name" {
 
 variable "external_app_buckets" {
   type        = list(string)
-  description = "Existing S3 buckets used by the application. Used to allow application roles to access buckets."
+  description = "Existing S3 buckets used by the application. Allows application and CodePipeline roles to access these buckets."
   default     = []
 }
 
