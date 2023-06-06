@@ -10,4 +10,6 @@ module "iam_policy" {
   iam_policy_statements = each.value
 
   iam_policy_enabled = true
+
+  context = module.this.context
 }
