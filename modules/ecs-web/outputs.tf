@@ -121,7 +121,7 @@ output "codestar_connection_arn" {
 
 output "app_bucket_policy_arn" {
   description = "ARN of IAM policy allowing access to S3 buckets used by app"
-  value       = [for v in aws_iam_policy.app_bucket_iam_policy : v.arn]
+  value       = { for key, policy in aws_iam_policy.app_bucket_iam_policy : key => policy.arn }
 }
 
 // App

@@ -9,8 +9,14 @@ variable "external_id" {
   default     = null
 }
 
-variable "aws_policy_names" {
-  description = "Built-in policies to attach to role"
+variable "aws_managed_policy_names" {
+  description = "Built-in policy names to attach to role"
+  type        = list(string)
+  default     = []
+}
+
+variable "policy_arns" {
+  description = "Custom policy ARNs to attach to role"
   type        = list(string)
   default     = []
 }

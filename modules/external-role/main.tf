@@ -5,14 +5,16 @@
 
 module "role" {
   source  = "cloudposse/iam-role/aws"
-  version = "0.15.0"
+  version = "0.18.0"
 
   principals = {
     "AWS" : [var.aws_account_id]
   }
   use_fullname = false
 
-  managed_policy_arns   = compact(formatlist("arn:aws:iam::aws:policy/%s", var.aws_policy_names))
+  managed_policy_arns = compact(concat(
+    var.policy_arns,
+  formatlist("arn:aws:iam::aws:policy/%s", var.aws_managed_policy_names)))
   policy_document_count = 0
 
   policy_description = "External access policy providing read only access"
