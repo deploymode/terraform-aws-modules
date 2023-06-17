@@ -318,7 +318,7 @@ module "codepipeline_notifications" {
   name       = each.key
   namespace  = module.this.namespace
   stage      = module.this.stage
-  attributes = [module.this.environment]
+  attributes = concat([module.this.name, module.this.environment], module.this.attributes)
 
   slack_url     = each.value.webhook_url
   slack_channel = each.value.channel
