@@ -1,5 +1,7 @@
 locals {
 
+  default_queue_name = "app"
+
   codepipeline_enabled = module.this.enabled && var.container_image == null
 
   codepipeline_group_events_map = {
@@ -19,10 +21,15 @@ locals {
       "codepipeline-pipeline-pipeline-execution-succeeded",
     ]
   }
-  queue_env_vars = var.queue_name != "" ? [
+
+  queue_env_vars = length(var.queue_names) > 0 ? concat([
+    {
+      name  = "QUEUE_CONNECTION"
+      value = "sqs"
+    },
     {
       name  = "SQS_QUEUE"
-      value = var.queue_name
+      value = var.queue_names[local.default_queue_name]
     },
     {
       name  = "SQS_REGION"
@@ -31,8 +38,13 @@ locals {
     {
       name  = "SQS_PREFIX"
       value = "https://sqs.${var.aws_region}.amazonaws.com/${var.aws_account_id}"
-    },
-  ] : []
+    }
+    ],
+    [
+      for queue_short_name, queue_name in var.queue_names : {
+        name  = join("_", ["SQS_QUEUE", upper(queue_short_name)])
+        value = queue_name
+  } if queue_short_name != local.default_queue_name]) : []
 
   dynamodb_cache_env_vars = var.dynamodb_table_name != "" ? [
     {
@@ -280,6 +292,8 @@ module "ecs_codepipeline" {
 
   environment_variables = concat(
     var.codepipeline_environment_variables,
+    var.codepipeline_add_queue_env_vars ?
+    [for var in local.queue_env_vars : merge(var, { type = "PLAINTEXT" })] : [],
     [
       {
         name  = "NAMESPACE"

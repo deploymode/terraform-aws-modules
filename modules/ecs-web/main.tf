@@ -1,4 +1,6 @@
 locals {
+
+  default_queue_name = "app"
   codepipeline_group_events_map = {
     all = [
       "codepipeline-pipeline-pipeline-execution-failed",
@@ -59,10 +61,14 @@ locals {
     monitoring = "/ecs/${module.container_label.id}/${local.image_names_map.monitoring}"
   }
 
-  queue_env_vars = var.queue_name != "" ? [
+  queue_env_vars = length(var.queue_names) > 0 ? concat([
+    {
+      name  = "QUEUE_CONNECTION"
+      value = "sqs"
+    },
     {
       name  = "SQS_QUEUE"
-      value = var.queue_name
+      value = var.queue_names[local.default_queue_name]
     },
     {
       name  = "SQS_REGION"
@@ -72,7 +78,12 @@ locals {
       name  = "SQS_PREFIX"
       value = "https://sqs.${var.aws_region}.amazonaws.com/${var.aws_account_id}"
     }
-  ] : []
+    ],
+    [
+      for queue_short_name, queue_name in var.queue_names : {
+        name  = join("_", ["SQS_QUEUE", upper(queue_short_name)])
+        value = queue_name
+  } if queue_short_name != local.default_queue_name]) : []
 
   redis_cache_env_vars = var.provision_redis_cache ? [
     {
@@ -495,37 +506,41 @@ module "ecs_codepipeline" {
   image_tag               = "latest" // var.image_tag
   webhook_enabled         = false
   s3_bucket_force_destroy = true
-  environment_variables = concat(var.codepipeline_environment_variables, [
-    {
-      name  = "NAMESPACE"
-      value = module.this.namespace
-      type  = "PLAINTEXT"
-    },
-    {
-      name  = "ENVIRONMENT"
-      value = module.this.environment
-      type  = "PLAINTEXT"
-    },
-    {
-      name  = "NGINX_ECR_REPO_URL"
-      value = module.ecr.repository_url_map[local.image_names_map.nginx]
-      type  = "PLAINTEXT"
-    },
-    {
-      name  = "PHP_ECR_REPO_URL"
-      value = module.ecr.repository_url_map[local.image_names_map.php]
-      type  = "PLAINTEXT"
-    },
-    {
-      name  = "NGINX_CONTAINER_NAME"
-      value = module.nginx_container_label.id
-      type  = "PLAINTEXT"
-    },
-    {
-      name  = "PHP_CONTAINER_NAME"
-      value = module.php-fpm_container_label.id
-      type  = "PLAINTEXT"
-    }
+  environment_variables = concat(
+    var.codepipeline_environment_variables,
+    var.codepipeline_add_queue_env_vars ?
+    [for var in local.queue_env_vars : merge(var, { type = "PLAINTEXT" })] : [],
+    [
+      {
+        name  = "NAMESPACE"
+        value = module.this.namespace
+        type  = "PLAINTEXT"
+      },
+      {
+        name  = "ENVIRONMENT"
+        value = module.this.environment
+        type  = "PLAINTEXT"
+      },
+      {
+        name  = "NGINX_ECR_REPO_URL"
+        value = module.ecr.repository_url_map[local.image_names_map.nginx]
+        type  = "PLAINTEXT"
+      },
+      {
+        name  = "PHP_ECR_REPO_URL"
+        value = module.ecr.repository_url_map[local.image_names_map.php]
+        type  = "PLAINTEXT"
+      },
+      {
+        name  = "NGINX_CONTAINER_NAME"
+        value = module.nginx_container_label.id
+        type  = "PLAINTEXT"
+      },
+      {
+        name  = "PHP_CONTAINER_NAME"
+        value = module.php-fpm_container_label.id
+        type  = "PLAINTEXT"
+      }
     ]
   )
   ecs_cluster_name  = var.ecs_cluster_name

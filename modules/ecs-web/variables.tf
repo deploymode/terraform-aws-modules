@@ -445,6 +445,12 @@ variable "codepipeline_environment_variables" {
   default     = []
 }
 
+variable "codepipeline_add_queue_env_vars" {
+  type        = bool
+  description = "Add environment variables for queue names, region and prefix to CodeBuild project"
+  default     = false
+}
+
 // CodePipeline notifications
 
 variable "codepipeline_slack_notifications" {
@@ -574,10 +580,10 @@ variable "dynamodb_cache_ttl_attribute" {
 
 // Queue
 
-variable "queue_name" {
-  type        = string
-  description = "Name of SQS queue used by application (if any)"
-  default     = ""
+variable "queue_names" {
+  type        = map(string)
+  description = "Map of queue short name to full queue name of SQS queues used by application (if any). The item with key `app` will be set as the default queue for the application."
+  default     = {}
 }
 
 // Buckets
