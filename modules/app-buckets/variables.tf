@@ -12,7 +12,7 @@ variable "buckets" {
         expose_headers  = list(string)
         max_age_seconds = number
       }))
-      allow_delete = bool
+      allow_delete = optional(bool, true)
     }
   ))
   default     = {}
