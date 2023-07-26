@@ -35,7 +35,7 @@ module "app_bucket_iam_policy" {
 
   iam_policy = {
     version   = "2012-10-17"
-    policy_id = "example"
+    policy_id = "s3-app-bucket"
     statements = [
       {
         sid        = "ListBucket"
