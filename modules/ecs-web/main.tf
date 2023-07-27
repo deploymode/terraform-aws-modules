@@ -486,7 +486,7 @@ resource "aws_codestarconnections_connection" "default" {
 
 module "ecs_codepipeline" {
   source  = "cloudposse/ecs-codepipeline/aws"
-  version = "0.29.0"
+  version = "0.33.0"
   # source = "git::https://github.com/deploymode/terraform-aws-ecs-codepipeline-1?ref=codestar-source-output-artifact-type-var"
 
   enabled                         = var.codepipeline_enabled
@@ -548,9 +548,8 @@ module "ecs_codepipeline" {
   cache_type        = var.codebuild_cache_type
   local_cache_modes = var.codebuild_local_cache_modes
   # github_anonymous        = true
-  github_oauth_token    = ""
-  github_webhooks_token = ""
-  codebuild_vpc_config  = var.codebuild_vpc_config
+  github_oauth_token   = ""
+  codebuild_vpc_config = var.codebuild_vpc_config
 
   context = module.this.context
 }
@@ -867,9 +866,8 @@ resource "aws_iam_policy" "app_bucket_iam_policy" {
 }
 
 module "frontend_web" {
-  # source  = "cloudposse/cloudfront-s3-cdn/aws"
-  # version = "0.82.4"
-  source = "git::https://github.com/deploymode/terraform-aws-cloudfront-s3-cdn?ref=update-aws-provider-to-v4"
+  source  = "cloudposse/cloudfront-s3-cdn/aws"
+  version = "0.91.0"
 
   enabled = module.this.enabled && var.create_frontend_website
 
