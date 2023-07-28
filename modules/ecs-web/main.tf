@@ -867,13 +867,14 @@ resource "aws_iam_policy" "app_bucket_iam_policy" {
 
 module "frontend_web" {
   source  = "cloudposse/cloudfront-s3-cdn/aws"
-  version = "0.91.0"
+  version = "0.92.0"
 
   enabled = module.this.enabled && var.create_frontend_website
 
   # Use S3 origin
   website_enabled         = false
   allow_ssl_requests_only = true
+  block_origin_public_access_enabled = true
 
   # For SPA routing - use CloudFront error handling
   custom_error_response = [
