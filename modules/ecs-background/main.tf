@@ -256,7 +256,7 @@ resource "aws_service_discovery_service" "service_discovery" {
 // CodePipeline using ECS Deploy
 module "ecs_codepipeline" {
   source  = "cloudposse/ecs-codepipeline/aws"
-  version = "0.28.6"
+  version = "0.33.0"
 
   enabled = var.container_image == null
 
@@ -273,10 +273,9 @@ module "ecs_codepipeline" {
 
   poll_source_changes     = false
   codestar_connection_arn = var.codestar_connection_arn
-  webhook_enabled         = var.codepipeline_github_webhook_enabled
   github_oauth_token      = var.codepipeline_github_oauth_token
-  github_webhooks_token   = var.codepipeline_github_webhooks_token
   github_webhook_events   = var.codepipeline_github_webhook_events
+  webhook_enabled = var.codepipeline_webhook_enabled
 
   codebuild_vpc_config = var.codebuild_vpc_config
 

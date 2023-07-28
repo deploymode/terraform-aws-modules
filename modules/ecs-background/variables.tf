@@ -298,20 +298,13 @@ variable "codepipeline_github_oauth_token" {
   description = "GitHub OAuth Token with permissions to access private repositories"
   default     = ""
 }
-
-variable "codepipeline_github_webhooks_token" {
-  type        = string
-  default     = ""
-  description = "GitHub OAuth Token with permissions to create webhooks. If not provided, can be sourced from the `GITHUB_TOKEN` environment variable"
-}
-
 variable "codepipeline_github_webhook_events" {
   type        = list(string)
   description = "A list of events which should trigger the webhook. See a list of [available events](https://developer.github.com/v3/activity/events/types/)"
   default     = ["push"]
 }
 
-variable "codepipeline_github_webhook_enabled" {
+variable "codepipeline_webhook_enabled" {
   type        = bool
   description = "Set to false to prevent the module from creating any webhook resources"
   default     = true
@@ -407,7 +400,7 @@ variable "codebuild_cache_type" {
 
 variable "codebuild_local_cache_modes" {
   type        = list(string)
-  default     = []
+  default     = ["LOCAL_SOURCE_CACHE"]
   description = "Specifies settings that AWS CodeBuild uses to store and reuse build dependencies. Valid values: LOCAL_SOURCE_CACHE, LOCAL_DOCKER_LAYER_CACHE, and LOCAL_CUSTOM_CACHE"
 }
 
