@@ -322,9 +322,8 @@ module "ecs_codepipeline" {
 }
 
 module "codepipeline_notifications" {
-  # source  = "kjagiello/codepipeline-slack-notifications/aws"
-  # version = "1.1.6"
-  source = "git::https://github.com/joe-niland/terraform-aws-codepipeline-slack-notifications?ref=unique-codestar-rule-name"
+  source  = "kjagiello/codepipeline-slack-notifications/aws"
+  version = "1.2.0"
 
   for_each = local.codepipeline_enabled ? var.codepipeline_slack_notifications : {}
 

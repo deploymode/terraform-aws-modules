@@ -555,9 +555,8 @@ module "ecs_codepipeline" {
 }
 
 module "codepipeline_notifications" {
-  # source  = "kjagiello/codepipeline-slack-notifications/aws"
-  # version = "1.1.6"
-  source = "git::https://github.com/joe-niland/terraform-aws-codepipeline-slack-notifications?ref=unique-codestar-rule-name"
+  source  = "kjagiello/codepipeline-slack-notifications/aws"
+  version = "1.2.0"
 
   for_each = module.this.enabled && var.codepipeline_enabled ? var.codepipeline_slack_notifications : {}
 
@@ -872,8 +871,8 @@ module "frontend_web" {
   enabled = module.this.enabled && var.create_frontend_website
 
   # Use S3 origin
-  website_enabled         = false
-  allow_ssl_requests_only = true
+  website_enabled                    = false
+  allow_ssl_requests_only            = true
   block_origin_public_access_enabled = true
 
   # For SPA routing - use CloudFront error handling
