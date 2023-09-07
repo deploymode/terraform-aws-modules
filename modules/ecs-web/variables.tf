@@ -128,7 +128,13 @@ variable "http_to_https_redirect" {
 variable "create_alb_dns_record" {
   type        = bool
   default     = false
-  description = "Whether to create an alias to the ALB endpoint or not"
+  description = "Whether to create a DNS alias of `app_dns_name`.`domain_name` to the ALB endpoint or not. For example, if an external CDN is used, or no CDN is used, this may be useful."
+}
+
+variable "alb_dns_aliases" {
+  type        = list(string)
+  description = "A list of FQDN's (e.g. vanity domains, or domains that should not be served via CDN) to add as aliases to the ALB."
+  default     = []
 }
 
 variable "domain_name" {

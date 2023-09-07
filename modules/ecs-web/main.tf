@@ -309,7 +309,7 @@ module "alb_label" {
 
 module "alb" {
   source             = "cloudposse/alb/aws"
-  version            = "1.3.0"
+  version            = "1.10.0"
   vpc_id             = var.vpc_id
   security_group_ids = var.alb_security_group_ids
   subnet_ids         = var.public_subnet_ids
@@ -332,6 +332,20 @@ module "alb" {
   http2_enabled                     = true
   deletion_protection_enabled       = false
   context                           = module.alb_label.context
+}
+
+resource "aws_route53_record" "default" {
+  for_each = toset(var.hosted_zone_id != "" ? concat(var.create_alb_dns_record ? [local.app_fqdn] : [], var.alb_dns_aliases) : [])
+
+  zone_id = var.hosted_zone_id
+  name    = each.key
+  type    = "A"
+
+  alias {
+    name                   = module.alb.alb_dns_name
+    zone_id                = module.alb.alb_zone_id
+    evaluate_target_health = true
+  }
 }
 
 module "ecs_task" {
@@ -426,18 +440,7 @@ data "aws_iam_policy_document" "send_email_policy" {
 }
 
 
-resource "aws_route53_record" "default" {
-  count   = var.hosted_zone_id != "" && var.create_alb_dns_record ? 1 : 0
-  zone_id = var.hosted_zone_id
-  name    = local.app_fqdn
-  type    = "A"
 
-  alias {
-    name                   = module.alb.alb_dns_name
-    zone_id                = module.alb.alb_zone_id
-    evaluate_target_health = true
-  }
-}
 module "cdn" {
   source  = "cloudposse/cloudfront-cdn/aws"
   version = "0.25.0"

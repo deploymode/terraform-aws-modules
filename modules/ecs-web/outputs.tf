@@ -37,8 +37,8 @@ output "ecs_task_definition_revision" {
   value       = module.ecs_task.task_definition_revision
 }
 
-output "host_name" {
-  value       = var.hosted_zone_id != "" ? join("", aws_route53_record.default.*.fqdn) : ""
+output "alb_dns_aliases" {
+  value       = [for record in aws_route53_record.default: record.fqdn ] 
   description = "Public hostname associated with load balancer"
 }
 
