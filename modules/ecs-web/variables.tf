@@ -168,7 +168,7 @@ variable "alb_access_logs_s3_bucket_force_destroy" {
 }
 
 variable "alb_https_ssl_policy" {
-  type = "string"
+  type = string
   default = "ELBSecurityPolicy-TLS13-1-2-2021-06"
   description = "The name of the SSL Policy for the listener. Required if `https_enabled` is true."
 }
