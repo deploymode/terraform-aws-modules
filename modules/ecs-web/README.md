@@ -18,6 +18,16 @@ Broadly speaking, it depends on the following resources:
 
 ## Notes
 
+### CloudFront
+
+The module adds aliases for CloudFront for the app's FQDN and for any others supplied in the 
+`app_dns_aliases` variable. These are required for properly configuring the distribution, including
+accepted domains and CORS. The module can also create DNS records for these aliases, which point
+to the CloudFront distribution. If a vanity domain from a zone other than the zone used for the 
+ALB, DNS records creation should be disabled and these records created elsewhere.
+
+### CodePipeline
+
 When using a Codestar connection created by this module it is 
 currently unfortunately necessary to do a targeted apply before creating the rest 
 of the resources. This is to avoid an error by which a count condition depends on 

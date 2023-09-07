@@ -457,6 +457,7 @@ module "cdn" {
   viewer_protocol_policy          = "redirect-to-https"
   viewer_minimum_protocol_version = var.cdn_viewer_min_protocol_version
   parent_zone_name                = var.domain_name
+  dns_alias_enabled             = var.create_cdn_dns_records
   default_root_object             = ""
   acm_certificate_arn             = var.cdn_certificate_arn
   forward_cookies                 = "all"

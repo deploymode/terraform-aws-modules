@@ -131,6 +131,12 @@ variable "create_alb_dns_record" {
   description = "Whether to create a DNS alias of `app_dns_name`.`domain_name` to the ALB endpoint or not. For example, if an external CDN is used, or no CDN is used, this may be useful."
 }
 
+variable "create_cdn_dns_records" {
+  type        = bool
+  default     = false
+  description = "Whether to create DNS aliases of `app_dns_name`.`domain_name` and other aliases supplied in `app_dns_aliases` to the CDN endpoint or not."
+}
+
 variable "alb_dns_aliases" {
   type        = list(string)
   description = "A list of FQDN's (e.g. vanity domains, or domains that should not be served via CDN) to add as aliases to the ALB."
