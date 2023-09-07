@@ -331,6 +331,7 @@ module "alb" {
   cross_zone_load_balancing_enabled = true
   http2_enabled                     = true
   deletion_protection_enabled       = false
+  https_ssl_policy = var.alb_https_ssl_policy
   context                           = module.alb_label.context
 }
 

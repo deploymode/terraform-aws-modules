@@ -167,6 +167,12 @@ variable "alb_access_logs_s3_bucket_force_destroy" {
   description = "A boolean that indicates all objects should be deleted from the ALB access logs S3 bucket so that the bucket can be destroyed without error"
 }
 
+variable "alb_https_ssl_policy" {
+  type = "string"
+  default = "ELBSecurityPolicy-TLS13-1-2-2021-06"
+  description = "The name of the SSL Policy for the listener. Required if `https_enabled` is true."
+}
+
 // ECR
 
 variable "ecr_max_image_count" {
