@@ -133,7 +133,7 @@ variable "create_alb_dns_record" {
 
 variable "create_cdn_dns_records" {
   type        = bool
-  default     = false
+  default     = true 
   description = "Whether to create DNS aliases of `app_dns_name`.`domain_name` and other aliases supplied in `app_dns_aliases` to the CDN endpoint or not."
 }
 
