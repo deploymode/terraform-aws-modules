@@ -66,7 +66,7 @@ module "rds_instance" {
   vpc_id              = var.vpc_id
   security_group_ids  = aws_security_group.allowed.*.id
   # allowed_cidr_blocks         = ["XXX.XXX.XXX.XXX/32"]
-  ca_cert_identifier = "rds-ca-2019"
+  ca_cert_identifier = var.ca_cert_identifier  
 
   dns_zone_id = var.dns_zone_id
   host_name   = var.host_name
