@@ -13,7 +13,7 @@ data "aws_route53_zone" "existing" {
 
 module "acm_request_certificate" {
   source                            = "cloudposse/acm-request-certificate/aws"
-  version                           = "0.16.0"
+  version                           = "0.16.3"
   enabled                           = module.this.enabled
   domain_name                       = var.cert_domain_name
   validation_method                 = var.validation_method
