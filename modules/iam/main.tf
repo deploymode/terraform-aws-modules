@@ -17,6 +17,14 @@ locals {
     }
   }
 
+  admin_group_names = {
+    for group, group_data in local.group_names : group => group_data if group_data.group == "admin"
+  }
+
+  other_group_names = {
+    for group, group_data in local.group_names : group => group_data if group_data.group != "admin"
+  }
+
   # Add the admin role for the master account, since it wasn't created in the `account` module
   master_account_with_role = lookup(var.accounts, var.master_account_name)
   accounts = merge(var.accounts, {
@@ -28,9 +36,11 @@ locals {
   )
 }
 
+# // BEGIN USERS AND GROUPS
+
 resource "aws_iam_group" "group" {
   for_each = local.group_names
-  name     = each.key # "${each.key}-${each.value}"
+  name     = each.key
 }
 
 resource "aws_iam_user" "user" {
@@ -59,6 +69,17 @@ resource "aws_iam_group_membership" "group_membership" {
   group    = each.value.name
 }
 
+resource "aws_iam_group_membership" "master_account_users_group_membership" {
+  name  = "master-account-users-group-membership"
+  users = keys(var.users)
+  group = aws_iam_group.master_account_users.name
+}
+
+# // END USERS AND GROUPS
+
+# // BEGIN ROLES AND POLICIES
+
+# A policy document to allow role members to assume an admin role in each account
 data "aws_iam_policy_document" "assume_admin_role_with_mfa" {
   for_each = local.accounts
 
@@ -81,17 +102,127 @@ data "aws_iam_policy_document" "assume_admin_role_with_mfa" {
   }
 }
 
+# A group policy to allow role members to assume an admin role in other accounts
 resource "aws_iam_group_policy" "admin_group_with_mfa_policy" {
-  for_each = local.group_names
-  name     = "${each.key}-policy"
-  group    = each.key
-  policy   = data.aws_iam_policy_document.assume_admin_role_with_mfa[each.value.account].json
+  for_each = local.admin_group_names
+
+  name   = "${each.key}-policy"
+  group  = each.key
+  policy = data.aws_iam_policy_document.assume_admin_role_with_mfa[each.value.account].json
 }
 
-resource "aws_iam_role_policy_attachment" "role_policy_attachment_admin" {
-  role       = module.master_admin_role.name
-  policy_arn = "arn:aws:iam::aws:policy/AdministratorAccess"
+# A policy to allow role members to assume an arbitrary role in each account
+data "aws_iam_policy_document" "assume_group_role_with_mfa" {
+  # for_each = local.accounts
+  for_each = local.other_group_names
+
+  statement {
+    actions = [
+      "sts:AssumeRole",
+    ]
+
+    # resources = [for group_name in keys(local.other_group_names) : "arn:aws:iam::${each.value.account_id}:role/${group_name}"]
+    # resources = ["arn:aws:iam::${var.accounts["master"].account_id}:role/${each.value.group}"]
+    resources = [module.account_assume_role[each.key].arn]
+
+    condition {
+      test     = "Bool"
+      variable = "aws:MultiFactorAuthPresent"
+      values   = ["true"]
+    }
+
+    effect = "Allow"
+  }
 }
+
+# A group policy to allow role members to assume an arbitrary role in other accounts
+resource "aws_iam_group_policy" "other_group_with_mfa_policy" {
+  for_each = local.other_group_names
+
+  name   = "${each.key}-policy"
+  group  = each.key
+  policy = data.aws_iam_policy_document.assume_group_role_with_mfa[each.key].json
+}
+
+
+// Role to allow users in the master account to assume a role in another account
+
+data "aws_iam_policy_document" "account_assume_role" {
+  for_each = local.other_group_names
+
+  statement {
+    actions = [
+      "sts:AssumeRole",
+      "sts:SetSourceIdentity",
+      "sts:TagSession",
+    ]
+
+    # resources = [for account, account_info in local.accounts : "arn:aws:iam::${account_info.account_id}:role/${each.value.group}" if account == each.value.account]
+    resources = ["arn:aws:iam::${var.accounts[each.value.account].account_id}:role/${each.value.account}-${each.value.group}"]
+
+    # required?
+    condition {
+      test     = "Bool"
+      variable = "aws:MultiFactorAuthPresent"
+      values   = ["true"]
+    }
+    condition {
+      test     = "StringEquals"
+      variable = "aws:PrincipalType"
+      values   = ["AssumedRole"] # compact(concat(["AssumedRole"], var.iam_users_enabled ? ["User"] : []))
+    }
+    condition {
+      test     = "ArnLike"
+      variable = "aws:PrincipalArn"
+      values   = ["arn:aws:iam::${var.accounts["master"].account_id}:role/${each.value.account}-${each.value.group}"]
+    }
+
+    effect = "Allow"
+  }
+}
+
+module "account_assume_role" {
+  source  = "cloudposse/iam-role/aws"
+  version = "0.16.2"
+
+  for_each = local.other_group_names
+
+  name = each.key
+
+  enabled = module.this.enabled
+
+  # policy_description = "Allow role to access to ${each.value.group} role in ${each.value.account} account"
+  # policy_document_count = 0
+  role_description = "IAM role with ${each.value.group} permissions"
+
+  # Roles allowed to assume role
+  principals = {
+    AWS = [
+      # todo: improve this with something like
+      #  condition {
+      #   test     = "ArnLike"
+      #   variable = "aws:PrincipalArn"
+      #   values   = local.allowed_roles
+      # }
+      "arn:aws:iam::${var.accounts["master"].account_id}:root"
+      # "arn:aws:iam::${var.accounts["master"].account_id}:role/${each.key}"
+      # "arn:aws:iam::${var.accounts[each.value.account].account_id}:role/${each.key}"
+    ]
+  }
+
+  policy_documents = [
+    data.aws_iam_policy_document.account_assume_role[each.key].json
+  ]
+
+  max_session_duration = lookup(var.account_settings, "master", { max_session_duration = local.defaults.max_session_duration }).max_session_duration
+
+  # context = module.this.context
+}
+
+# // END GROUP ROLES AND POLICIES
+
+
+# // BEGING MASTER ACCOUNT ROLES, POLICIES, AND GROUPS
 
 // Role to allow users in the master account to assume role
 module "master_admin_role" {
@@ -117,6 +248,16 @@ module "master_admin_role" {
 
   max_session_duration = lookup(var.account_settings, "master", { max_session_duration = local.defaults.max_session_duration }).max_session_duration
 }
+
+resource "aws_iam_role_policy_attachment" "role_policy_attachment_admin" {
+  role       = module.master_admin_role.name
+  policy_arn = "arn:aws:iam::aws:policy/AdministratorAccess"
+}
+
+## // END MASTER ACCOUNT ROLES, POLICIES, AND GROUPS
+
+
+# // BEGIN MASTER ACCOUNT USERS, GROUPS AND POLICIES
 
 # Group to control password policy for users in master account
 resource "aws_iam_group" "master_account_users" {
@@ -202,7 +343,7 @@ data "aws_iam_policy_document" "manage_mfa_policy" {
       "iam:ResyncMFADevice"
     ]
     resources = [
-      "arn:aws:iam::${local.master_account_with_role.account_id}:mfa/&{aws:username}",
+      "arn:aws:iam::${local.master_account_with_role.account_id}:mfa/*",
       "arn:aws:iam::${local.master_account_with_role.account_id}:user/&{aws:username}"
     ]
   }
@@ -213,7 +354,7 @@ data "aws_iam_policy_document" "manage_mfa_policy" {
       "iam:DeleteVirtualMFADevice"
     ]
     resources = [
-      "arn:aws:iam::${local.master_account_with_role.account_id}:mfa/&{aws:username}",
+      "arn:aws:iam::${local.master_account_with_role.account_id}:mfa/*",
       "arn:aws:iam::${local.master_account_with_role.account_id}:user/&{aws:username}"
     ]
     condition {
@@ -242,8 +383,4 @@ data "aws_iam_policy_document" "manage_mfa_policy" {
   # }
 }
 
-resource "aws_iam_group_membership" "master_account_users_group_membership" {
-  name  = "master-account-users-group-membership"
-  users = keys(var.users)
-  group = aws_iam_group.master_account_users.name
-}
+# // END MASTER ACCOUNT USERS, GROUPS AND POLICIES

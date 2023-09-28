@@ -37,3 +37,11 @@ output "master_admin_role_arn" {
   value       = module.master_admin_role.arn
   description = "ARN of role for access master account as admin"
 }
+
+output "group_policies" {
+  description = "IAM group policies created for master and cross-account access"
+  value = merge(
+     { for p in aws_iam_group_policy.other_group_with_mfa_policy : p.name => p},
+     { for p in aws_iam_group_policy.admin_group_with_mfa_policy : p.name => p},
+  )
+}
