@@ -57,9 +57,9 @@ module "db_username_label" {
 }
 
 module "rds_instance" {
-  source = "git::https://github.com/joe-niland/terraform-aws-rds.git?ref=feat/restore-to-point-in-time"
-  # source  = "cloudposse/rds/aws"
-  # version = "0.43.0"
+  # source = "git::https://github.com/joe-niland/terraform-aws-rds.git?ref=feat/restore-to-point-in-time"
+  source  = "cloudposse/rds/aws"
+  version = "1.1.0"
 
   publicly_accessible = false
   subnet_ids          = var.subnet_ids
