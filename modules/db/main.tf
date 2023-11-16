@@ -57,16 +57,16 @@ module "db_username_label" {
 }
 
 module "rds_instance" {
-  # source = "git::https://github.com/joe-niland/terraform-aws-rds.git?ref=avoid-sec-group-count-issue"
-  source  = "cloudposse/rds/aws"
-  version = "0.43.0"
+  source = "git::https://github.com/joe-niland/terraform-aws-rds.git?ref=feat/restore-to-point-in-time"
+  # source  = "cloudposse/rds/aws"
+  # version = "0.43.0"
 
   publicly_accessible = false
   subnet_ids          = var.subnet_ids
   vpc_id              = var.vpc_id
   security_group_ids  = aws_security_group.allowed.*.id
   # allowed_cidr_blocks         = ["XXX.XXX.XXX.XXX/32"]
-  ca_cert_identifier = var.ca_cert_identifier  
+  ca_cert_identifier = var.ca_cert_identifier
 
   dns_zone_id = var.dns_zone_id
   host_name   = var.host_name
@@ -85,7 +85,7 @@ module "rds_instance" {
   storage_encrypted = var.storage_encrypted
   instance_class    = var.instance_class
 
-  # snapshot_identifier         = "rds:production-2015-06-26-06-05"
+  snapshot_identifier = var.snapshot_identifier
   deletion_protection = var.deletion_protection
 
   auto_minor_version_upgrade  = true
@@ -102,6 +102,8 @@ module "rds_instance" {
   option_group_name    = var.option_group_name
 
   enabled_cloudwatch_logs_exports = var.enabled_cloudwatch_logs_exports
+
+  restore_to_point_in_time = var.restore_to_point_in_time
 
   # db_parameter = [
   #   { name  = "myisam_sort_buffer_size"   value = "1048576" },

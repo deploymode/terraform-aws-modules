@@ -282,7 +282,7 @@ variable "db_options" {
 
 variable "snapshot_identifier" {
   type        = string
-  description = "Snapshot identifier e.g: rds:production-2019-06-26-06-05. If specified, the module create cluster from the snapshot"
+  description = "Snapshot identifier e.g: `rds:project-prod-2023-06-26-06-05` or `manual-backup-2023-11-16`. If specified, the module creates the instance from this snapshot."
   default     = null
 }
 
@@ -354,4 +354,16 @@ variable "monitoring_role_arn" {
 variable "iam_database_authentication_enabled" {
   description = "Specifies whether or mappings of AWS Identity and Access Management (IAM) accounts to database accounts is enabled"
   default     = false
+}
+
+variable "restore_to_point_in_time" {
+  type = object({
+    restore_time                             = optional(string, null)
+    source_db_instance_identifier            = optional(string, null)
+    source_db_instance_automated_backups_arn = optional(string, null)
+    source_dbi_resource_id                   = optional(string, null)
+    use_latest_restorable_time               = optional(bool, null)
+  })
+  description = "An object specifying the restore point in time for the DB instance to restore from. Only used when `snapshot_identifier` is not provided."
+  default     = null
 }
