@@ -1,6 +1,14 @@
+locals {
+  bucket_resources = {
+    for key, value in var.buckets : key => length(value.allowed_extensions) == 0 ?
+    ["arn:aws:s3:::${module.s3_bucket[key].bucket_id}/*"] :
+    [for ext in value.allowed_extensions : "arn:aws:s3:::${module.s3_bucket[key].bucket_id}/*.${ext}"]
+  }
+}
+
 module "s3_bucket" {
   source  = "cloudposse/s3-bucket/aws"
-  version = "3.1.2"
+  version = "4.0.1"
 
   for_each = var.buckets
 
@@ -23,7 +31,7 @@ module "s3_bucket" {
 
 module "app_bucket_iam_policy" {
   source  = "cloudposse/iam-policy/aws"
-  version = "1.0.1"
+  version = "2.0.1"
 
   for_each = var.create_policy ? var.buckets : {}
 
@@ -33,7 +41,7 @@ module "app_bucket_iam_policy" {
   iam_policy_enabled = true
   description        = "Allows app-level access to ${module.s3_bucket[each.key].bucket_id}"
 
-  iam_policy = {
+  iam_policy = [{
     version   = "2012-10-17"
     policy_id = "s3-app-bucket"
     statements = [
@@ -61,9 +69,10 @@ module "app_bucket_iam_policy" {
             "s3:DeleteObject"
           ]
         : []))
-        resources  = ["arn:aws:s3:::${module.s3_bucket[each.key].bucket_id}/*"]
+        resources  = local.bucket_resources[each.key]
         conditions = []
       },
+
       # TODO: move this out so it's not duplicated
       {
         sid    = "ListBuckets"
@@ -76,7 +85,7 @@ module "app_bucket_iam_policy" {
         conditions = []
       }
     ]
-  }
+  }]
 
   context = module.this.context
 }

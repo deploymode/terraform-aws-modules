@@ -13,6 +13,7 @@ variable "buckets" {
         max_age_seconds = number
       }))
       allow_delete = optional(bool, true)
+      allowed_extensions = optional(list(string), [])
     }
   ))
   default     = {}
