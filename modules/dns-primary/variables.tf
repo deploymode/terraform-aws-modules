@@ -1,7 +1,9 @@
 variable "domains" {
-  type        = list(string)
-  description = "Domains to set up zones for"
-  default     = []
+  type        = map(object({
+    dnssec_enabled = optional(bool, false)
+  }))
+  description = "Domains to set up zones for. Map of domain name to settings."
+  default     = {}
 }
 
 variable "record_config" {

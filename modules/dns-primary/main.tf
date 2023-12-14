@@ -5,15 +5,15 @@
 
 locals {
   dns_soa_config = "awsdns-hostmaster.amazon.com. 1 7200 900 1209600 86400"
-  domains_set    = toset(var.domains)
   zone_recs_map  = { for zone in var.record_config : "${zone.name}${zone.root_zone}.${zone.type}" => zone }
+  dnssec_zones = {for k, v in var.domains: k => v if v.dnssec_enabled == true}
 }
 
 resource "aws_route53_zone" "root" {
-  for_each = local.domains_set
+  for_each = var.domains 
 
-  name    = each.value
-  comment = "DNS zone for the ${each.value} root domain"
+  name    = each.key
+  comment = "DNS zone for the ${each.key} root domain"
   tags    = module.this.tags
 }
 
@@ -40,4 +40,25 @@ resource "aws_route53_record" "dnsrec" {
   ttl     = each.value.ttl
 
   records = each.value.records
+}
+
+module "dnssec" {
+  source  = "ugns/route53-dnssec/aws"
+  version = "1.1.0"
+
+  for_each = local.dnssec_zones
+
+  zones = {
+    "${each.key}" = {
+      zone_id = aws_route53_zone.root[each.key].zone_id
+    }
+  }
+
+  context = module.this.context
+}
+
+resource "aws_route53_hosted_zone_dnssec" "default" {
+  for_each = local.dnssec_zones
+
+  hosted_zone_id = aws_route53_zone.root[each.key].zone_id
 }
