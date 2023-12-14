@@ -712,6 +712,38 @@ variable "cdn_log_expiration_days" {
   default     = 90
 }
 
+variable "cdn_headers_response_security_referrer" {
+  type        = string
+  description = "The value of the referer header that CloudFront sends in the response. This will override the value from the origin."
+  default     = "strict-origin-when-cross-origin"
+}
+
+# https://registry.terraform.io/providers/hashicorp/aws/latest/docs/resources/cloudfront_response_headers_policy#strict_transport_security
+variable "cdn_headers_response_security_sts" {
+  type        = object({
+    access_control_max_age_sec            = number
+      include_subdomains = bool
+      preload           = bool
+  })
+  description = "Determines whether CloudFront includes the Strict-Transport-Security HTTP response header and the header's value. "
+  default     = null
+}
+
+variable "cdn_headers_response_remove" {
+  type       = list(string)
+  description = "List of headers to remove from the response"
+  default     = ["Server"]
+}
+
+variable "cdn_headers_response_custom" {
+  type        = map(object({
+    override  = bool
+    header_value = string
+  }))
+  description = "Custom headers to add to the response with override flag"
+  default     = null
+}
+
 
 // Front-end static website
 

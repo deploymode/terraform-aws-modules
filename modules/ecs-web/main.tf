@@ -331,7 +331,7 @@ module "alb" {
   cross_zone_load_balancing_enabled = true
   http2_enabled                     = true
   deletion_protection_enabled       = false
-  https_ssl_policy = var.alb_https_ssl_policy
+  https_ssl_policy                  = var.alb_https_ssl_policy
   context                           = module.alb_label.context
 }
 
@@ -440,11 +440,83 @@ data "aws_iam_policy_document" "send_email_policy" {
   }
 }
 
+###
+## CDN
+#
+module "label_cdn" {
+  source     = "cloudposse/label/null"
+  version    = "0.25.0"
+  attributes = ["cdn"]
+  context    = module.this.context
+}
 
+module "label_cdn_response" {
+  source     = "cloudposse/label/null"
+  version    = "0.25.0"
+  attributes = ["response"]
+  context    = module.label_cdn.context
+}
+
+resource "aws_cloudfront_response_headers_policy" "default" {
+  name = module.label_cdn_response.id
+
+  security_headers_config {
+    content_type_options {
+      override = true
+    }
+
+    frame_options {
+      frame_option = "SAMEORIGIN"
+      override = true
+    }
+
+    referrer_policy {
+      referrer_policy = var.cdn_headers_response_security_referrer 
+      override = true
+    }
+
+    dynamic "strict_transport_security" {
+      for_each = var.cdn_headers_response_security_sts != null ? [var.cdn_headers_response_security_sts] : []
+      
+      content {
+        access_control_max_age_sec            = strict_transport_security.value.access_control_max_age_sec 
+        include_subdomains = strict_transport_security.value.include_subdomains
+        preload           = strict_transport_security.value.preload
+        override          = true
+      }
+    }
+  }
+
+  remove_headers_config {
+    dynamic "items" {
+      for_each = var.cdn_headers_response_remove # != null ? [var.cdn_headers_response_remove] : []
+      content {
+        header = items.value
+      }
+    }
+  }
+
+  dynamic "custom_headers_config" {
+    for_each = var.cdn_headers_response_custom != null ? [var.cdn_headers_response_custom] : []
+
+    content {
+      dynamic "items" {
+        for_each = custom_headers_config.value
+        content {
+          header   = items.key
+          override = items.value.override
+          value    = items.value.header_value
+        }
+      }
+    }
+  }
+
+ 
+}
 
 module "cdn" {
   source  = "cloudposse/cloudfront-cdn/aws"
-  version = "0.25.0"
+  version = "1.0.0"
   enabled = module.this.enabled && var.use_cdn
 
   aliases                         = concat([local.app_fqdn], var.app_dns_aliases)
@@ -456,6 +528,7 @@ module "cdn" {
   origin_ssl_protocols            = var.cdn_origin_ssl_protocols
   viewer_protocol_policy          = "redirect-to-https"
   viewer_minimum_protocol_version = var.cdn_viewer_min_protocol_version
+  response_headers_policy_id      = aws_cloudfront_response_headers_policy.default.id
   parent_zone_name                = var.domain_name
   dns_aliases_enabled             = var.create_cdn_dns_records
   default_root_object             = ""
@@ -478,7 +551,7 @@ module "cdn" {
   log_standard_transition_days    = var.cdn_log_standard_transition_days
   log_glacier_transition_days     = var.cdn_log_glacier_transition_days
 
-  context = module.this.context
+  context = module.label_cdn.context
 }
 
 // CodePipeline
@@ -490,9 +563,9 @@ resource "aws_codestarconnections_connection" "default" {
 }
 
 module "ecs_codepipeline" {
-  source  = "cloudposse/ecs-codepipeline/aws"
-  version = "0.33.0"
-  # source = "git::https://github.com/deploymode/terraform-aws-ecs-codepipeline-1?ref=codestar-source-output-artifact-type-var"
+  # source  = "cloudposse/ecs-codepipeline/aws"
+  # version = "0.33.0"
+  source = "git::https://github.com/deploymode/terraform-aws-ecs-codepipeline-1?ref=update-upstream-modules"
 
   enabled                         = var.codepipeline_enabled
   region                          = var.aws_region
@@ -560,8 +633,9 @@ module "ecs_codepipeline" {
 }
 
 module "codepipeline_notifications" {
-  source  = "kjagiello/codepipeline-slack-notifications/aws"
-  version = "1.2.0"
+#   source  = "kjagiello/codepipeline-slack-notifications/aws"
+#   version = "1.2.0"
+  source =  "git::https://github.com/deploymode/terraform-aws-codepipeline-slack-notifications?ref=update-aws-provider-v5"
 
   for_each = module.this.enabled && var.codepipeline_enabled ? var.codepipeline_slack_notifications : {}
 
@@ -614,6 +688,7 @@ resource "aws_iam_role_policy_attachment" "codebuild_additional_policies" {
 }
 
 # Allow Codebuild to read/write from S3 buckets
+# TODO: deprecate this
 resource "aws_iam_role_policy_attachment" "codebuild_app_bucket" {
   for_each   = toset(module.this.enabled && var.codepipeline_enabled ? var.external_app_buckets : [])
   role       = module.ecs_codepipeline.codebuild_role_id
@@ -692,7 +767,7 @@ module "vpc_peering" {
 
 module "redis" {
   source     = "cloudposse/elasticache-redis/aws"
-  version    = "0.44.0"
+  version    = "1.0.0"
   enabled    = (module.this.enabled && var.provision_redis_cache)
   attributes = compact(concat(module.this.attributes, ["cache"]))
 
@@ -812,9 +887,10 @@ resource "aws_iam_role_policy_attachment" "ecs_task_dynamodb" {
 }
 
 // Bucket access
+// TODO: deprecate this
 module "app_bucket_iam_policy" {
   source  = "cloudposse/iam-policy/aws"
-  version = "0.3.0"
+  version = "2.0.1"
 
   for_each = toset(var.external_app_buckets)
 
@@ -855,6 +931,7 @@ module "app_bucket_iam_policy" {
   ]
 }
 
+// TODO: deprecate this
 module "app_bucket_policy_label" {
   source     = "cloudposse/label/null"
   version    = "0.25.0"
@@ -862,6 +939,7 @@ module "app_bucket_policy_label" {
   context    = module.this.context
 }
 
+// TODO: deprecate this
 resource "aws_iam_policy" "app_bucket_iam_policy" {
   for_each    = toset(var.external_app_buckets)
   path        = "/"
@@ -909,12 +987,23 @@ module "frontend_web" {
   context = module.this.context
 }
 
+###
+# SSM parameter store values for exposing data to other modules/services
+
 resource "aws_ssm_parameter" "ssm_param_frontend_bucket" {
   count       = module.this.enabled && var.create_frontend_website ? 1 : 0
   name        = "/${module.this.namespace}/${module.this.stage}/${module.this.environment}/build/FRONTEND_BUCKET"
   description = "Frontend bucket name"
   type        = "String"
   value       = module.frontend_web.s3_bucket
-  overwrite   = true
+  tags        = module.this.tags
+}
+
+resource "aws_ssm_parameter" "ssm_param_app_fqdn" {
+  count       = module.this.enabled && var.create_frontend_website ? 1 : 0
+  name        = "/${module.this.namespace}/${module.this.stage}/${module.this.environment}/app/APP_FQDN"
+  description = "Frontend bucket name"
+  type        = "String"
+  value       = module.frontend_web.s3_bucket
   tags        = module.this.tags
 }
