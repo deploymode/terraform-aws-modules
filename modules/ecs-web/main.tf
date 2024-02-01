@@ -582,7 +582,7 @@ module "ecs_codepipeline" {
   privileged_mode         = true
   image_repo_name         = split("/", module.ecr.repository_url)[0]
   image_tag               = "latest" // var.image_tag
-  webhook_enabled         = false
+  webhook_enabled         = var.codepipeline_webhook_enabled 
   s3_bucket_force_destroy = true
   environment_variables = concat(
     var.codepipeline_environment_variables,

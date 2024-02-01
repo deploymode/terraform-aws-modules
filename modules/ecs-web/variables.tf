@@ -452,6 +452,12 @@ variable "codepipeline_build_timeout" {
   description = "How long in minutes, from 5 to 480 (8 hours), for AWS CodeBuild to wait until timing out any related build that does not get marked as completed"
 }
 
+variable "codepipeline_webhook_enabled" {
+  type        = bool
+  description = "Set to false to prevent the module from creating any webhook resources"
+  default     = true
+}
+
 variable "codepipeline_environment_variables" {
   type = list(object(
     {
