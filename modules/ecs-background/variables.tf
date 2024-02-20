@@ -86,7 +86,7 @@ variable "ecs_capacity_provider_strategies" {
   type = list(object({
     capacity_provider = string
     weight            = number
-    base              = number
+    base              = optional(number, null)
   }))
   description = "The capacity provider strategies to use for the service. See `capacity_provider_strategy` configuration block: https://www.terraform.io/docs/providers/aws/r/ecs_service.html#capacity_provider_strategy"
   default     = []
