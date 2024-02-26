@@ -45,13 +45,6 @@ locals {
         name  = join("_", ["SQS_QUEUE", upper(queue_short_name)])
         value = queue_name
   } if queue_short_name != local.default_queue_name]) : []
-
-  dynamodb_cache_env_vars = var.dynamodb_table_name != "" ? [
-    {
-      name  = "DYNAMODB_CACHE_TABLE"
-      value = var.dynamodb_table_name
-    },
-  ] : []
 }
 
 
@@ -100,8 +93,7 @@ module "container" {
       },
     ],
     var.container_environment,
-    local.queue_env_vars,
-    local.dynamodb_cache_env_vars
+    local.queue_env_vars
   )
   secrets       = var.container_ssm_secrets
   port_mappings = var.container_port_mappings
@@ -275,7 +267,7 @@ module "ecs_codepipeline" {
   codestar_connection_arn = var.codestar_connection_arn
   github_oauth_token      = var.codepipeline_github_oauth_token
   github_webhook_events   = var.codepipeline_github_webhook_events
-  webhook_enabled = var.codepipeline_webhook_enabled
+  webhook_enabled         = var.codepipeline_webhook_enabled
 
   codebuild_vpc_config = var.codebuild_vpc_config
 

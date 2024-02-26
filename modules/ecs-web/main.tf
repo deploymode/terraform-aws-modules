@@ -84,24 +84,6 @@ locals {
         name  = join("_", ["SQS_QUEUE", upper(queue_short_name)])
         value = queue_name
   } if queue_short_name != local.default_queue_name]) : []
-
-  redis_cache_env_vars = var.provision_redis_cache ? [
-    {
-      name  = "REDIS_HOST"
-      value = format("tls://%s", module.redis.endpoint)
-    }
-  ] : []
-
-  dynamodb_cache_env_vars = var.provision_dynamodb_cache ? [
-    {
-      name  = "DYNAMODB_CACHE_TABLE"
-      value = module.dynamodb.table_name
-    },
-    # {
-    #   name  = "DYNAMODB_ENDPOINT"
-    #   value = module.dynamodb.table_name
-    # },
-  ] : []
 }
 
 // ECR Registry/Repo
@@ -207,8 +189,6 @@ module "container_php-fpm" {
     },
     ],
     var.container_environment_php,
-    local.dynamodb_cache_env_vars,
-    local.redis_cache_env_vars,
     local.queue_env_vars
   )
   secrets = var.container_ssm_secrets_php
@@ -563,9 +543,9 @@ resource "aws_codestarconnections_connection" "default" {
 }
 
 module "ecs_codepipeline" {
-  source  = "cloudposse/ecs-codepipeline/aws"
-  version = "0.33.0"
-  # source = "git::https://github.com/deploymode/terraform-aws-ecs-codepipeline-1?ref=update-upstream-modules"
+  # source  = "cloudposse/ecs-codepipeline/aws"
+  # version = "0.33.0"
+  source = "git::https://github.com/deploymode/terraform-aws-ecs-codepipeline-1?ref=update-upstream-modules"
 
   enabled                         = var.codepipeline_enabled
   region                          = var.aws_region
@@ -804,7 +784,7 @@ module "redis" {
 # This can be assigned to other resources, such as the ECS task
 module "redis_allowed_sg" {
   source  = "cloudposse/security-group/aws"
-  version = "2.0.0-rc1"
+  version = "2.2.0"
 
   enabled = module.this.enabled && var.provision_redis_cache
 
