@@ -22,6 +22,8 @@ lint:
     - markdownlint@0.39.0
     - prettier@3.2.5
     - terrascan@1.18.11
+    - terraform@1.7.4:
+        commands: [validate, fmt]
     - tflint@0.50.3
     - trivy@0.49.1
     - trufflehog@3.67.5
