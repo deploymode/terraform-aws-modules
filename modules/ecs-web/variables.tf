@@ -588,7 +588,7 @@ variable "redis_password" {
 
 }
 
-// Redis
+// DynamoDB 
 
 variable "provision_dynamodb_cache" {
   type        = bool
