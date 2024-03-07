@@ -418,13 +418,3 @@ variable "queue_names" {
   description = "Map of queue short name to full queue name of SQS queues used by application (if any). The item with key `app` will be set as the default queue for the application."
   default     = {}
 }
-
-// DynamoDB
-
-variable "dynamodb_table_name" {
-  type        = string
-  description = "Name of DynamoDB table used by application (if any)"
-  default     = ""
-}
-
-

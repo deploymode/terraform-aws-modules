@@ -338,10 +338,7 @@ module "ecs_task" {
   network_mode     = var.ecs_network_mode
   assign_public_ip = var.assign_public_ip
   subnet_ids       = var.private_subnet_ids
-  security_group_ids = concat(
-    var.ecs_security_group_ids,
-    var.provision_redis_cache ? [module.redis_allowed_sg.id] : []
-  )
+  security_group_ids = var.ecs_security_group_ids
 
   # ALB
   alb_security_group     = module.alb.security_group_id
@@ -743,127 +740,6 @@ module "vpc_peering" {
   update_timeout                            = "5m"
   delete_timeout                            = "10m"
   context                                   = module.this.context
-}
-
-module "redis" {
-  source     = "cloudposse/elasticache-redis/aws"
-  version    = "1.0.0"
-  enabled    = (module.this.enabled && var.provision_redis_cache)
-  attributes = compact(concat(module.this.attributes, ["cache"]))
-
-  # Networking
-  availability_zones = var.redis_availability_zones
-  vpc_id             = var.vpc_id
-  subnets            = var.private_subnet_ids
-
-  # DNS
-  zone_id = var.hosted_zone_id
-
-  # Security groups
-  create_security_group      = true
-  allowed_security_group_ids = [module.redis_allowed_sg.id] #module.ecs_task.service_security_group_id]
-  # associated_security_group_ids = [module.redis_allowed_sg.id] # aws_security_group.redis_allowed.*.id
-  # Redis infra
-  cluster_mode_enabled       = var.redis_cluster_mode_enabled
-  cluster_size               = var.redis_cluster_size
-  instance_type              = var.redis_instance_type
-  apply_immediately          = true
-  automatic_failover_enabled = false
-  at_rest_encryption_enabled = false
-  transit_encryption_enabled = true
-
-  # Redis settings
-  engine_version = var.redis_engine_version
-  family         = var.redis_family
-  auth_token     = var.redis_password
-
-  context = module.this.context
-}
-
-# Security group which is allowed access to redis
-# This can be assigned to other resources, such as the ECS task
-module "redis_allowed_sg" {
-  source  = "cloudposse/security-group/aws"
-  version = "2.2.0"
-
-  enabled = module.this.enabled && var.provision_redis_cache
-
-  attributes = ["redis", "allowed"]
-
-  security_group_description = "Services which need Redis access can be assigned this security group"
-
-  create_before_destroy = true
-
-  # Allow unlimited egress
-  allow_all_egress = true
-
-  rules = []
-
-  vpc_id = var.vpc_id
-
-  context = module.this.context
-}
-
-// DynamoDB Cache
-module "dynamodb" {
-  source                        = "cloudposse/dynamodb/aws"
-  version                       = "0.25.2"
-  enabled                       = (module.this.enabled && var.provision_dynamodb_cache)
-  hash_key                      = "key"
-  enable_autoscaler             = false
-  enable_point_in_time_recovery = false
-  billing_mode                  = "PAY_PER_REQUEST"
-  ttl_attribute                 = var.dynamodb_cache_ttl_attribute
-  context                       = module.this.context
-}
-
-data "aws_iam_policy_document" "dynamodb" {
-  count = (module.this.enabled && var.provision_dynamodb_cache) ? 1 : 0
-
-  # Allow ECS task to access DynamoDB cache table
-  statement {
-    sid = ""
-
-    actions = [
-      "dynamodb:DescribeTable",
-      "dynamodb:Query",
-      "dynamodb:Scan",
-      "dynamodb:BatchGetItem",
-      "dynamodb:BatchWriteItem",
-      "dynamodb:ConditionCheckItem",
-      "dynamodb:PutItem",
-      "dynamodb:DeleteItem",
-      "dynamodb:GetItem",
-      "dynamodb:UpdateItem"
-    ]
-
-    resources = [
-      module.dynamodb.table_arn
-    ]
-
-    effect = "Allow"
-  }
-}
-
-module "dynamodb_label" {
-  source     = "cloudposse/label/null"
-  version    = "0.25.0"
-  attributes = ["dynamodb"]
-  context    = module.this.context
-}
-
-resource "aws_iam_policy" "dynamodb_access_policy" {
-  count       = (module.this.enabled && var.provision_dynamodb_cache) ? 1 : 0
-  name        = module.dynamodb_label.id
-  path        = "/"
-  description = "Allows access to DynamoDB table for app cache"
-  policy      = join("", data.aws_iam_policy_document.dynamodb.*.json)
-}
-
-resource "aws_iam_role_policy_attachment" "ecs_task_dynamodb" {
-  count      = (module.this.enabled && var.provision_dynamodb_cache) ? 1 : 0
-  role       = module.ecs_task.task_role_name
-  policy_arn = join("", aws_iam_policy.dynamodb_access_policy.*.arn)
 }
 
 // Bucket access
