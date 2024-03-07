@@ -630,14 +630,14 @@ variable "cdn_log_force_destroy" {
 
 variable "cdn_log_standard_transition_days" {
   type        = number
-  description = "Number of days to persist in the standard storage tier before moving to the glacier tier"
+  description = "Number of days to persist in the standard storage tier before moving to the infrequent access tier. Set to null to disable transition."
   default     = 30
 }
 
 variable "cdn_log_glacier_transition_days" {
   type        = number
-  description = "Number of days after which to move the data to the glacier storage tier"
-  default     = 60
+  description = "Number of days after which to move the data to the glacier storage tier. Set to null to disable transition."
+  default     = null
 }
 
 variable "cdn_log_expiration_days" {

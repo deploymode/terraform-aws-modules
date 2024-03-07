@@ -521,6 +521,7 @@ module "cdn" {
   allowed_methods                 = ["HEAD", "DELETE", "POST", "GET", "OPTIONS", "PUT", "PATCH"]
   price_class                     = "PriceClass_All"
   logging_enabled                 = var.cdn_logging_enabled
+  log_bucket_fqdn                 = var.cdn_log_bucket_fqdn
   log_prefix                      = var.cdn_log_prefix
   log_force_destroy               = var.cdn_log_force_destroy
   log_expiration_days             = var.cdn_log_expiration_days
