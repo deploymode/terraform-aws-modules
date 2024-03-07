@@ -10,6 +10,8 @@ resource "aws_ecs_cluster" "fargate_cluster" {
   lifecycle {
     create_before_destroy = true
   }
+
+  tags = module.this.tags
 }
 
 resource "aws_ecs_cluster_capacity_providers" "default" {
@@ -28,4 +30,5 @@ resource "aws_service_discovery_private_dns_namespace" "default" {
   name        = join(".", [module.this.namespace, "local"])
   description = module.this.id
   vpc         = var.vpc_id
+  tags = module.this.tags
 }
