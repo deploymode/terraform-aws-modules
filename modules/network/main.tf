@@ -1,13 +1,13 @@
 module "vpc" {
   source                  = "cloudposse/vpc/aws"
-  version                 = "2.1.0"
+  version                 = "2.1.1"
   ipv4_primary_cidr_block = var.account_network_cidr
   context                 = module.this.context
 }
 
 module "subnets" {
   source               = "cloudposse/dynamic-subnets/aws"
-  version              = "2.0.2"
+  version              = "2.4.1"
   availability_zones   = var.zones
   vpc_id               = module.vpc.vpc_id
   igw_id               = [module.vpc.igw_id]
