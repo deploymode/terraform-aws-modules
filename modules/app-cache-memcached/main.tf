@@ -1,7 +1,6 @@
 module "memcached_label" {
   source     = "cloudposse/label/null"
   version    = "0.25.0"
-  attributes = ["memcached"]
   context    = module.this.context
 }
 

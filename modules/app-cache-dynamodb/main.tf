@@ -1,7 +1,6 @@
 module "dynamodb_label" {
   source     = "cloudposse/label/null"
   version    = "0.25.0"
-  attributes = ["dynamodb"]
   context    = module.this.context
 }
 
