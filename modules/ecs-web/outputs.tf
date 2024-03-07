@@ -52,47 +52,6 @@ output "container_name_php-fpm" {
   description = "ECS container name for PHP-FPM container"
 }
 
-// Redis
-
-output "redis_endpoint" {
-  value       = var.provision_redis_cache ? module.redis.endpoint : ""
-  description = "Elasticache Redis endpoint"
-}
-
-output "redis_port" {
-  value       = var.provision_redis_cache ? module.redis.port : 0
-  description = "Redis port"
-}
-
-output "redis_security_group_id" {
-  value       = var.provision_redis_cache ? module.redis.security_group_id : ""
-  description = "Elasticache Redis security group ID - allows access to Redis cache"
-}
-
-output "redis_access_security_group_id" {
-  value       = var.provision_redis_cache ? module.redis_allowed_sg.id : ""
-  description = "ID of the security group for use by services which need access to Redis"
-}
-
-
-
-// DynamoDB
-
-output "dynamodb_table_name" {
-  value       = var.provision_dynamodb_cache ? module.dynamodb.table_name : ""
-  description = "DynamoDB table name for app cache"
-}
-
-output "dynamodb_table_arn" {
-  value       = var.provision_dynamodb_cache ? module.dynamodb.table_arn : ""
-  description = "DynamoDB table ARN"
-}
-
-output "dynamodb_access_policy_arn" {
-  value       = var.provision_dynamodb_cache ? join("", aws_iam_policy.dynamodb_access_policy.*.arn) : ""
-  description = "Policy to allow access to DynamoDB table for app cache"
-}
-
 // Email
 
 output "email_sending_policy_arn" {
