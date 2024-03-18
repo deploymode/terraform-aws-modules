@@ -13,6 +13,16 @@ output "ses_dkim_tokens" {
   description = "A list of DKIM Tokens which, when added to the DNS Domain as CNAME records, allows for receivers to verify that emails were indeed authorized by the domain owner."
 }
 
+output "spf_record" {
+  value       = module.ses.spf_record
+  description = "The SPF record for the domain. This is a TXT record that should be added to the domain's DNS settings to allow SES to send emails on behalf of the domain."
+}
+
+output "custom_from_domain" {
+  value = module.ses.custom_from_domain
+  description = "The custom mail FROM domain"
+}
+
 output "send_email_role" {
   value       = module.send_email_role.arn
   description = "Role which allows sending email"

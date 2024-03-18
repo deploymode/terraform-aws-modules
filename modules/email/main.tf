@@ -8,13 +8,18 @@ locals {
 }
 
 module "ses" {
-  source  = "cloudposse/ses/aws"
-  version = "0.22.1"
+  # source  = "cloudposse/ses/aws"
+  # version = "0.24.0"
+  source = "git::https://github.com/joe-niland/terraform-aws-ses.git?ref=spf-record"
 
-  domain           = var.domain
-  zone_id          = var.zone_id
-  verify_dkim      = var.verify_dkim
-  verify_domain    = var.verify_domain
+  domain                             = var.domain
+  zone_id                            = var.zone_id
+  verify_dkim                        = var.verify_dkim
+  verify_domain                      = var.verify_domain
+  create_spf_record                  = var.create_spf_record
+  custom_from_subdomain              = var.custom_from_subdomain
+  custom_from_behavior_on_mx_failure = var.custom_from_behavior_on_mx_failure
+
   ses_user_enabled = var.ses_user_enabled
   iam_permissions = [
     "ses:SendEmail",
@@ -67,10 +72,9 @@ data "aws_iam_policy_document" "send_email_policy" {
   }
 }
 
-
 module "store_write" {
   source  = "cloudposse/ssm-parameter-store/aws"
-  version = "0.8.4"
+  version = "0.13.0"
 
   enabled = module.this.enabled && var.iam_key_id_ssm_param_path != ""
 
@@ -128,4 +132,16 @@ module "email_notification_topic" {
   }
 
   context = module.this.context
+}
+
+# DMARC
+
+resource "aws_route53_record" "amazonses_dmarc_record" {
+  count = module.this.enabled && length(var.dmarc_record) > 0 ? 1 : 0
+
+  zone_id = var.zone_id
+  name    = "_dmarc.${var.domain}"
+  type    = "TXT"
+  ttl     = "1800"
+  records = var.dmarc_record
 }

@@ -26,6 +26,48 @@ variable "verify_dkim" {
   default     = false
 }
 
+variable "create_spf_record" {
+  type        = bool
+  description = "If provided the module will create an SPF record for `domain`."
+  default     = false
+}
+
+variable "custom_from_subdomain" {
+  type        = list(string)
+  description = "If provided the module will create a custom subdomain for the `From` address."
+  default     = []
+  nullable    = false
+
+  validation {
+    condition     = length(var.custom_from_subdomain) <= 1
+    error_message = "Only one custom_from_subdomain is allowed."
+  }
+
+  validation {
+    condition     = length(var.custom_from_subdomain) > 0 ? can(regex("^[a-zA-Z0-9-]+$", var.custom_from_subdomain[0])) : true
+    error_message = "The custom_from_subdomain must be a valid subdomain."
+  }
+}
+
+variable "custom_from_behavior_on_mx_failure" {
+  type        = string
+  description = "The behaviour of the custom_from_subdomain when the MX record is not found. Defaults to `UseDefaultValue`. Ignored if `custom_from_subdomain` is empty."
+  default     = "UseDefaultValue"
+
+  validation {
+    condition     = contains(["UseDefaultValue", "RejectMessage"], var.custom_from_behavior_on_mx_failure)
+    error_message = "The custom_from_behavior_on_mx_failure must be `UseDefaultValue` or `RejectMessage`."
+  }
+}
+
+variable "dmarc_record" {
+  type        = list(string)
+  description = "The DMARC record to create for the domain. If null, a default DMARC record will be created. Set to an empty list to disable DMARC."
+  default     = ["v=DMARC1; p=none;"]
+}
+
+# Permissions
+
 variable "create_iam_role" {
   type        = bool
   description = "Creates an IAM role with permission to send emails from SES domain. Probably not required if `ses_user_enabled` is true."
