@@ -127,7 +127,10 @@ variable "allocated_storage" {
 
 variable "max_allocated_storage" {
   type        = number
-  description = "The upper limit to which RDS can automatically scale the storage in GBs"
+  description = <<EOT
+  The upper limit to which RDS can automatically scale the storage in GBs. 
+  If this is greater than `allocated_storage`, then RDS storage auto-scaling is enabled.
+EOT
   default     = 0
 }
 
