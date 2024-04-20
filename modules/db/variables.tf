@@ -316,7 +316,10 @@ variable "kms_key_arn" {
 variable "performance_insights_enabled" {
   type        = bool
   default     = false
-  description = "Specifies whether Performance Insights are enabled."
+  description = <<EOT
+  Specifies whether Performance Insights are enabled.
+  Not supported for micro and small instances, and some others.
+EOT
 }
 
 variable "performance_insights_kms_key_id" {
