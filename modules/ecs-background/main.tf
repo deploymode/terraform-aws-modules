@@ -247,8 +247,9 @@ resource "aws_service_discovery_service" "service_discovery" {
 
 // CodePipeline using ECS Deploy
 module "ecs_codepipeline" {
-  source  = "cloudposse/ecs-codepipeline/aws"
-  version = "0.33.0"
+  # source  = "cloudposse/ecs-codepipeline/aws"
+  # version = "0.33.0"
+  source = "git::https://github.com/deploymode/terraform-aws-ecs-codepipeline-1?ref=update-upstream-modules"
 
   enabled = var.container_image == null
 
