@@ -329,7 +329,7 @@ module "codepipeline_notifications" {
 
   slack_url     = each.value.webhook_url
   slack_channel = each.value.channel
-  event_type_ids = tolist(distinct(concat(
+  pipeline_event_type_ids = tolist(distinct(concat(
     flatten([for g in each.value.event_groups : local.codepipeline_group_events_map[g]]),
     each.value.event_ids
   )))
