@@ -6,19 +6,19 @@ locals {
 
   codepipeline_group_events_map = {
     all = [
-      "codepipeline-pipeline-pipeline-execution-failed",
-      "codepipeline-pipeline-pipeline-execution-canceled",
-      "codepipeline-pipeline-pipeline-execution-started",
-      "codepipeline-pipeline-pipeline-execution-resumed",
-      "codepipeline-pipeline-pipeline-execution-succeeded",
-      "codepipeline-pipeline-pipeline-execution-superseded"
+      "failed",
+      "canceled",
+      "started",
+      "resumed",
+      "succeeded",
+      "superseded"
     ]
     errors = [
-      "codepipeline-pipeline-pipeline-execution-failed",
+      "failed",
     ]
     minimal = [
-      "codepipeline-pipeline-pipeline-execution-failed",
-      "codepipeline-pipeline-pipeline-execution-succeeded",
+      "failed",
+      "succeeded",
     ]
   }
 
@@ -314,8 +314,9 @@ module "ecs_codepipeline" {
 }
 
 module "codepipeline_notifications" {
-  source  = "kjagiello/codepipeline-slack-notifications/aws"
-  version = "1.2.0"
+  # source  = "kjagiello/codepipeline-slack-notifications/aws"
+  # version = "3.0.0"
+  source = "git::https://github.com/joe-niland/terraform-aws-codepipeline-slack-notifications?ref=update-python"
 
   for_each = local.codepipeline_enabled ? var.codepipeline_slack_notifications : {}
 
@@ -323,6 +324,8 @@ module "codepipeline_notifications" {
   namespace  = module.this.namespace
   stage      = module.this.stage
   attributes = concat([module.this.name, module.this.environment], module.this.attributes)
+
+  lambda_runtime = "python3.12"
 
   slack_url     = each.value.webhook_url
   slack_channel = each.value.channel
