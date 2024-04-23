@@ -88,7 +88,14 @@ variable "ecs_capacity_provider_strategies" {
     weight            = number
     base              = optional(number, null)
   }))
-  description = "The capacity provider strategies to use for the service. See `capacity_provider_strategy` configuration block: https://www.terraform.io/docs/providers/aws/r/ecs_service.html#capacity_provider_strategy"
+  description = <<EOT
+    The capacity provider strategies to use for the service.
+    See `capacity_provider_strategy` configuration block: 
+    https://www.terraform.io/docs/providers/aws/r/ecs_service.html#capacity_provider_strategy
+
+    Note, setting a weight of 0 will effectively disable the capacity
+    provider.
+EOT
   default     = []
 }
 

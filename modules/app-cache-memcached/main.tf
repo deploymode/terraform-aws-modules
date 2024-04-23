@@ -1,7 +1,7 @@
 module "memcached_label" {
-  source     = "cloudposse/label/null"
-  version    = "0.25.0"
-  context    = module.this.context
+  source  = "cloudposse/label/null"
+  version = "0.25.0"
+  context = module.this.context
 }
 
 module "memcached" {
@@ -12,7 +12,7 @@ module "memcached" {
   vpc_id                  = var.vpc_id
   subnets                 = var.subnet_ids
   availability_zones      = var.availability_zones
-  availability_zone       = var.az_mode == "single-az" ?  one(var.availability_zones) : null
+  availability_zone       = var.az_mode == "single-az" ? one(var.availability_zones) : null
   allowed_security_groups = [module.memcached_allowed_sg.id]
 
   // DNS
@@ -20,9 +20,9 @@ module "memcached" {
   dns_subdomain = var.dns_subdomain
 
   // Memcached infra & HA
-  az_mode       = var.az_mode
-  cluster_size  = var.cluster_size
-  instance_type = var.instance_type
+  az_mode            = var.az_mode
+  cluster_size       = var.cluster_size
+  instance_type      = var.instance_type
   maintenance_window = var.maintenance_window
 
   // Memcached settings    
@@ -30,7 +30,7 @@ module "memcached" {
   apply_immediately                  = true
   elasticache_parameter_group_family = var.elasticache_parameter_group_family
   max_item_size                      = var.max_item_size
-  transit_encryption_enabled = var.transit_encryption_enabled
+  transit_encryption_enabled         = var.transit_encryption_enabled
 
   context = module.memcached_label.context
 }

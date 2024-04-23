@@ -334,10 +334,10 @@ module "ecs_task" {
   version = "0.67.1"
 
   # Network
-  vpc_id           = var.vpc_id
-  network_mode     = var.ecs_network_mode
-  assign_public_ip = var.assign_public_ip
-  subnet_ids       = var.private_subnet_ids
+  vpc_id             = var.vpc_id
+  network_mode       = var.ecs_network_mode
+  assign_public_ip   = var.assign_public_ip
+  subnet_ids         = var.private_subnet_ids
   security_group_ids = var.ecs_security_group_ids
 
   # ALB
@@ -444,22 +444,22 @@ resource "aws_cloudfront_response_headers_policy" "default" {
 
     frame_options {
       frame_option = "SAMEORIGIN"
-      override = true
+      override     = true
     }
 
     referrer_policy {
-      referrer_policy = var.cdn_headers_response_security_referrer 
-      override = true
+      referrer_policy = var.cdn_headers_response_security_referrer
+      override        = true
     }
 
     dynamic "strict_transport_security" {
       for_each = var.cdn_headers_response_security_sts != null ? [var.cdn_headers_response_security_sts] : []
-      
+
       content {
-        access_control_max_age_sec            = strict_transport_security.value.access_control_max_age_sec 
-        include_subdomains = strict_transport_security.value.include_subdomains
-        preload           = strict_transport_security.value.preload
-        override          = true
+        access_control_max_age_sec = strict_transport_security.value.access_control_max_age_sec
+        include_subdomains         = strict_transport_security.value.include_subdomains
+        preload                    = strict_transport_security.value.preload
+        override                   = true
       }
     }
   }
@@ -488,7 +488,7 @@ resource "aws_cloudfront_response_headers_policy" "default" {
     }
   }
 
- 
+
 }
 
 module "cdn" {
@@ -560,7 +560,7 @@ module "ecs_codepipeline" {
   privileged_mode         = true
   image_repo_name         = split("/", module.ecr.repository_url)[0]
   image_tag               = "latest" // var.image_tag
-  webhook_enabled         = var.codepipeline_webhook_enabled 
+  webhook_enabled         = var.codepipeline_webhook_enabled
   s3_bucket_force_destroy = true
   environment_variables = concat(
     var.codepipeline_environment_variables,
@@ -611,9 +611,9 @@ module "ecs_codepipeline" {
 }
 
 module "codepipeline_notifications" {
-#   source  = "kjagiello/codepipeline-slack-notifications/aws"
-#   version = "1.2.0"
-  source =  "git::https://github.com/deploymode/terraform-aws-codepipeline-slack-notifications?ref=update-aws-provider-v5"
+  #   source  = "kjagiello/codepipeline-slack-notifications/aws"
+  #   version = "3.0.0"
+  source = "git::https://github.com/joe-niland/terraform-aws-codepipeline-slack-notifications?ref=update-python"
 
   for_each = module.this.enabled && var.codepipeline_enabled ? var.codepipeline_slack_notifications : {}
 
@@ -622,9 +622,11 @@ module "codepipeline_notifications" {
   stage      = module.this.stage
   attributes = concat([module.this.name, module.this.environment], module.this.attributes)
 
+  lambda_runtime = "python3.12"
+
   slack_url     = each.value.webhook_url
   slack_channel = each.value.channel
-  event_type_ids = tolist(distinct(concat(
+  pipeline_event_type_ids = tolist(distinct(concat(
     flatten([for g in each.value.event_groups : local.codepipeline_group_events_map[g]]),
     each.value.event_ids
   )))

@@ -133,7 +133,7 @@ variable "create_alb_dns_record" {
 
 variable "create_cdn_dns_records" {
   type        = bool
-  default     = true 
+  default     = true
   description = "Whether to create DNS aliases of `app_dns_name`.`domain_name` and other aliases supplied in `app_dns_aliases` to the CDN endpoint or not."
 }
 
@@ -174,8 +174,8 @@ variable "alb_access_logs_s3_bucket_force_destroy" {
 }
 
 variable "alb_https_ssl_policy" {
-  type = string
-  default = "ELBSecurityPolicy-TLS13-1-2-2021-06"
+  type        = string
+  default     = "ELBSecurityPolicy-TLS13-1-2-2021-06"
   description = "The name of the SSL Policy for the listener. Required if `https_enabled` is true."
 }
 
@@ -237,7 +237,14 @@ variable "ecs_capacity_provider_strategies" {
     weight            = number
     base              = optional(number, null)
   }))
-  description = "The capacity provider strategies to use for the service. See `capacity_provider_strategy` configuration block: https://www.terraform.io/docs/providers/aws/r/ecs_service.html#capacity_provider_strategy"
+  description = <<EOT
+    The capacity provider strategies to use for the service.
+    See `capacity_provider_strategy` configuration block: 
+    https://www.terraform.io/docs/providers/aws/r/ecs_service.html#capacity_provider_strategy
+
+    Note, setting a weight of 0 will effectively disable the capacity
+    provider.
+EOT
   default     = []
 }
 
@@ -654,24 +661,24 @@ variable "cdn_headers_response_security_referrer" {
 
 # https://registry.terraform.io/providers/hashicorp/aws/latest/docs/resources/cloudfront_response_headers_policy#strict_transport_security
 variable "cdn_headers_response_security_sts" {
-  type        = object({
-    access_control_max_age_sec            = number
-      include_subdomains = bool
-      preload           = bool
+  type = object({
+    access_control_max_age_sec = number
+    include_subdomains         = bool
+    preload                    = bool
   })
   description = "Determines whether CloudFront includes the Strict-Transport-Security HTTP response header and the header's value. "
   default     = null
 }
 
 variable "cdn_headers_response_remove" {
-  type       = list(string)
+  type        = list(string)
   description = "List of headers to remove from the response"
   default     = ["Server"]
 }
 
 variable "cdn_headers_response_custom" {
-  type        = map(object({
-    override  = bool
+  type = map(object({
+    override     = bool
     header_value = string
   }))
   description = "Custom headers to add to the response with override flag"
