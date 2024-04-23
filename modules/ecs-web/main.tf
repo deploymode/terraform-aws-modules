@@ -3,19 +3,19 @@ locals {
   default_queue_name = "app"
   codepipeline_group_events_map = {
     all = [
-      "codepipeline-pipeline-pipeline-execution-failed",
-      "codepipeline-pipeline-pipeline-execution-canceled",
-      "codepipeline-pipeline-pipeline-execution-started",
-      "codepipeline-pipeline-pipeline-execution-resumed",
-      "codepipeline-pipeline-pipeline-execution-succeeded",
-      "codepipeline-pipeline-pipeline-execution-superseded"
+      "failed",
+      "canceled",
+      "started",
+      "resumed",
+      "succeeded",
+      "superseded"
     ]
     errors = [
-      "codepipeline-pipeline-pipeline-execution-failed",
+      "failed",
     ]
     minimal = [
-      "codepipeline-pipeline-pipeline-execution-failed",
-      "codepipeline-pipeline-pipeline-execution-succeeded",
+      "failed",
+      "succeeded",
     ]
   }
 }
