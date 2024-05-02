@@ -611,9 +611,8 @@ module "ecs_codepipeline" {
 }
 
 module "codepipeline_notifications" {
-  #   source  = "kjagiello/codepipeline-slack-notifications/aws"
-  #   version = "3.0.0"
-  source = "git::https://github.com/joe-niland/terraform-aws-codepipeline-slack-notifications?ref=update-python"
+  source  = "kjagiello/codepipeline-slack-notifications/aws"
+  version = "3.1.0"
 
   for_each = module.this.enabled && var.codepipeline_enabled ? var.codepipeline_slack_notifications : {}
 
