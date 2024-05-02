@@ -305,7 +305,7 @@ module "alb" {
   health_check_timeout                    = var.alb_healthcheck_timeout
   health_check_interval                   = var.alb_healthcheck_interval
   certificate_arn                         = var.certificate_arn
-  access_logs_enabled                     = false
+  access_logs_enabled                     = var.alb_access_logs_enabled
   alb_access_logs_s3_bucket_force_destroy = var.alb_access_logs_s3_bucket_force_destroy
   # alb_access_logs_s3_bucket_force_destroy_enabled = var.alb_access_logs_s3_bucket_force_destroy ? "true" : "false"
   cross_zone_load_balancing_enabled = true

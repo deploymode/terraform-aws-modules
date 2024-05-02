@@ -167,6 +167,12 @@ variable "app_dns_aliases" {
   default     = []
 }
 
+variable "alb_access_logs_enabled" {
+  type        = bool
+  default     = false
+  description = "A boolean that indicates whether access logs should be enabled for the ALB"
+}
+
 variable "alb_access_logs_s3_bucket_force_destroy" {
   type        = bool
   default     = true
