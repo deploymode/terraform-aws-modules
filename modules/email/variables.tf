@@ -103,8 +103,15 @@ variable "iam_access_key_max_age" {
   }
 }
 
-variable "notification_email" {
-  type        = string
-  description = "Email address to send notifications to"
-  default     = null
+# SNS notifications
+
+variable "notification_emails" {
+  type        = map(string)
+  description = "A map of SES event to email address to notify. Keys are `bounce`, `complaint`, and `delivery`."
+  default     = {}
+
+  validation {
+    condition = length(setunion(keys(var.notification_emails), ["bounce", "complaint", "delivery"])) == 3
+    error_message = "Only `bounce`, `complaint`, and `delivery` are allowed keys in notification_emails."
+  }
 }

@@ -3,14 +3,9 @@
 #
 ###
 
-locals {
-  email_notification_topic_enabled = module.this.enabled && var.notification_email != null && var.notification_email != ""
-}
-
 module "ses" {
-  # source  = "cloudposse/ses/aws"
-  # version = "0.24.0"
-  source = "git::https://github.com/joe-niland/terraform-aws-ses.git?ref=spf-record"
+  source  = "cloudposse/ses/aws"
+  version = "0.25.0"
 
   domain                             = var.domain
   zone_id                            = var.zone_id
@@ -98,23 +93,25 @@ module "store_write" {
   context = module.this.context
 }
 
-resource "aws_ses_identity_notification_topic" "bounce" {
-  count                    = local.email_notification_topic_enabled ? 1 : 0
-  topic_arn                = module.email_notification_topic.sns_topic_arn
-  notification_type        = "Bounce"
+# Bounce and Complaints notification
+
+resource "aws_ses_identity_notification_topic" "notification_topic" {
+  for_each                 = module.this.enabled ? var.notification_emails : {}
+
+  topic_arn                = module.email_notification_topic[each.key].sns_topic_arn
+  notification_type        = title(each.key)
   identity                 = var.domain
   include_original_headers = true
 }
 
-# Bounce and Complaints notification
 module "email_notification_topic" {
   source  = "cloudposse/sns-topic/aws"
   version = "0.20.3"
 
-  name       = "ses"
-  attributes = ["bounce"]
+  for_each = var.notification_emails
 
-  enabled = local.email_notification_topic_enabled
+  name       = "ses"
+  attributes = [each.key]
 
   encryption_enabled = false
 
@@ -125,7 +122,7 @@ module "email_notification_topic" {
   subscribers = {
     email = {
       protocol               = "email-json"
-      endpoint               = var.notification_email
+      endpoint               = each.value
       endpoint_auto_confirms = false
       raw_message_delivery   = false
     }
