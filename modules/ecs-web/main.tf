@@ -370,7 +370,7 @@ module "ecs_task" {
   )
   exec_enabled                   = var.ecs_enable_exec
   ignore_changes_task_definition = var.ecs_ignore_changes_task_definition
-  task_definition_family_only    = var.task_definition_family_only
+  # task_definition_family_only    = var.task_definition_family_only
 
   propagate_tags = "TASK_DEFINITION"
 

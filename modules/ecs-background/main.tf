@@ -249,7 +249,7 @@ resource "aws_service_discovery_service" "service_discovery" {
 module "ecs_codepipeline" {
   # source  = "cloudposse/ecs-codepipeline/aws"
   # version = "0.33.0"
-  source = "git::https://github.com/deploymode/terraform-aws-ecs-codepipeline-1?ref=update-upstream-modules"
+  source = "git::https://github.com/joe-niland/terraform-aws-ecs-codepipeline?ref=update-upstream-modules"
 
   enabled = var.container_image == null
 
@@ -398,6 +398,18 @@ data "aws_iam_policy_document" "codebuild" {
       "ecs:RegisterTaskDefinition"
     ]
 
+    resources = ["*"]
+    effect    = "Allow"
+  }
+
+  // Allow tagging resources
+  statement {
+    sid = "AllowTagging"
+
+    actions = [
+      "ecs:TagResource"
+    ]
+    
     resources = ["*"]
     effect    = "Allow"
   }

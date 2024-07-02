@@ -260,11 +260,11 @@ variable "ecs_ignore_changes_task_definition" {
   default     = true
 }
 
-variable "task_definition_family_only" {
-  type        = bool
-  description = "When using the task definition created by this module, ignore the revision number when referencing the task definition in a service"
-  default     = false
-}
+# variable "task_definition_family_only" {
+#   type        = bool
+#   description = "When using the task definition created by this module, ignore the revision number when referencing the task definition in a service"
+#   default     = false
+# }
 
 
 
