@@ -331,7 +331,7 @@ resource "aws_route53_record" "default" {
 
 module "ecs_task" {
   source  = "cloudposse/ecs-alb-service-task/aws"
-  version = "0.67.1"
+  version = "0.75.0"
 
   # Network
   vpc_id             = var.vpc_id
@@ -370,6 +370,7 @@ module "ecs_task" {
   )
   exec_enabled                   = var.ecs_enable_exec
   ignore_changes_task_definition = var.ecs_ignore_changes_task_definition
+  task_definition_family_only    = var.task_definition_family_only
 
   propagate_tags = "TASK_DEFINITION"
 
