@@ -542,9 +542,8 @@ resource "aws_codestarconnections_connection" "default" {
 }
 
 module "ecs_codepipeline" {
-  # source  = "cloudposse/ecs-codepipeline/aws"
-  # version = "0.33.0"
-  source = "git::https://github.com/deploymode/terraform-aws-ecs-codepipeline-1?ref=update-upstream-modules"
+  source  = "cloudposse/ecs-codepipeline/aws"
+  version = "0.34.2"
 
   enabled                         = var.codepipeline_enabled
   region                          = var.aws_region
