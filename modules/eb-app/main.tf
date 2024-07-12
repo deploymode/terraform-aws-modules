@@ -63,7 +63,7 @@ module "ssh_key_pair" {
 
 module "elastic_beanstalk_application" {
   source  = "cloudposse/elastic-beanstalk-application/aws"
-  version = "0.11.1"
+  version = "0.12.0"
 
   description = var.description
 
@@ -80,7 +80,7 @@ data "aws_vpc" "default" {
 
 module "elastic_beanstalk_environment" {
   source  = "cloudposse/elastic-beanstalk-environment/aws"
-  version = "0.49.0"
+  version = "0.52.0"
 
   for_each = var.environment_settings
 
@@ -144,6 +144,7 @@ module "elastic_beanstalk_environment" {
 
   loadbalancer_certificate_arn = each.value.environment_type == "LoadBalanced" ? var.loadbalancer_certificate_arn : null
   loadbalancer_ssl_policy      = each.value.environment_type == "LoadBalanced" ? var.loadbalancer_ssl_policy : null
+  enable_loadbalancer_logs     = each.value.environment_type == "LoadBalanced" ? var.enable_loadbalancer_logs : false
 
   allow_all_egress = true
 

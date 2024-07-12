@@ -111,6 +111,12 @@ variable "loadbalancer_type" {
   description = "Load Balancer type, e.g. 'application' or 'classic'"
 }
 
+variable "enable_loadbalancer_logs" {
+  type        = bool
+  default     = true
+  description = "Whether to enable Load Balancer Logging to the S3 bucket."
+}
+
 variable "dns_zone_id" {
   type        = string
   description = "Route53 parent zone ID. The module will create sub-domain DNS record in the parent zone for the EB environment"
