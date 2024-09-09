@@ -29,8 +29,10 @@ variable "account_role_name" {
 }
 
 variable "accounts" {
-  type        = list(string)
-  description = "List of account names to create"
+  type        = map(object({
+    iam_user_access_to_billing = bool
+  }))
+  description = "Accounts to be created. Map of account names to settings."
 }
 
 // Account Settings

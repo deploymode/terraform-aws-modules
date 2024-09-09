@@ -14,10 +14,11 @@ locals {
 }
 
 resource "aws_organizations_account" "account" {
-  for_each  = toset(var.accounts)
+  for_each  = var.accounts
   name      = each.key
   email     = format(var.account_email_format, each.key)
   role_name = var.account_role_name
+  iam_user_access_to_billing = each.value.iam_user_access_to_billing ? "ALLOW" : "DENY"
 
   lifecycle {
     ignore_changes = [role_name]
@@ -29,7 +30,7 @@ resource "aws_organizations_account" "account" {
 }
 
 resource "aws_iam_account_password_policy" "account_password_policy" {
-  for_each                       = toset(var.accounts)
+  for_each                       = var.accounts
   minimum_password_length        = var.minimum_password_length
   require_lowercase_characters   = true
   require_numbers                = true
