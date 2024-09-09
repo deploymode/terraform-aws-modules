@@ -93,6 +93,12 @@ resource "aws_iam_role_policy_attachment" "role_policy_attachment_admin" {
   policy_arn = "arn:aws:iam::aws:policy/AdministratorAccess"
 }
 
+resource "aws_iam_role_policy_attachment" "role_policy_attachment_admin_billing" {
+  role       = module.master_admin_role.name
+  policy_arn = "arn:aws:iam::aws:policy/AWSBillingReadOnlyAccess"
+  // Full access to Billing (arn:aws:iam::aws:policy/job-function/Billing)
+}
+
 // Role to allow users in the master account to assume role
 module "master_admin_role" {
   source  = "cloudposse/iam-role/aws"
