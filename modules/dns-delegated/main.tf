@@ -1,7 +1,7 @@
 locals {
   # zone_map = zipmap(var.zone_config[*].subdomain, var.zone_config[*].zone_name)
-  zone_map = { for c in var.zone_config : c.subdomain => {zone_name = c.zone_name, dnssec_enabled = c.dnssec_enabled} }
-  dnssec_zones = {for k, v in local.zone_map: k => v if v.dnssec_enabled == true}
+  zone_map     = { for c in var.zone_config : c.subdomain => { zone_name = c.zone_name, dnssec_enabled = c.dnssec_enabled } }
+  dnssec_zones = { for k, v in local.zone_map : k => v if v.dnssec_enabled == true }
 }
 
 resource "aws_route53_zone" "default" {
@@ -50,8 +50,9 @@ resource "aws_route53_record" "root_ns" {
 
 
 module "dnssec" {
-  source  = "ugns/route53-dnssec/aws"
-  version = "1.1.0"
+  // source  = "ugns/route53-dnssec/aws"
+  // version = "1.1.0"
+  source = "git::https://github.com/joe-niland/terraform-aws-route53-dnssec?ref=output-ds-record"
 
   for_each = local.dnssec_zones
 
@@ -74,4 +75,17 @@ resource "aws_route53_hosted_zone_dnssec" "default" {
   hosted_zone_id = aws_route53_zone.default[each.key].zone_id
 
   provider = aws.delegated
+}
+
+resource "aws_route53_record" "ds" {
+  for_each = local.dnssec_zones
+
+  allow_overwrite = true
+  name            = each.key
+  records         = [module.dnssec[each.key].ds_record["${each.key}.${each.value.zone_name}"]]
+  type            = "DS"
+  ttl             = "300"
+  zone_id         = data.aws_route53_zone.root_zone[each.key].zone_id
+
+  provider = aws.primary
 }
