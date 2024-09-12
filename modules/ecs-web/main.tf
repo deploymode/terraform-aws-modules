@@ -807,7 +807,7 @@ resource "aws_iam_policy" "app_bucket_iam_policy" {
 
 module "frontend_web" {
   source  = "cloudposse/cloudfront-s3-cdn/aws"
-  version = "0.92.0"
+  version = "0.95.0"
 
   enabled = module.this.enabled && var.create_frontend_website
 
