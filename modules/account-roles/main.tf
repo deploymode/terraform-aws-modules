@@ -76,6 +76,7 @@ module "admin_role" {
 
   policy_document_count = 0
   managed_policy_arns = [
-    "arn:aws:iam::aws:policy/AdministratorAccess"
+    "arn:aws:iam::aws:policy/AdministratorAccess",
+    "arn:aws:iam::aws:policy/AWSBillingReadOnlyAccess"
   ]
 }
