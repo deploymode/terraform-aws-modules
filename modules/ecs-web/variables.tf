@@ -379,21 +379,52 @@ variable "container_memory_reservation_php" {
   default     = 128
 }
 
-variable "container_environment_nginx" {
-  type = list(object({
-    name  = string
-    value = string
-  }))
-  description = "Container environment variables for nginx containers"
-  default     = []
-}
-
 variable "container_environment_php" {
   type = list(object({
     name  = string
     value = string
   }))
   description = "Container environment variables for php-fpm containers"
+  default     = []
+}
+
+variable "container_ssm_secrets_php" {
+  type = list(object({
+    name      = string
+    valueFrom = string
+  }))
+  description = "Container secret variables stored in SSM parameter store for php-fpm containers"
+  default     = []
+}
+
+variable "container_healthcheck_php" {
+  type = object({
+    command     = list(string)
+    retries     = number
+    timeout     = number
+    interval    = number
+    startPeriod = number
+  })
+  description = "Container healthcheck configuration for php-fpm containers. Set to null to disable."
+  default = {
+    command = [
+      "CMD-SHELL",
+      "php-fpm-healthcheck || exit 1"
+    ]
+    retries     = 3
+    timeout     = 3
+    interval    = 5
+    startPeriod = 5
+  } 
+}
+
+// Container settings - nginx
+variable "container_environment_nginx" {
+  type = list(object({
+    name  = string
+    value = string
+  }))
+  description = "Container environment variables for nginx containers"
   default     = []
 }
 
@@ -406,13 +437,25 @@ variable "container_ssm_secrets_nginx" {
   default     = []
 }
 
-variable "container_ssm_secrets_php" {
-  type = list(object({
-    name      = string
-    valueFrom = string
-  }))
-  description = "Container secret variables stored in SSM parameter store for php-fpm containers"
-  default     = []
+variable "container_healthcheck_nginx" {
+  type = object({
+    command     = list(string)
+    retries     = number
+    timeout     = number
+    interval    = number
+    startPeriod = number
+  })
+  description = "Container healthcheck configuration for nginx containers. Set to null to disable."
+  default = {
+    command = [
+      "CMD-SHELL",
+      "curl --insecure --location --silent --show-error --fail http://localhost:80 || exit 1" 
+    ]
+    retries     = 3
+    timeout     = 3
+    interval    = 5
+    startPeriod = 5
+  } 
 }
 
 // CodePipeline

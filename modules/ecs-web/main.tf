@@ -171,13 +171,19 @@ module "container_php-fpm" {
   container_cpu                = var.container_cpu_php
   start_timeout                = var.container_start_timeout
   stop_timeout                 = var.container_stop_timeout
+  
   # Task will stop if this container fails
   essential = true
+  
+  healthcheck = var.container_healthcheck_php
+
   container_depends_on = var.monitoring_image_name != "" && var.monitoring_container_dependency ? [{
     containerName = module.monitoring_container_label.id
     condition     = "HEALTHY"
   }] : null
+
   readonly_root_filesystem = false
+  
   environment = concat([
     {
       name  = "STAGE"

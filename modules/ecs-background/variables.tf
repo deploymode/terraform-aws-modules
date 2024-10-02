@@ -244,6 +244,18 @@ variable "container_ssm_secrets" {
   default     = null
 }
 
+variable "container_healthcheck" {
+  type = object({
+    command     = list(string)
+    retries     = number
+    timeout     = number
+    interval    = number
+    startPeriod = number
+  })
+  description = "Container healthcheck configuration for container. Set to null to disable."
+  default = null
+}
+
 variable "container_port_mappings" {
   type = list(object({
     containerPort = number
