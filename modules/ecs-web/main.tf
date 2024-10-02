@@ -128,7 +128,11 @@ module "container_nginx" {
   stop_timeout                 = var.container_stop_timeout
   # Task will stop if this container fails
   essential                = true
+
+  healthcheck = var.container_healthcheck_nginx
+
   readonly_root_filesystem = false
+  
   environment              = var.container_environment_nginx
   secrets                  = var.container_ssm_secrets_nginx
 
