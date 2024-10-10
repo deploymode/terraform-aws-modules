@@ -756,6 +756,24 @@ variable "frontend_dns_name" {
 
 // ECS Deployment
 
+variable "ecs_deployment_maximum_percent" {
+  type        = number
+  description = "The upper limit of the number of tasks (as a percentage of `desired_count`) that can be running in a service during a deployment"
+  default     = 200
+}
+
+variable "ecs_deployment_minimum_healthy_percent" {
+  type        = number
+  description = "The lower limit (as a percentage of `desired_count`) of the number of tasks that must remain running and healthy in a service during a deployment"
+  default     = 100
+}
+
+variable "ecs_health_check_grace_period_seconds" {
+  type        = number
+  description = "Seconds to ignore failing load balancer health checks on newly instantiated tasks to prevent premature shutdown, up to 7200. Only valid for services configured to use load balancers"
+  default     = 0
+}
+
 variable "ecs_circuit_breaker_deployment_enabled" {
   type        = bool
   description = "If `true`, enable the deployment circuit breaker logic for the service"

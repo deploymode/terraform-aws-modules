@@ -385,8 +385,9 @@ module "ecs_task" {
   propagate_tags = "TASK_DEFINITION"
 
   # Deployment
-  # deployment_minimum_healthy_percent = var.deployment_minimum_healthy_percent
-  # deployment_maximum_percent         = var.deployment_maximum_percent
+  health_check_grace_period_seconds = var.ecs_health_check_grace_period_seconds
+  deployment_minimum_healthy_percent = var.ecs_deployment_minimum_healthy_percent
+  deployment_maximum_percent         = var.ecs_deployment_maximum_percent
   deployment_controller_type         = "ECS"
   circuit_breaker_deployment_enabled = var.ecs_circuit_breaker_deployment_enabled
   circuit_breaker_rollback_enabled   = var.ecs_circuit_breaker_rollback_enabled
