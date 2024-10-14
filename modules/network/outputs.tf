@@ -4,8 +4,8 @@ output "public_elastic_ips" {
 }
 
 output "nat_ips" {
-  description = "IP Addresses in use for NAT"
-  value       = module.subnets.nat_ips
+  description = "List of IP Addresses in use for NAT. When using the FCK NAT instance image with HA mode, this will be empty."
+  value       = var.use_fck_nat_instance_image ? [for name, fck_nat in module.fck-nat : fck_nat.instance_public_ip] : module.subnets.nat_ips
 }
 
 output "nat_gateway_ids" {
@@ -21,6 +21,11 @@ output "nat_gateway_public_ips" {
 output "nat_instance_ids" {
   description = "IDs of the NAT Instances created"
   value       = module.subnets.nat_instance_ids
+}
+
+output "fck_nat_instance_arns" {
+  description = "ARNs of the NAT Instances created by the FCK NAT module"
+  value       = [ for name, fck_nat in module.fck-nat : fck_nat.instance_arn ]
 }
 
 output "public_subnet_cidrs" {
