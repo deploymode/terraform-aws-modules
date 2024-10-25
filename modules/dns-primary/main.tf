@@ -48,6 +48,8 @@ module "dnssec" {
 
   for_each = local.dnssec_zones
 
+  name = each.key
+
   zones = {
     "${each.key}" = {
       zone_id = aws_route53_zone.root[each.key].zone_id

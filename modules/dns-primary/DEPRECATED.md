@@ -1,1 +1,0 @@
-Replaced by cloudposse/components/aws//modules/dns-primary
