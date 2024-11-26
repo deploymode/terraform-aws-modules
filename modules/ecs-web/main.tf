@@ -341,7 +341,7 @@ resource "aws_route53_record" "default" {
 
 module "ecs_task" {
   source  = "cloudposse/ecs-alb-service-task/aws"
-  version = "0.75.0"
+  version = "0.76.1"
 
   # Network
   vpc_id             = var.vpc_id
@@ -369,6 +369,7 @@ module "ecs_task" {
       var.monitoring_image_name != null ? [module.container_monitoring[0].json_map_object] : []
     )
   )
+  track_latest = var.ecs_task_def_track_latest
   ecs_cluster_arn              = var.ecs_cluster_arn
   capacity_provider_strategies = var.ecs_capacity_provider_strategies
   launch_type                  = var.ecs_launch_type

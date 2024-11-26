@@ -129,6 +129,12 @@ variable "ecs_ignore_changes_task_definition" {
   default     = false
 }
 
+variable "ecs_task_def_track_latest" {
+  type        = bool
+  description = "Track the latest revision of the task definition rather than only the revisions managed by Terraform."
+  default     = false
+}
+
 
 
 // ECS Task Variables

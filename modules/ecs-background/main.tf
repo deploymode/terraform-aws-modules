@@ -118,7 +118,7 @@ module "container" {
 
 module "ecs_task" {
   source  = "cloudposse/ecs-alb-service-task/aws"
-  version = "0.67.1"
+  version = "0.76.1"
 
   context = module.this.context
 
@@ -131,6 +131,7 @@ module "ecs_task" {
   exec_enabled                 = var.ecs_enable_exec
   force_new_deployment         = var.service_force_new_deployment
   redeploy_on_apply            = var.service_redeploy_on_apply
+  track_latest = var.ecs_task_def_track_latest
 
   service_registries = var.use_service_discovery == false ? [] : [
     {
