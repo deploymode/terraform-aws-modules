@@ -59,7 +59,7 @@ module "db_username_label" {
 module "rds_instance" {
   # source = "git::https://github.com/joe-niland/terraform-aws-rds.git?ref=feat/restore-to-point-in-time"
   source  = "cloudposse/rds/aws"
-  version = "1.1.0"
+  version = "1.1.2"
 
   publicly_accessible = false
   subnet_ids          = var.subnet_ids
@@ -80,10 +80,13 @@ module "rds_instance" {
   database_password = local.database_password
   database_port     = var.database_port
 
+  iam_database_authentication_enabled = var.iam_database_authentication_enabled
+
   storage_type      = var.storage_type
   allocated_storage = var.allocated_storage
   max_allocated_storage = var.max_allocated_storage
   storage_encrypted = var.storage_encrypted
+
   instance_class    = var.instance_class
 
   snapshot_identifier = var.snapshot_identifier
@@ -123,6 +126,63 @@ module "rds_instance" {
   #       ]
   #   }
   # ]
+
+  context = module.this.context
+}
+
+module "rds_replica" {
+  source  = "cloudposse/rds/aws"
+  version = "1.1.2"
+
+  attributes = ["replica"]
+
+  enabled = module.this.enabled && var.create_replica
+
+  replicate_source_db = module.rds_instance.instance_id
+
+  # subnet_ids          = var.subnet_ids
+  vpc_id              = var.vpc_id
+  security_group_ids  = aws_security_group.allowed.*.id
+  associate_security_group_ids = [module.rds_instance.security_group_id]
+  ca_cert_identifier = var.ca_cert_identifier
+
+  iam_database_authentication_enabled = var.iam_database_authentication_enabled
+
+  dns_zone_id = var.dns_zone_id
+  host_name   = var.replica_host_name
+
+  database_port     = var.database_port
+
+  storage_type      = var.storage_type
+  storage_encrypted = var.storage_encrypted
+
+  instance_class    = var.instance_class
+
+  engine = var.engine
+  engine_version = var.engine_version
+
+  deletion_protection = var.deletion_protection
+
+  auto_minor_version_upgrade  = true
+  allow_major_version_upgrade = var.allow_major_version_upgrade
+  apply_immediately           = true
+  maintenance_window          = var.maintenance_window
+  skip_final_snapshot         = var.skip_final_snapshot
+  copy_tags_to_snapshot       = true
+  backup_retention_period     = var.backup_retention_period
+  backup_window               = var.backup_window
+
+  db_parameter_group   = var.db_parameter_group
+  parameter_group_name = var.parameter_group_name
+  option_group_name    = var.option_group_name
+
+  enabled_cloudwatch_logs_exports = var.enabled_cloudwatch_logs_exports
+
+  restore_to_point_in_time = var.restore_to_point_in_time
+
+  performance_insights_enabled = var.performance_insights_enabled
+  performance_insights_kms_key_id = var.performance_insights_kms_key_id
+  performance_insights_retention_period = var.performance_insights_retention_period
 
   context = module.this.context
 }

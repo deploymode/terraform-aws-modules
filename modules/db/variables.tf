@@ -103,8 +103,8 @@ variable "multi_az" {
 
 variable "storage_type" {
   type        = string
-  description = "One of 'standard' (magnetic), 'gp2' (general purpose SSD), or 'io1' (provisioned IOPS SSD)"
-  default     = "gp2"
+  description = "One of 'standard' (magnetic), 'gp2' (general purpose SSD), 'gp3' (general purpose SSD), or 'io1' (provisioned IOPS SSD)"
+  default     = "gp3"
 }
 
 variable "storage_encrypted" {
@@ -358,6 +358,7 @@ variable "monitoring_role_arn" {
 }
 
 variable "iam_database_authentication_enabled" {
+  type = bool
   description = "Specifies whether or mappings of AWS Identity and Access Management (IAM) accounts to database accounts is enabled"
   default     = false
 }
@@ -372,4 +373,16 @@ variable "restore_to_point_in_time" {
   })
   description = "An object specifying the restore point in time for the DB instance to restore from. Only used when `snapshot_identifier` is not provided."
   default     = null
+}
+
+variable "create_replica" {
+  type        = bool
+  description = "Create a read replica"
+  default     = false
+}
+
+variable "replica_host_name" {
+  type        = string
+  description = "The DB host name created in Route53 for the replica"
+  default     = "read"
 }
