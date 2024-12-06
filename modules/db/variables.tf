@@ -196,6 +196,12 @@ variable "availability_zone" {
   description = "The AZ for the RDS instance. Specify one of `subnet_ids`, `db_subnet_group_name` or `availability_zone`. If `availability_zone` is provided, the instance will be placed into the default VPC or EC2 Classic"
 }
 
+variable "availability_zone_replica" {
+  type        = string
+  default     = null
+  description = "The AZ for the RDS replica instance. Specify one of `subnet_ids`, `db_subnet_group_name` or `availability_zone`. If `availability_zone` is provided, the instance will be placed into the default VPC or EC2 Classic"
+}
+
 variable "db_subnet_group_name" {
   type        = string
   default     = null
@@ -385,4 +391,10 @@ variable "replica_host_name" {
   type        = string
   description = "The DB host name created in Route53 for the replica"
   default     = "read"
+}
+
+variable "promote_replica" {
+  type        = bool
+  description = "Promote the read replica to a standalone DB"
+  default     = false
 }

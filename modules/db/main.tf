@@ -62,6 +62,8 @@ module "rds_instance" {
   version = "1.1.2"
 
   publicly_accessible = false
+  availability_zone   = var.availability_zone
+  multi_az            = false
   subnet_ids          = var.subnet_ids
   vpc_id              = var.vpc_id
   security_group_ids  = aws_security_group.allowed.*.id
@@ -73,7 +75,7 @@ module "rds_instance" {
 
   engine         = var.engine
   engine_version = var.engine_version
-  multi_az       = false
+  
 
   database_name     = var.database_name
   database_user     = local.database_username
@@ -138,9 +140,10 @@ module "rds_replica" {
 
   enabled = module.this.enabled && var.create_replica
 
-  replicate_source_db = module.rds_instance.instance_id
+  replicate_source_db = !var.promote_replica ? module.rds_instance.instance_id : null
 
   # subnet_ids          = var.subnet_ids
+  availability_zone = var.availability_zone_replica
   vpc_id              = var.vpc_id
   security_group_ids  = aws_security_group.allowed.*.id
   associate_security_group_ids = [module.rds_instance.security_group_id]
@@ -154,6 +157,7 @@ module "rds_replica" {
   database_port     = var.database_port
 
   storage_type      = var.storage_type
+  max_allocated_storage = var.max_allocated_storage
   storage_encrypted = var.storage_encrypted
 
   instance_class    = var.instance_class
