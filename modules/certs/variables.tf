@@ -33,6 +33,12 @@ variable "alternative_domains" {
   default     = []
 }
 
+variable "wildcard_all" {
+  type        = bool
+  description = "Set to true if Terraform should create a wildcard certificate for all subdomains of domain_name"
+  default     = false
+}
+
 variable "validation_method" {
   type        = string
   default     = "DNS"
