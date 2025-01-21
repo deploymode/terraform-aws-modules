@@ -1,5 +1,11 @@
 # DNS Primary
 
+Primary DNS zone to be delegated to other accounts. Used for vanity domains, e.g. example.com, or your primary infrastructure domain, e.g. example.net
+
+This module is pretty much a straight copy of <https://github.com/cloudposse/terraform-aws-components/blob/main/modules/dns-primary/main.tf>
+
+DNSSEC support was added to this module.
+
 ## Alternative
 
 If you don't require DNSSEC, I recommend using the `cloudposse/components/aws//modules/dns-primary` module instead.

@@ -1,8 +1,3 @@
-###
-# Creates and verifies certificate for application within existing hosted zone.
-#
-###
-
 locals {
   zone_name = var.hosted_zone_name == "" ? var.cert_domain_name : var.hosted_zone_name
 }

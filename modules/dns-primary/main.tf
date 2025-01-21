@@ -1,8 +1,3 @@
-
-
-# Primary DNS zone to be delegated to other accounts
-# This module is pretty much a straight copy of https://github.com/cloudposse/terraform-aws-components/blob/main/modules/dns-primary/main.tf
-
 locals {
   dns_soa_config = "awsdns-hostmaster.amazon.com. 1 7200 900 1209600 86400"
   zone_recs_map  = { for zone in var.record_config : "${zone.name}${zone.root_zone}.${zone.type}" => zone }
