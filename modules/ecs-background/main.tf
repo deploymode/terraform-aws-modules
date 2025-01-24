@@ -52,12 +52,16 @@ locals {
 // ECR Registry/Repo
 module "ecr" {
   source               = "cloudposse/ecr/aws"
-  version              = "0.35.0"
+  version              = "0.42.1"
+
+  enabled              = var.container_image == null
+
   use_fullname         = true
   scan_images_on_push  = true
   max_image_count      = var.ecr_max_image_count
   image_tag_mutability = "MUTABLE"
-  enabled              = var.container_image == null
+
+  force_delete = var.ecr_force_delete
 
   context = module.this.context
 }

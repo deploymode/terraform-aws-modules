@@ -89,7 +89,7 @@ locals {
 // ECR Registry/Repo
 module "ecr" {
   source       = "cloudposse/ecr/aws"
-  version      = "0.35.0"
+  version      = "0.42.1"
   use_fullname = true
   image_names = [
     local.image_names_map.nginx,
@@ -98,6 +98,8 @@ module "ecr" {
   image_tag_mutability    = "MUTABLE"
   enable_lifecycle_policy = true
   max_image_count         = var.ecr_max_image_count
+    force_delete = var.ecr_force_delete
+
   context                 = module.this.context
 }
 

@@ -193,6 +193,12 @@ variable "ecr_max_image_count" {
   default     = 500
 }
 
+variable "ecr_force_delete" {
+  type        = bool
+  description = "Force delete ECR repository if it is not empty"
+  default     = true
+}
+
 // ECS
 
 variable "ecs_cluster_arn" {
