@@ -185,6 +185,12 @@ variable "alb_https_ssl_policy" {
   description = "The name of the SSL Policy for the listener. Required if `https_enabled` is true."
 }
 
+variable "redirect_from_host" {
+  type        = string
+  description = "A host to redirect from. This creates an S3 bucket which returns a 301 to the app's domain."
+  default     = null
+}
+
 // ECR
 
 variable "ecr_max_image_count" {
@@ -427,7 +433,7 @@ variable "container_healthcheck_php" {
     timeout     = 3
     interval    = 5
     startPeriod = 5
-  } 
+  }
 }
 
 // Container settings - nginx
@@ -461,13 +467,13 @@ variable "container_healthcheck_nginx" {
   default = {
     command = [
       "CMD-SHELL",
-      "curl --insecure --location --silent --show-error --fail http://localhost:80 || exit 1" 
+      "curl --insecure --location --silent --show-error --fail http://localhost:80 || exit 1"
     ]
     retries     = 3
     timeout     = 3
     interval    = 5
     startPeriod = 5
-  } 
+  }
 }
 
 // CodePipeline
