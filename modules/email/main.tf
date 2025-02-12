@@ -142,3 +142,64 @@ resource "aws_route53_record" "amazonses_dmarc_record" {
   ttl     = "1800"
   records = var.dmarc_record
 }
+
+# Reputation metric alarms
+
+locals {
+  thresholds = {
+    ReputationComplaintRateThreshold = max(var.complaint_rate_threshold, 1)
+    ReputationBounceRateThreshold    = max(var.bounce_rate_threshold, 1)
+  }
+
+  alarm_names = toset([
+    "complaint_rate_threshold_too_high",
+    "bounce_rate_threshold_too_high"
+  ])
+}
+
+module "label" {
+  source   = "cloudposse/label/null"
+  version  = "0.25.0"
+  for_each = local.alarm_names
+
+  name       = coalesce(module.this.name, var.db_instance_id)
+  attributes = [each.key]
+
+  context = module.this.context
+}
+
+resource "aws_cloudwatch_metric_alarm" "complaint_rate_threshold_too_high" {
+  alarm_name          = module.label["complaint_rate_threshold_too_high"].id
+  comparison_operator = "GreaterThanThreshold"
+  evaluation_periods  = "1"
+  metric_name         = "Reputation.ComplaintRate"
+  namespace           = "AWS/SES"
+  period              = "3600"
+  statistic           = "Average"
+  threshold           = local.thresholds["ReputationComplaintRateThreshold"]
+  alarm_description   = "Average SES complaint rate over the last hour too high"
+  alarm_actions       = aws_sns_topic.default.*.arn
+  ok_actions          = aws_sns_topic.default.*.arn
+
+  dimensions = {
+    DBInstanceIdentifier = var.db_instance_id
+  }
+}
+
+resource "aws_cloudwatch_metric_alarm" "bounce_rate_threshold_too_high" {
+  alarm_name          = module.label["bounce_rate_threshold_too_high"].id
+  comparison_operator = "GreaterThanThreshold"
+  evaluation_periods  = "1"
+  metric_name         = "Reputation.BounceRate"
+  namespace           = "AWS/SES"
+  period              = "3600"
+  statistic           = "Average"
+  threshold           = local.thresholds["RepuationBounceRateThreshold"]
+  alarm_description   = "Average SES bounce rate over the last hour too high"
+  alarm_actions       = aws_sns_topic.default.*.arn
+  ok_actions          = aws_sns_topic.default.*.arn
+
+  dimensions = {
+    DBInstanceIdentifier = var.db_instance_id
+  }
+}

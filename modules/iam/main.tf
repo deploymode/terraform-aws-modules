@@ -88,6 +88,7 @@ resource "aws_iam_group_policy" "admin_group_with_mfa_policy" {
   policy   = data.aws_iam_policy_document.assume_admin_role_with_mfa[each.value.account].json
 }
 
+# Assigns the Admin policy to users in the Master/primary account Admin role
 resource "aws_iam_role_policy_attachment" "role_policy_attachment_admin" {
   role       = module.master_admin_role.name
   policy_arn = "arn:aws:iam::aws:policy/AdministratorAccess"

@@ -106,8 +106,15 @@ variable "iam_access_key_max_age" {
 # SNS notifications
 
 variable "notification_emails" {
-  type        = map(string)
-  description = "A map of SES event to email address to notify. Keys are `bounce`, `complaint`, and `delivery`."
+  type        = map(object(
+    {
+      email = string,
+      include_threshold_alarm = optional(bool, false)
+    }
+  ))
+  description = <<EOT
+    A map of SES event to email address and threshold alarm flag to notify. Keys are `bounce`, `complaint`, and `delivery`.
+EOT
   default     = {}
 
   validation {
