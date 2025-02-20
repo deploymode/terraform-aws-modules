@@ -98,9 +98,9 @@ module "ecr" {
   image_tag_mutability    = "MUTABLE"
   enable_lifecycle_policy = true
   max_image_count         = var.ecr_max_image_count
-    force_delete = var.ecr_force_delete
+  force_delete            = var.ecr_force_delete
 
-  context                 = module.this.context
+  context = module.this.context
 }
 
 // Container Defs
@@ -129,14 +129,14 @@ module "container_nginx" {
   start_timeout                = var.container_start_timeout
   stop_timeout                 = var.container_stop_timeout
   # Task will stop if this container fails
-  essential                = true
+  essential = true
 
   healthcheck = var.container_healthcheck_nginx
 
   readonly_root_filesystem = false
-  
-  environment              = var.container_environment_nginx
-  secrets                  = var.container_ssm_secrets_nginx
+
+  environment = var.container_environment_nginx
+  secrets     = var.container_ssm_secrets_nginx
 
   port_mappings = [
     {
@@ -177,10 +177,10 @@ module "container_php-fpm" {
   container_cpu                = var.container_cpu_php
   start_timeout                = var.container_start_timeout
   stop_timeout                 = var.container_stop_timeout
-  
+
   # Task will stop if this container fails
   essential = true
-  
+
   healthcheck = var.container_healthcheck_php
 
   container_depends_on = var.monitoring_image_name != "" && var.monitoring_container_dependency ? [{
@@ -189,7 +189,7 @@ module "container_php-fpm" {
   }] : null
 
   readonly_root_filesystem = false
-  
+
   environment = concat([
     {
       name  = "STAGE"
@@ -371,7 +371,7 @@ module "ecs_task" {
       var.monitoring_image_name != null ? [module.container_monitoring[0].json_map_object] : []
     )
   )
-  track_latest = var.ecs_task_def_track_latest
+  track_latest                 = var.ecs_task_def_track_latest
   ecs_cluster_arn              = var.ecs_cluster_arn
   capacity_provider_strategies = var.ecs_capacity_provider_strategies
   launch_type                  = var.ecs_launch_type
@@ -388,7 +388,7 @@ module "ecs_task" {
   propagate_tags = "TASK_DEFINITION"
 
   # Deployment
-  health_check_grace_period_seconds = var.ecs_health_check_grace_period_seconds
+  health_check_grace_period_seconds  = var.ecs_health_check_grace_period_seconds
   deployment_minimum_healthy_percent = var.ecs_deployment_minimum_healthy_percent
   deployment_maximum_percent         = var.ecs_deployment_maximum_percent
   deployment_controller_type         = "ECS"
