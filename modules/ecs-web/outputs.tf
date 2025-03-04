@@ -3,6 +3,11 @@ output "log_groups" {
   description = "ECS log groups"
 }
 
+output "build_log_groups" {
+  value       = local.build_log_groups
+  description = "Codebuild log groups"
+}
+
 // ECR
 
 output "repository_url_map" {
@@ -38,7 +43,7 @@ output "ecs_task_definition_revision" {
 }
 
 output "alb_dns_aliases" {
-  value       = [for record in aws_route53_record.default: record.fqdn ] 
+  value       = [for record in aws_route53_record.default : record.fqdn]
   description = "Public hostname associated with load balancer"
 }
 

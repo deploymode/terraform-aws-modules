@@ -22,6 +22,14 @@ locals {
     ]
   }
 
+  log_groups = {
+    ecs = "/ecs/${module.container_label.id}"
+  }
+
+  build_log_groups = local.codepipeline_enabled ? {
+    codebuild = "/aws/codebuild/${module.this.id}-build"
+  } : {}
+
   queue_env_vars = length(var.queue_names) > 0 ? concat([
     {
       name  = "QUEUE_CONNECTION"
@@ -51,10 +59,10 @@ locals {
 
 // ECR Registry/Repo
 module "ecr" {
-  source               = "cloudposse/ecr/aws"
-  version              = "0.42.1"
+  source  = "cloudposse/ecr/aws"
+  version = "0.42.1"
 
-  enabled              = var.container_image == null
+  enabled = local.codepipeline_enabled
 
   use_fullname         = true
   scan_images_on_push  = true
@@ -87,8 +95,8 @@ module "container" {
 
   healthcheck = var.container_healthcheck
 
-  readonly_root_filesystem     = false
-  
+  readonly_root_filesystem = false
+
   environment = concat(
     [
       {
@@ -112,9 +120,9 @@ module "container" {
     "logDriver" : var.log_driver,
     "secretOptions" : null,
     "options" : {
-      "awslogs-group" : module.container_label.id,
+      "awslogs-group" : local.log_groups.ecs,
       "awslogs-region" : var.aws_region,
-      "awslogs-stream-prefix" : "ecs", # module.this.name,
+      "awslogs-stream-prefix" : "ecs",
       "awslogs-create-group" : "true"
     }
   }
@@ -135,7 +143,7 @@ module "ecs_task" {
   exec_enabled                 = var.ecs_enable_exec
   force_new_deployment         = var.service_force_new_deployment
   redeploy_on_apply            = var.service_redeploy_on_apply
-  track_latest = var.ecs_task_def_track_latest
+  track_latest                 = var.ecs_task_def_track_latest
 
   service_registries = var.use_service_discovery == false ? [] : [
     {
@@ -259,7 +267,7 @@ module "ecs_codepipeline" {
   source  = "cloudposse/ecs-codepipeline/aws"
   version = "0.34.2"
 
-  enabled = var.container_image == null
+  enabled = local.codepipeline_enabled
 
   region = var.aws_region
 
@@ -349,7 +357,7 @@ module "codepipeline_notifications" {
 
 // Block public ACLs for Codepipeline bucket
 resource "aws_s3_bucket_public_access_block" "codepipeline_bucket_block_public" {
-  count = var.container_image == null ? 1 : 0
+  count = local.codepipeline_enabled ? 1 : 0
 
   bucket                  = join("-", [module.this.id, "codepipeline"])
   block_public_acls       = true
@@ -361,7 +369,7 @@ resource "aws_s3_bucket_public_access_block" "codepipeline_bucket_block_public" 
 // Allow pull permission to CodeBuild
 
 resource "aws_iam_role_policy_attachment" "codebuild" {
-  count      = (module.this.enabled && var.container_image == null) ? 1 : 0
+  count      = local.codepipeline_enabled ? 1 : 0
   role       = module.ecs_codepipeline.codebuild_role_id
   policy_arn = join("", aws_iam_policy.codebuild.*.arn)
 }
@@ -370,19 +378,19 @@ module "codebuild_label" {
   //source     = "github.com/cloudposse/terraform-null-label.git?ref=0.21.0"
   source     = "cloudposse/label/null"
   version    = "0.25.0"
-  enabled    = var.container_image == null
+  enabled    = local.codepipeline_enabled
   attributes = compact(concat(module.this.attributes, ["ecr"]))
   context    = module.this.context
 }
 
 resource "aws_iam_policy" "codebuild" {
-  count  = (module.this.enabled && var.container_image == null) ? 1 : 0
+  count  = local.codepipeline_enabled ? 1 : 0
   name   = module.codebuild_label.id
   policy = join("", data.aws_iam_policy_document.codebuild.*.json)
 }
 
 data "aws_iam_policy_document" "codebuild" {
-  count = var.container_image == null ? 1 : 0
+  count = local.codepipeline_enabled ? 1 : 0
 
   # Allow CodeBuild to pull ECR images
   statement {

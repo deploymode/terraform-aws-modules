@@ -13,9 +13,14 @@ output "ecs_task_definition_family" {
   value       = module.ecs_task.task_definition_family
 }
 
-output "cloudwatch_log_group_name" {
-  description = "ECS Service log group name"
-  value       = module.container_label.id
+output "log_groups" {
+  value       = local.log_groups
+  description = "ECS log groups"
+}
+
+output "build_log_groups" {
+  value       = local.build_log_groups
+  description = "Codebuild log groups"
 }
 
 output "ecs_task_definition_revision" {

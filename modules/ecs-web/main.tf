@@ -18,6 +18,7 @@ locals {
       "succeeded",
     ]
   }
+  monitoring_container_enabled = module.this.enabled && var.monitoring_image_name != null
 }
 
 data "aws_caller_identity" "current" {}
@@ -55,11 +56,18 @@ locals {
     "monitoring" = module.monitoring_image_label.id
   }
 
-  log_groups = {
-    nginx      = "/ecs/${module.container_label.id}/${local.image_names_map.nginx}"
-    php        = "/ecs/${module.container_label.id}/${local.image_names_map.php}"
-    monitoring = "/ecs/${module.container_label.id}/${local.image_names_map.monitoring}"
-  }
+  log_groups = merge({
+    nginx = "/ecs/${module.container_label.id}/${local.image_names_map.nginx}"
+    php   = "/ecs/${module.container_label.id}/${local.image_names_map.php}"
+    },
+    local.monitoring_container_enabled ? {
+      monitoring = "/ecs/${module.container_label.id}/${local.image_names_map.monitoring}"
+    } : {}
+  )
+
+  build_log_groups = var.codepipeline_enabled ? {
+    codebuild = "/aws/codebuild/${module.this.id}-build"
+  } : {}
 
   queue_env_vars = length(var.queue_names) > 0 ? concat([
     {
@@ -183,7 +191,7 @@ module "container_php-fpm" {
 
   healthcheck = var.container_healthcheck_php
 
-  container_depends_on = var.monitoring_image_name != "" && var.monitoring_container_dependency ? [{
+  container_depends_on = local.monitoring_container_enabled && var.monitoring_container_dependency ? [{
     containerName = module.monitoring_container_label.id
     condition     = "HEALTHY"
   }] : null
@@ -231,14 +239,14 @@ module "monitoring_container_label" {
   source     = "cloudposse/label/null"
   version    = "0.25.0"
   attributes = ["monitoring"]
-  enabled    = var.monitoring_image_name != null
+  enabled    = local.monitoring_container_enabled
   context    = module.container_label.context
 }
 
 module "container_monitoring" {
   source                       = "cloudposse/ecs-container-definition/aws"
   version                      = "0.58.1"
-  count                        = var.monitoring_image_name != null ? 1 : 0
+  count                        = local.monitoring_container_enabled ? 1 : 0
   container_name               = module.monitoring_container_label.id
   container_image              = var.monitoring_image_name
   container_memory             = var.monitoring_container_memory
@@ -368,7 +376,7 @@ module "ecs_task" {
       module.container_nginx.json_map_object,
       module.container_php-fpm.json_map_object
       ],
-      var.monitoring_image_name != null ? [module.container_monitoring[0].json_map_object] : []
+      local.monitoring_container_enabled ? [module.container_monitoring[0].json_map_object] : []
     )
   )
   track_latest                 = var.ecs_task_def_track_latest
