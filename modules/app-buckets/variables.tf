@@ -1,10 +1,17 @@
 variable "buckets" {
   type = map(object(
     {
-      acl                = string
-      versioning_enabled = bool
-      block_public       = bool
-      bucket_name        = optional(string)
+      acl                = optional(string, "private")
+      versioning_enabled = optional(bool, true)
+      # Set block_public to false to allow setting block_public_acls, block_public_policy, ignore_public_acls, restrict_public_buckets
+      block_public            = optional(bool, true)
+      block_public_acls       = optional(bool, false)
+      block_public_policy     = optional(bool, false)
+      ignore_public_acls      = optional(bool, false)
+      restrict_public_buckets = optional(bool, false)
+      object_ownership        = optional(string, "BucketOwnerEnforced")
+      bucket_policy           = optional(string)
+      bucket_name             = optional(string)
       cors_rules = list(object({
         allowed_headers = list(string)
         allowed_methods = list(string)
@@ -12,8 +19,10 @@ variable "buckets" {
         expose_headers  = list(string)
         max_age_seconds = number
       }))
-      allow_delete = optional(bool, true)
+      allow_delete       = optional(bool, true)
       allowed_extensions = optional(list(string), [])
+      # Paths are relative to the bucket root "/"
+      allowed_public_paths = optional(list(string), [])
     }
   ))
   default     = {}

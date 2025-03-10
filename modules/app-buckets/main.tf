@@ -1,5 +1,22 @@
 locals {
-  bucket_resources = {
+
+  # Generate a list of public paths for each bucket
+  bucket_public_paths = {
+    for key, value in var.buckets : key => length(value.allowed_public_paths) == 0 ?
+    ["arn:aws:s3:::${module.s3_bucket[key].bucket_id}/*"] :
+    [for path in value.allowed_public_paths : "arn:aws:s3:::${module.s3_bucket[key].bucket_id}/${path}/*"]
+  }
+
+  # Generate a list of public resources for each bucket, taking account of the allowed extensions
+  bucket_public_resources = {
+    for key, value in local.bucket_public_paths : key => length(var.buckets[key].allowed_extensions) == 0 ?
+    # TODO: clean this up
+    tolist(flatten([value])) :
+    tolist(flatten([for path in value : formatlist("%s.%s", path, var.buckets[key].allowed_extensions)]))
+  }
+
+  # General list of allowed resource extensions for write policy
+  bucket_extensions = {
     for key, value in var.buckets : key => length(value.allowed_extensions) == 0 ?
     ["arn:aws:s3:::${module.s3_bucket[key].bucket_id}/*"] :
     [for ext in value.allowed_extensions : "arn:aws:s3:::${module.s3_bucket[key].bucket_id}/*.${ext}"]
@@ -8,7 +25,7 @@ locals {
 
 module "s3_bucket" {
   source  = "cloudposse/s3-bucket/aws"
-  version = "4.0.1"
+  version = "4.10.0"
 
   for_each = var.buckets
 
@@ -16,11 +33,17 @@ module "s3_bucket" {
 
   bucket_name = var.use_bucket_name_only ? each.value.bucket_name : null
 
-  acl                     = each.value.acl
-  block_public_acls       = each.value.block_public
-  block_public_policy     = each.value.block_public
-  ignore_public_acls      = each.value.block_public
-  restrict_public_buckets = each.value.block_public
+  acl = each.value.acl
+
+  # If block_public is set, it will override the following settings
+  block_public_acls       = each.value.block_public_acls || each.value.block_public
+  block_public_policy     = each.value.block_public_policy || each.value.block_public
+  ignore_public_acls      = each.value.ignore_public_acls || each.value.block_public
+  restrict_public_buckets = each.value.restrict_public_buckets || each.value.block_public
+
+  s3_object_ownership = each.value.object_ownership
+
+  # source_policy_documents = bucket_public_paths[each.key] != null ? module.bucket_policy[each.key].json : null
 
   versioning_enabled = each.value.versioning_enabled
 
@@ -29,6 +52,41 @@ module "s3_bucket" {
   context = module.this.context
 }
 
+# This generates JSON for use as the bucket policy
+module "bucket_policy" {
+  source  = "cloudposse/iam-policy/aws"
+  version = "2.0.1"
+
+  for_each = local.bucket_public_resources
+
+  name       = "policy"
+  attributes = [each.key, "bucket"]
+
+  iam_policy_enabled = false # Generate JSON only
+  description        = "Allows public access to specified paths and extensions for ${module.s3_bucket[each.key].bucket_id}"
+
+  iam_policy = [{
+    version   = "2012-10-17"
+    policy_id = "s3-bucket-policy"
+    statements = [
+      {
+        sid       = "PublicReadObjects"
+        effect    = "Allow"
+        principal = "*"
+        actions = [
+          "s3:GetObject",
+        ]
+        resources  = local.bucket_public_resources[each.key]
+        conditions = []
+      },
+
+    ]
+  }]
+
+  context = module.this.context
+}
+
+# This generates policies to be used by consuming services, e.g. ECS tasks
 module "app_bucket_iam_policy" {
   source  = "cloudposse/iam-policy/aws"
   version = "2.0.1"
@@ -69,7 +127,7 @@ module "app_bucket_iam_policy" {
             "s3:DeleteObject"
           ]
         : []))
-        resources  = local.bucket_resources[each.key]
+        resources  = local.bucket_extensions[each.key]
         conditions = []
       },
 
