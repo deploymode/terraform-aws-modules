@@ -1,7 +1,7 @@
 
 module "iam_policy" {
   source  = "cloudposse/iam-policy/aws"
-  version = "0.4.0"
+  version = "2.0.1"
 
   for_each = var.policies
 
