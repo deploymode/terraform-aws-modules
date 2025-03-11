@@ -3,8 +3,8 @@ locals {
   # Generate a list of public paths for each bucket
   bucket_public_paths = {
     for key, value in var.buckets : key => length(value.allowed_public_paths) == 0 ?
-    ["arn:aws:s3:::${module.s3_bucket[key].bucket_id}/*"] :
-    [for path in value.allowed_public_paths : "arn:aws:s3:::${module.s3_bucket[key].bucket_id}/${path}/*"]
+    [] :
+    [for path in value.allowed_public_paths : "arn:aws:s3:::${module.s3_bucket[key].bucket_id}/${path}"]
   }
 
   # Generate a list of public resources for each bucket, taking account of the allowed extensions
@@ -43,13 +43,21 @@ module "s3_bucket" {
 
   s3_object_ownership = each.value.object_ownership
 
-  # source_policy_documents = bucket_public_paths[each.key] != null ? module.bucket_policy[each.key].json : null
-
   versioning_enabled = each.value.versioning_enabled
 
   cors_configuration = each.value.cors_rules
 
   context = module.this.context
+}
+
+# We can't use the `source_policy_documents` attribute of the `s3` module
+# because we need the bucket id to put in the resource filter of the policy
+# so we have to attach the bucket policy separately
+resource "aws_s3_bucket_policy" "public_resources" {
+  for_each = { for k, v in local.bucket_public_resources : k => v if length(v) > 0 }
+
+  bucket = module.s3_bucket[each.key].bucket_id
+  policy = module.bucket_policy[each.key].json
 }
 
 # This generates JSON for use as the bucket policy
