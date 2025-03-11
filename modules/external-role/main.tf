@@ -7,10 +7,12 @@ module "role" {
   source  = "cloudposse/iam-role/aws"
   version = "0.21.0"
 
+  attributes = ["external", "role"]
+
   principals = {
     "AWS" : [var.aws_account_id]
   }
-  use_fullname = false
+  use_fullname = true
 
   managed_policy_arns = compact(concat(
     var.policy_arns,
