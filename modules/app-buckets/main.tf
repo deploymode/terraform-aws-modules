@@ -78,9 +78,14 @@ module "bucket_policy" {
     policy_id = "s3-bucket-policy"
     statements = [
       {
-        sid        = "PublicReadObjects"
-        effect     = "Allow"
-        principals = ["*"]
+        sid    = "PublicReadObjects"
+        effect = "Allow"
+        principals = [
+          {
+            type        = "AWS"
+            identifiers = ["*"]
+          }
+        ]
         actions = [
           "s3:GetObject",
         ]
