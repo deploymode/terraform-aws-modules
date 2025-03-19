@@ -425,9 +425,9 @@ variable "container_healthcheck_php" {
     ]
     retries     = 3
     timeout     = 3
-    interval    = 5
-    startPeriod = 5
-  } 
+    interval    = 30
+    startPeriod = 60
+  }
 }
 
 // Container settings - nginx
@@ -461,13 +461,13 @@ variable "container_healthcheck_nginx" {
   default = {
     command = [
       "CMD-SHELL",
-      "curl --insecure --location --silent --show-error --fail http://localhost:80 || exit 1" 
+      "curl --insecure --location --silent --show-error --fail http://localhost:80 || exit 1"
     ]
     retries     = 3
-    timeout     = 3
-    interval    = 5
-    startPeriod = 5
-  } 
+    timeout     = 5
+    interval    = 60
+    startPeriod = 60
+  }
 }
 
 // CodePipeline
