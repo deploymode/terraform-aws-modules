@@ -128,7 +128,7 @@ module "nginx_container_label" {
 
 module "container_nginx" {
   source                       = "cloudposse/ecs-container-definition/aws"
-  version                      = "0.58.1"
+  version                      = "0.61.2"
   container_name               = module.nginx_container_label.id #join("-", [module.container_label.id, "nginx"])
   container_image              = join(":", [module.ecr.repository_url_map[local.image_names_map.nginx], "latest"])
   container_memory             = var.container_memory_nginx
@@ -177,7 +177,7 @@ module "php-fpm_container_label" {
 
 module "container_php-fpm" {
   source                       = "cloudposse/ecs-container-definition/aws"
-  version                      = "0.58.1"
+  version                      = "0.61.2"
   container_name               = module.php-fpm_container_label.id # join("-", [module.container_label.id, "php-fpm"])
   container_image              = join(":", [module.ecr.repository_url_map[local.image_names_map.php], "latest"])
   container_memory             = var.container_memory_php
@@ -245,7 +245,7 @@ module "monitoring_container_label" {
 
 module "container_monitoring" {
   source                       = "cloudposse/ecs-container-definition/aws"
-  version                      = "0.58.1"
+  version                      = "0.61.2"
   count                        = local.monitoring_container_enabled ? 1 : 0
   container_name               = module.monitoring_container_label.id
   container_image              = var.monitoring_image_name

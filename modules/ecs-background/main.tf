@@ -83,7 +83,7 @@ module "container_label" {
 
 module "container" {
   source                       = "cloudposse/ecs-container-definition/aws"
-  version                      = "0.58.1"
+  version                      = "0.61.2"
   container_name               = module.container_label.id
   container_image              = var.container_image == null ? join(":", [module.ecr.repository_url, "latest"]) : var.container_image
   container_memory             = var.container_memory
