@@ -106,7 +106,7 @@ module "app_bucket_iam_policy_combined" {
   count = var.create_policy ? 1 : 0
 
   name       = "policy"
-  attributes = ["app-bucket", "s3"]
+  attributes = ["app-buckets", "combined"]
 
   iam_policy_enabled = true
   description        = "Allows app-level access to S3 buckets"
