@@ -75,7 +75,7 @@ module "bucket_policy" {
 
   iam_policy = [{
     version   = "2012-10-17"
-    policy_id = "s3-bucket-policy"
+    policy_id = "s3-bucket-policy-${each.key}"
     statements = [
       {
         sid    = "PublicReadObjects"
@@ -99,15 +99,72 @@ module "bucket_policy" {
   context = module.this.context
 }
 
+module "app_bucket_iam_policy_combined" {
+  source  = "cloudposse/iam-policy/aws"
+  version = "2.0.1"
+
+  count = var.create_policy ? 1 : 0
+
+  name       = "policy"
+  attributes = ["app-bucket", "s3"]
+
+  iam_policy_enabled = true
+  description        = "Allows app-level access to S3 buckets"
+
+  iam_policy = [{
+    version   = "2012-10-17"
+    policy_id = "s3-app-bucket"
+    statements = concat(
+      [
+        {
+          sid    = "ListBuckets"
+          effect = "Allow"
+          actions = [
+            "s3:ListAllMyBuckets",
+            "s3:HeadBucket"
+          ]
+          resources  = ["*"]
+          conditions = []
+        }
+      ],
+      [for k, b in var.buckets : {
+        sid       = format("ListBucket%s", title(k))
+        effect    = "Allow"
+        actions   = ["s3:ListBucket"]
+        resources = ["arn:aws:s3:::${module.s3_bucket[k].bucket_id}"]
+      }],
+      [for k, b in var.buckets : {
+        sid    = format("WriteBucket%s", title(k))
+        effect = "Allow"
+        actions = compact(concat(
+          [
+            "s3:PutObject",
+            "s3:PutObjectVersionAcl",
+            "s3:PutObjectAcl",
+            "s3:GetObjectAcl",
+            "s3:GetObject",
+            "s3:GetObjectVersionAcl",
+            "s3:GetObjectVersion"
+          ],
+          b.allow_delete ? ["s3:DeleteObject"] : []
+        ))
+        resources = local.bucket_extensions[k]
+      }]
+    )
+  }]
+
+  context = module.this.context
+}
+
 # This generates policies to be used by consuming services, e.g. ECS tasks
-module "app_bucket_iam_policy" {
+module "app_bucket_iam_policy_separate" {
   source  = "cloudposse/iam-policy/aws"
   version = "2.0.1"
 
   for_each = var.create_policy ? var.buckets : {}
 
   name       = "policy"
-  attributes = [each.key, "s3"]
+  attributes = [each.key, "s3", "bucket"]
 
   iam_policy_enabled = true
   description        = "Allows app-level access to ${module.s3_bucket[each.key].bucket_id}"
@@ -143,8 +200,7 @@ module "app_bucket_iam_policy" {
         resources  = local.bucket_extensions[each.key]
         conditions = []
       },
-
-      # TODO: move this out so it's not duplicated
+      # Intentionally duplicated
       {
         sid    = "ListBuckets"
         effect = "Allow"
