@@ -688,14 +688,6 @@ resource "aws_iam_role_policy_attachment" "codebuild_additional_policies" {
   policy_arn = each.value
 }
 
-# Allow Codebuild to read/write from S3 buckets
-# TODO: deprecate this
-resource "aws_iam_role_policy_attachment" "codebuild_app_bucket" {
-  for_each   = toset(module.this.enabled && var.codepipeline_enabled ? var.external_app_buckets : [])
-  role       = module.ecs_codepipeline.codebuild_role_id
-  policy_arn = aws_iam_policy.app_bucket_iam_policy[each.key].arn
-}
-
 module "codebuild_label" {
   source     = "cloudposse/label/null"
   version    = "0.25.0"
@@ -764,67 +756,6 @@ module "vpc_peering" {
   update_timeout                            = "5m"
   delete_timeout                            = "10m"
   context                                   = module.this.context
-}
-
-// Bucket access
-// TODO: deprecate this
-module "app_bucket_iam_policy" {
-  source  = "cloudposse/iam-policy/aws"
-  version = "2.0.1"
-
-  for_each = toset(var.external_app_buckets)
-
-  iam_policy_statements = [
-    {
-      sid        = "ListBucket"
-      effect     = "Allow"
-      actions    = ["s3:ListBucket"]
-      resources  = ["arn:aws:s3:::${each.key}"]
-      conditions = []
-    },
-    {
-      sid    = "WriteBucket"
-      effect = "Allow"
-      actions = [
-        "s3:PutObject",
-        "s3:PutObjectVersionAcl",
-        "s3:PutObjectAcl",
-        "s3:GetObjectAcl",
-        "s3:GetObject",
-        "s3:GetObjectVersionAcl",
-        "s3:GetObjectVersion"
-      ]
-      resources  = ["arn:aws:s3:::${each.key}/*"]
-      conditions = []
-    },
-    # TODO: move this out so it's not duplicated
-    {
-      sid    = "ListBuckets"
-      effect = "Allow"
-      actions = [
-        "s3:ListAllMyBuckets",
-        "s3:HeadBucket"
-      ]
-      resources  = ["*"]
-      conditions = []
-    }
-  ]
-}
-
-// TODO: deprecate this
-module "app_bucket_policy_label" {
-  source     = "cloudposse/label/null"
-  version    = "0.25.0"
-  attributes = ["s3"]
-  context    = module.this.context
-}
-
-// TODO: deprecate this
-resource "aws_iam_policy" "app_bucket_iam_policy" {
-  for_each    = toset(var.external_app_buckets)
-  path        = "/"
-  description = format("Allow ECS tasks access to S3 bucket %s required by the application", each.key)
-  policy      = module.app_bucket_iam_policy[each.key].json
 }
 
 module "frontend_web" {

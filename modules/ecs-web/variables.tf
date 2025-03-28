@@ -611,14 +611,6 @@ variable "queue_names" {
   default     = {}
 }
 
-// Buckets
-
-variable "external_app_buckets" {
-  type        = list(string)
-  description = "Existing S3 buckets used by the application. Allows application and CodePipeline roles to access these buckets."
-  default     = []
-}
-
 // CDN / CloudFront
 
 variable "use_cdn" {
