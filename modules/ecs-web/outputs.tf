@@ -81,13 +81,6 @@ output "codestar_connection_arn" {
   value       = coalesce(var.codestar_connection_arn, join("", aws_codestarconnections_connection.default.*.arn))
 }
 
-// IAM
-
-output "app_bucket_policy_arn" {
-  description = "ARN of IAM policy allowing access to S3 buckets used by app"
-  value       = { for key, policy in aws_iam_policy.app_bucket_iam_policy : key => policy.arn }
-}
-
 // App
 
 output "application_endpoint" {
