@@ -386,8 +386,7 @@ module "ecs_task" {
   platform_version             = var.ecs_platform_version
   task_policy_arns_map = merge(
     var.ecs_task_policy_arns,
-    var.allow_email_sending ? { email_smtp = join("", aws_iam_policy.email_policy.*.arn) } : {},
-    { for k, v in aws_iam_policy.app_bucket_iam_policy : k => v.arn }
+    var.allow_email_sending ? { email_smtp = join("", aws_iam_policy.email_policy.*.arn) } : {}
   )
   exec_enabled                   = var.ecs_enable_exec
   ignore_changes_task_definition = var.ecs_ignore_changes_task_definition
