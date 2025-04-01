@@ -17,11 +17,12 @@ resource "aws_ecs_cluster" "fargate_cluster" {
 resource "aws_ecs_cluster_capacity_providers" "default" {
   cluster_name = join("", aws_ecs_cluster.fargate_cluster.*.name)
 
-  capacity_providers = ["FARGATE_SPOT", "FARGATE"]
+  capacity_providers = var.capacity_providers
 
   default_capacity_provider_strategy {
     capacity_provider = var.default_capacity_provider
     weight            = 100
+    base              = 1
   }
 }
 
@@ -30,5 +31,5 @@ resource "aws_service_discovery_private_dns_namespace" "default" {
   name        = join(".", [module.this.namespace, "local"])
   description = module.this.id
   vpc         = var.vpc_id
-  tags = module.this.tags
+  tags        = module.this.tags
 }
