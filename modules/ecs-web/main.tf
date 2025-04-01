@@ -309,7 +309,7 @@ module "alb_label" {
 
 module "alb" {
   source             = "cloudposse/alb/aws"
-  version            = "1.10.0"
+  version            = "2.2.2"
   vpc_id             = var.vpc_id
   security_group_ids = var.alb_security_group_ids
   subnet_ids         = var.public_subnet_ids
@@ -324,6 +324,8 @@ module "alb" {
   health_check_path                       = var.alb_healthcheck_path
   health_check_timeout                    = var.alb_healthcheck_timeout
   health_check_interval                   = var.alb_healthcheck_interval
+  health_check_healthy_threshold          = var.alb_healthcheck_healthy_threshold
+  health_check_unhealthy_threshold        = var.alb_healthcheck_unhealthy_threshold
   certificate_arn                         = var.certificate_arn
   access_logs_enabled                     = var.alb_access_logs_enabled
   alb_access_logs_s3_bucket_force_destroy = var.alb_access_logs_s3_bucket_force_destroy

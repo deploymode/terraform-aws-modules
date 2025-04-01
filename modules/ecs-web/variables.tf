@@ -71,6 +71,18 @@ variable "alb_healthcheck_interval" {
   default     = 15
 }
 
+variable "alb_healthcheck_healthy_threshold" {
+  type        = number
+  description = "The number of consecutive health check successes required before considering the target healthy"
+  default     = 2
+}
+
+variable "alb_healthcheck_unhealthy_threshold" {
+  type        = number
+  description = "The number of consecutive health check failures required before considering the target unhealthy"
+  default     = 2
+}
+
 variable "target_group_port" {
   type        = number
   default     = 80
