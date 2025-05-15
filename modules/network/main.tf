@@ -29,9 +29,10 @@ module "nat-image-label" {
   context    = module.this.context
 }
 
-# Create a NAT insance per AZ
+# Create a NAT instance per AZ
 module "fck-nat" {
-  source = "git::https://github.com/RaJiska/terraform-aws-fck-nat.git"
+  source  = "RaJiska/fck-nat/aws"
+  version = "1.3.0"
 
   for_each = var.use_fck_nat_instance_image ? module.subnets.az_public_subnets_map : {}
 
