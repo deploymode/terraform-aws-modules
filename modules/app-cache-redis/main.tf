@@ -7,7 +7,7 @@ module "redis_label" {
 
 module "redis" {
   source  = "cloudposse/elasticache-redis/aws"
-  version = "1.2.1"
+  version = "1.9.0"
 
   # Networking
   availability_zones = var.availability_zones
@@ -31,9 +31,11 @@ module "redis" {
   at_rest_encryption_enabled = true
   transit_encryption_enabled = true
 
-  # Redis settings
+  # Redis/Valkey settings
+  engine         = var.engine
   engine_version = var.engine_version
   family         = var.family
+  port           = var.port
   auth_token     = var.password
 
   context = module.redis_label.context

@@ -60,19 +60,30 @@ variable "instance_type" {
 
 variable "family" {
   type        = string
-  default     = "redis6.x"
-  description = "Redis family"
+  default     = "redis7.x"
+  description = "The family of the ElastiCache parameter group"
+}
+
+variable "engine" {
+  type        = string
+  default     = "redis"
+  description = "Name of the Redis-compatible cache engine. Valid values are: `redis` or `valkey`"
 }
 
 variable "engine_version" {
   type        = string
-  default     = "6.2"
-  description = "Redis engine version"
+  default     = "7.1"
+  description = "Version number of the cache engine"
+}
+
+variable "port" {
+  type        = number
+  default     = 6379
+  description = "Port number on which the cache nodes will accept connections"
 }
 
 variable "password" {
   type        = string
   description = "Auth token for password protecting redis, `transit_encryption_enabled` must be set to `true`. Password must be longer than 16 chars"
   default     = null
-
 }
