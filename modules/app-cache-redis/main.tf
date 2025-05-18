@@ -7,7 +7,7 @@ module "redis_label" {
 
 module "redis" {
   source  = "cloudposse/elasticache-redis/aws"
-  version = "1.9.0"
+  version = "1.9.1"
 
   # Networking
   availability_zones = var.availability_zones
