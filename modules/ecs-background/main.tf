@@ -2,7 +2,9 @@ locals {
 
   default_queue_name = "app"
 
-  codepipeline_enabled = module.this.enabled && var.container_image == null
+  codepipeline_enabled = module.this.enabled && var.codepipeline_enabled
+
+  ecr_enabled = module.this.enabled && var.container_image == null
 
   codepipeline_group_events_map = {
     all = [
@@ -62,12 +64,12 @@ module "ecr" {
   source  = "cloudposse/ecr/aws"
   version = "0.42.1"
 
-  enabled = local.codepipeline_enabled
+  enabled = local.ecr_enabled
 
   use_fullname         = true
   scan_images_on_push  = true
   max_image_count      = var.ecr_max_image_count
-  image_tag_mutability = "MUTABLE"
+  image_tag_mutability = var.ecr_image_tag_mutability
 
   force_delete = var.ecr_force_delete
 
@@ -82,8 +84,9 @@ module "container_label" {
 }
 
 module "container" {
-  source                       = "cloudposse/ecs-container-definition/aws"
-  version                      = "0.61.2"
+  source  = "cloudposse/ecs-container-definition/aws"
+  version = "0.61.2"
+
   container_name               = module.container_label.id
   container_image              = var.container_image == null ? join(":", [module.ecr.repository_url, "latest"]) : var.container_image
   container_memory             = var.container_memory
@@ -92,6 +95,8 @@ module "container" {
   start_timeout                = var.container_start_timeout
   stop_timeout                 = var.container_stop_timeout
   essential                    = true
+
+  container_definition = var.container_overrides
 
   healthcheck = var.container_healthcheck
 
@@ -130,7 +135,7 @@ module "container" {
 
 module "ecs_task" {
   source  = "cloudposse/ecs-alb-service-task/aws"
-  version = "0.76.1"
+  version = "0.78.0"
 
   context = module.this.context
 
@@ -210,7 +215,14 @@ data "aws_iam_policy_document" "ecs_task" {
     ]
 
     resources = [
-      "arn:aws:ssm:${var.aws_region}:${var.aws_account_id}:parameter/${module.this.namespace}/${module.this.stage}/${var.ssm_param_store_app_key}/*"
+      join("/", compact(["arn:aws:ssm:${var.aws_region}:${var.aws_account_id}:parameter",
+        module.this.namespace,
+        module.this.environment,
+        module.this.stage,
+        var.ssm_param_store_app_key,
+        "*"
+      ]))
+
     ]
 
     effect = "Allow"

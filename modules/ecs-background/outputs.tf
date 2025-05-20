@@ -27,3 +27,13 @@ output "ecs_task_definition_revision" {
   description = "ECS task definition revision"
   value       = module.ecs_task.task_definition_revision
 }
+
+output "ecr_repository_name" {
+  description = "ECR repository name"
+  value       = module.ecr.repository_name
+}
+
+output "ecr_repository_url" {
+  description = "ECR repository URL"
+  value       = module.ecr.repository_url
+}
