@@ -22,8 +22,14 @@ variable "zone_id" {
 
 variable "instance_type" {
   type        = string
-  default     = "t2.micro"
+  default     = "t4g.nano"
   description = "Bastion instance type"
+}
+
+variable "ami_filter" {
+  type        = map(list(string))
+  default     = { "name" : ["al2023-ami-minimal-*arm64"] }
+  description = "AMI filter to use for provisioning EC2 Bastion Host"
 }
 
 variable "user_data" {

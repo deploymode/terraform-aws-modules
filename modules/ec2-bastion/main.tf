@@ -10,11 +10,12 @@ module "aws_key_pair" {
 
 module "ec2_bastion" {
   source  = "cloudposse/ec2-bastion-server/aws"
-  version = "0.30.1"
+  version = "0.31.1"
 
   enabled = module.this.enabled
 
   instance_type               = var.instance_type
+  ami_filter                  = var.ami_filter
   security_groups             = var.security_groups
   subnets                     = var.public_subnet_ids
   key_name                    = module.aws_key_pair.key_name
