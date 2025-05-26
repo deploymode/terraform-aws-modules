@@ -53,7 +53,7 @@ resource "aws_iam_policy" "scheduler" {
         Action = [
           "ecs:RunTask"
         ]
-        Resource = [module.ecs_task.task_definition_arn_without_revision]
+        Resource = ["${module.ecs_task.task_definition_arn_without_revision}:*"]
       },
       { # allow scheduler to set the IAM roles of your task
         Effect = "Allow",
@@ -89,16 +89,15 @@ resource "aws_scheduler_schedule" "scheduled_task" {
       # schedule always uses latest revision
       task_definition_arn = module.ecs_task.task_definition_arn_without_revision
       launch_type         = var.ecs_launch_type
-      dynamic "capacity_provider_strategy" {
-        for_each = var.ecs_capacity_provider_strategies
+      # dynamic "capacity_provider_strategy" {
+      #   for_each = var.ecs_capacity_provider_strategies
 
-        content {
-          base              = capacity_provider_strategy.value.base
-          capacity_provider = capacity_provider_strategy.value.capacity_provider
-          weight            = capacity_provider_strategy.value.weight
-        }
-      }
-
+      #   content {
+      #     base              = capacity_provider_strategy.value.base
+      #     capacity_provider = capacity_provider_strategy.value.capacity_provider
+      #     weight            = capacity_provider_strategy.value.weight
+      #   }
+      # }
 
       network_configuration {
         assign_public_ip = var.assign_public_ip
