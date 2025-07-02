@@ -10,7 +10,7 @@ module "aws_key_pair" {
 
 module "ec2_bastion" {
   source  = "cloudposse/ec2-bastion-server/aws"
-  version = "0.31.2"
+  version = "0.31.1"
 
   enabled = module.this.enabled
 
