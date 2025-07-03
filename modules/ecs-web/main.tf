@@ -746,7 +746,7 @@ data "aws_iam_policy_document" "codebuild" {
 
 module "vpc_peering" {
   source                                    = "cloudposse/vpc-peering/aws"
-  version                                   = "0.9.0"
+  version                                   = "1.0.1"
   enabled                                   = (module.this.enabled && length(var.peered_vpc_id) > 0)
   auto_accept                               = true
   requestor_allow_remote_vpc_dns_resolution = true
