@@ -87,30 +87,31 @@ module "role" {
   source  = "cloudposse/iam-role/aws"
   version = "0.16.2"
 
-  name    = each.key
+  name = each.key
 
   enabled = module.this.enabled
 
   policy_description = "${each.key} access"
-  role_description   = each.value.description 
+  role_description   = each.value.description
 
   # Roles/users allowed to assume role
   principals = {
     AWS = compact(concat(each.value.assume_role_arns,
-      [for name in each.value.assume_role_names : "arn:aws:iam::${var.identity_account_id}:role/${module.this.stage}-${name}"]
+      [for name in each.value.assume_role_names : "arn:aws:iam::${var.identity_account_id}:role/${var.namespace}-${module.this.stage}-${name}"]
     ))
   }
 
   max_session_duration = each.value.max_session_duration
 
-  assume_role_conditions = each.value.enforce_mfa ? [{
-    test     = "Bool"
-    variable = "aws:MultiFactorAuthPresent"
-    values   = ["true"]
-  }] : []
+  assume_role_conditions = concat(
+    each.value.enforce_mfa ? [{
+      test     = "Bool"
+      variable = "aws:MultiFactorAuthPresent"
+      values   = ["true"]
+  }] : [])
 
   policy_document_count = 0
-  managed_policy_arns = each.value.managed_policy_arns
+  managed_policy_arns   = each.value.managed_policy_arns
 
   context = module.this.context
 }

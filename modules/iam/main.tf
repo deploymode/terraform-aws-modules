@@ -10,8 +10,9 @@ locals {
     max_session_duration = 3600
   }
 
+  # Create group names by prefixing account name
   group_names = {
-    for tuple in setproduct(keys(var.accounts), toset(var.groups)) : "${tuple[0]}-${tuple[1]}" => {
+    for tuple in setproduct(keys(var.accounts), toset(var.groups)) : "${var.namespace}-${tuple[0]}-${tuple[1]}" => {
       account = tuple[0]
       group   = tuple[1]
     }
@@ -44,7 +45,8 @@ resource "aws_iam_group" "group" {
 }
 
 resource "aws_iam_user" "user" {
-  for_each      = var.users
+  for_each = var.users
+
   name          = each.key
   force_destroy = each.value.force_destroy
   tags          = module.this.tags
@@ -52,21 +54,24 @@ resource "aws_iam_user" "user" {
 
 resource "aws_iam_user_login_profile" "user_login" {
   for_each = aws_iam_user.user
-  user     = each.value.name
-  pgp_key  = var.encryption_key
+
+  user    = each.value.name
+  pgp_key = var.encryption_key
 }
 
 resource "aws_iam_access_key" "user_key" {
   for_each = { for u, user_data in var.users : u => user_data if user_data.generate_access_key }
-  user     = each.key
-  pgp_key  = var.encryption_key
+
+  user    = each.key
+  pgp_key = var.encryption_key
 }
 
 resource "aws_iam_group_membership" "group_membership" {
-  for_each = aws_iam_group.group # toset(var.groups)
-  name     = "${each.value.name}-membership"
-  users    = [for u, user_data in var.users : u if contains(user_data.groups, each.value.name)]
-  group    = each.value.name
+  for_each = aws_iam_group.group
+
+  name  = "${each.value.name}-membership"
+  users = [for u, user_data in var.users : u if contains(user_data.groups, each.value.name)]
+  group = each.value.name
 }
 
 resource "aws_iam_group_membership" "master_account_users_group_membership" {
@@ -111,9 +116,8 @@ resource "aws_iam_group_policy" "admin_group_with_mfa_policy" {
   policy = data.aws_iam_policy_document.assume_admin_role_with_mfa[each.value.account].json
 }
 
-# A policy to allow role members to assume an arbitrary role in each account
+# Allows group users to assume the role associated with the group 
 data "aws_iam_policy_document" "assume_group_role_with_mfa" {
-  # for_each = local.accounts
   for_each = local.other_group_names
 
   statement {
@@ -121,10 +125,9 @@ data "aws_iam_policy_document" "assume_group_role_with_mfa" {
       "sts:AssumeRole",
     ]
 
-    # resources = [for group_name in keys(local.other_group_names) : "arn:aws:iam::${each.value.account_id}:role/${group_name}"]
-    # resources = ["arn:aws:iam::${var.accounts["master"].account_id}:role/${each.value.group}"]
     resources = [module.account_assume_role[each.key].arn]
 
+    # disable for cli use
     condition {
       test     = "Bool"
       variable = "aws:MultiFactorAuthPresent"
@@ -157,25 +160,7 @@ data "aws_iam_policy_document" "account_assume_role" {
       "sts:TagSession",
     ]
 
-    # resources = [for account, account_info in local.accounts : "arn:aws:iam::${account_info.account_id}:role/${each.value.group}" if account == each.value.account]
-    resources = ["arn:aws:iam::${var.accounts[each.value.account].account_id}:role/${each.value.account}-${each.value.group}"]
-
-    # required?
-    condition {
-      test     = "Bool"
-      variable = "aws:MultiFactorAuthPresent"
-      values   = ["true"]
-    }
-    condition {
-      test     = "StringEquals"
-      variable = "aws:PrincipalType"
-      values   = ["AssumedRole"] # compact(concat(["AssumedRole"], var.iam_users_enabled ? ["User"] : []))
-    }
-    condition {
-      test     = "ArnLike"
-      variable = "aws:PrincipalArn"
-      values   = ["arn:aws:iam::${var.accounts["master"].account_id}:role/${each.value.account}-${each.value.group}"]
-    }
+    resources = ["arn:aws:iam::${var.accounts[each.value.account].account_id}:role/${var.namespace}-${each.value.account}-${each.value.group}"]
 
     effect = "Allow"
   }
@@ -191,9 +176,7 @@ module "account_assume_role" {
 
   enabled = module.this.enabled
 
-  # policy_description = "Allow role to access to ${each.value.group} role in ${each.value.account} account"
-  # policy_document_count = 0
-  role_description = "IAM role with ${each.value.group} permissions"
+  role_description = "Allows users in ${each.value.group} group to assume role in ${each.value.account} account"
 
   # Roles allowed to assume role
   principals = {
@@ -223,6 +206,9 @@ module "account_assume_role" {
 
 
 # // BEGING MASTER ACCOUNT ROLES, POLICIES, AND GROUPS
+// **
+// Master Account access
+// **
 
 // Role to allow users in the master account to assume role
 module "master_admin_role" {
@@ -283,7 +269,8 @@ data "aws_iam_policy_document" "change_password_policy" {
   statement {
     actions = [
       "iam:ChangePassword",
-      "iam:GetUser"
+      "iam:GetUser",
+      "iam:GetLoginProfile"
     ]
 
     resources = [
@@ -382,5 +369,3 @@ data "aws_iam_policy_document" "manage_mfa_policy" {
   #   }
   # }
 }
-
-# // END MASTER ACCOUNT USERS, GROUPS AND POLICIES
