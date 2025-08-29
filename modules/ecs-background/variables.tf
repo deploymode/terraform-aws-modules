@@ -627,3 +627,74 @@ variable "scheduled_task_count" {
   type        = number
   default     = 1
 }
+
+
+variable "process_capacity_per_worker" {
+  type        = number
+  description = "Number of queue processes per worker"
+  default     = 5
+}
+
+variable "queue_weights" {
+  type = map(number)
+  description = "Mapping of queue names to their respective weights for scaling decisions."
+  default = {}
+}
+
+variable "autoscaling_enabled" {
+  type        = bool
+  description = "A boolean to enable/disable Autoscaling policy for ECS Service"
+  default     = false
+}
+
+variable "autoscaling_min_capacity" {
+  type    = number
+  description = "Minimum number of ECS tasks for Autoscaling"
+  default = 1
+}
+
+variable "autoscaling_max_capacity" {
+  type    = number
+  description = "Maximum number of ECS tasks for Autoscaling"
+  default = 5
+}
+
+variable "autoscaling_scale_up_cooldown" {
+  type        = number
+  description = "Period (in seconds) to wait between scale up events"
+  default     = 60
+}
+
+variable "autoscaling_scale_down_cooldown" {
+  type        = number
+  description = "Period (in seconds) to wait between scale down events"
+  default     = 300
+}
+
+# Scaling thresholds
+variable "autoscaling_scale_up_thresholds" {
+  description = "Step scaling thresholds for workload per slot"
+  type = list(object({
+    lower_bound = number
+    upper_bound = number
+    adjustment  = number
+  }))
+  default = [
+    { lower_bound = 0.0, upper_bound = 0.5, adjustment = 2 },
+    { lower_bound = 0.5, upper_bound = 1.0, adjustment = 4 },
+    { lower_bound = 1.0, upper_bound = null, adjustment = 6 }
+  ]
+}
+
+variable "autoscaling_scale_down_thresholds" {
+  description = "Step scaling thresholds for scaling down ECS tasks"
+  type = list(object({
+    upper_bound = number
+    adjustment  = number
+  }))
+  default = [
+    { upper_bound = 0.3, adjustment = -1 },
+    { upper_bound = 0.15, adjustment = -2 },
+    { upper_bound = 0.05, adjustment = -4 },
+  ]
+}

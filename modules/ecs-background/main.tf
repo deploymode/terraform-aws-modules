@@ -32,7 +32,9 @@ locals {
     codebuild = "/aws/codebuild/${module.this.id}-build"
   } : {}
 
-  queue_env_vars = length(var.queue_names) > 0 ? concat([
+  queue_in_use = length(var.queue_names) > 0
+
+  queue_env_vars = local.queue_in_use ? concat([
     {
       name  = "QUEUE_CONNECTION"
       value = "sqs"
@@ -55,6 +57,10 @@ locals {
         name  = join("_", ["SQS_QUEUE", upper(queue_short_name)])
         value = queue_name
   } if queue_short_name != local.default_queue_name]) : []
+
+  // Auto-scaling
+
+  process_capacity_per_worker = var.process_capacity_per_worker
 }
 
 
@@ -181,6 +187,154 @@ module "ecs_task" {
   desired_count = var.ecs_task_desired_count
   task_memory   = var.ecs_task_memory
   task_cpu      = var.ecs_task_cpu
+}
+
+
+// Auto-scaling based on SQS queue metrics
+
+module "ecs_cloudwatch_autoscaling" {  
+  source                = "cloudposse/ecs-cloudwatch-autoscaling/aws"
+  version               = "1.0.0"
+
+  enabled               = module.this.enabled && var.autoscaling_enabled
+
+  service_name          = module.ecs_task.service_name
+  cluster_name          = var.ecs_cluster_name
+  min_capacity          = var.autoscaling_min_capacity
+  max_capacity          = var.autoscaling_max_capacity
+  scale_down_step_adjustments = var.autoscaling_scale_down_thresholds
+  scale_down_cooldown   = var.autoscaling_scale_down_cooldown
+  scale_up_step_adjustments = var.autoscaling_scale_up_thresholds
+  scale_up_cooldown     = var.autoscaling_scale_up_cooldown
+
+  context                = module.this.context
+}
+
+# CLOUDWATCH ALARMS for SQS
+# Custom metrics for scaling based on weighted queue messages per process slot
+
+# Helper function for metric query ids to avoid duplicates
+locals {
+  queue_ids = [for queue_name, _ in var.queue_weights : "q${queue_name}"]
+}
+
+resource "aws_cloudwatch_metric_alarm" "scale_up_alarm" {
+  count = local.queue_in_use ? 1 : 0
+
+  alarm_name          = "ecs-scale-up-alarm"
+  comparison_operator = "GreaterThanThreshold"
+  threshold           = var.scale_up_thresholds[0].lower_bound
+  evaluation_periods  = 1
+  datapoints_to_alarm = 1
+  period              = 60
+  alarm_description   = "Scale up ECS when workload per process slot exceeds threshold"
+  treat_missing_data  = "notBreaching"
+
+  # Queue metrics with weights
+  dynamic "metric_query" {
+    for_each = var.queue_weights
+    content {
+      id = local.queue_ids[metric_query.key]
+      metric {
+        namespace   = "AWS/SQS"
+        metric_name = "ApproximateNumberOfMessagesVisible"
+        dimensions  = { QueueName = metric_query.key }
+        period      = 60
+        stat        = "Average"
+      }
+    }
+  }
+
+  # Running ECS tasks
+  metric_query {
+    id          = "tasks"
+    metric {
+      namespace   = "ECS/Service"
+      metric_name = "RunningTaskCount"
+      dimensions  = {
+        ClusterName = var.ecs_cluster_name
+        ServiceName = module.ecs_task.service_name
+      }
+      period = 60
+      stat   = "Average"
+    }
+  }
+
+  # Weighted sums for queues
+  metric_query {
+    id         = "weighted"
+    expression = join(" + ", [for queue_name, weight in var.queue_weights : "(${local.queue_ids[queue_name]} * ${weight})"])
+    label      = "Weighted Queue Messages"
+  }
+
+  # Workload per ECS process slot
+  metric_query {
+    id         = "workload_per_slot"
+    expression = "weighted / (tasks * ${local.process_capacity_per_worker})"
+    label      = "Workload Per Slot"
+    return_data = true
+  }
+
+  alarm_actions = [aws_appautoscaling_policy.scale_out.arn]
+  ok_actions    = []
+}
+
+resource "aws_cloudwatch_metric_alarm" "scale_down_alarm" {
+  count = local.queue_in_use ? 1 : 0
+
+  alarm_name          = "ecs-scale-down-alarm"
+  comparison_operator = "LessThanThreshold"
+  threshold           = var.autoscaling_scale_down_thresholds[0].upper_bound
+  evaluation_periods  = 1
+  datapoints_to_alarm = 1
+  period              = 60
+  alarm_description   = "Scale down ECS when workload per process slot drops below threshold"
+  treat_missing_data  = "breaching"
+
+  # Repeat same metric queries as scale-up alarm
+  dynamic "metric_query" {
+    for_each = var.queue_weights
+    content {
+      id = local.queue_ids[metric_query.key]
+      metric {
+        namespace   = "AWS/SQS"
+        metric_name = "ApproximateNumberOfMessagesVisible"
+        dimensions  = { QueueName = metric_query.key }
+        period      = 60
+        stat        = "Average"
+      }
+    }
+  }
+
+  metric_query {
+    id          = "tasks"
+    metric {
+      namespace   = "ECS/Service"
+      metric_name = "RunningTaskCount"
+      dimensions  = {
+        ClusterName = var.ecs_cluster_name
+        ServiceName = module.ecs_task.service_name
+      }
+      period = 60
+      stat   = "Average"
+    }
+  }
+
+  metric_query {
+    id         = "weighted"
+    expression = join(" + ", [for queue_name, weight in var.queue_weights : "(${local.queue_ids[queue_name]} * ${weight})"])
+    label      = "Weighted Queue Messages"
+  }
+
+  metric_query {
+    id         = "workload_per_slot"
+    expression = "weighted / (tasks * ${local.process_capacity_per_worker})"
+    label      = "Workload Per Slot"
+    return_data = true
+  }
+
+  alarm_actions = [aws_appautoscaling_policy.scale_in.arn]
+  ok_actions    = []
 }
 
 // Allow ECS task to access SSM parameters
@@ -313,7 +467,7 @@ module "ecs_codepipeline" {
   environment_variables = concat(
     var.codepipeline_environment_variables,
     var.codepipeline_add_queue_env_vars ?
-    [for var in local.queue_env_vars : merge(var, { type = "PLAINTEXT" })] : [],
+    [for queue_var in local.queue_env_vars : merge(queue_var, { type = "PLAINTEXT" })] : [],
     [
       {
         name  = "NAMESPACE"
