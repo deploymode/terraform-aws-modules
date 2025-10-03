@@ -3,6 +3,8 @@
 module "oidc_provider" {
   source  = "philips-labs/github-oidc/aws//modules/provider"
   version = "0.8.1"
+
+  count = var.openid_connect_provider_arn == null ? 1 : 0
 }
 
 module "repo_oidc_label" {
@@ -22,7 +24,7 @@ module "repo_oidc" {
 
   for_each = var.github_repositories
 
-  openid_connect_provider_arn = module.oidc_provider.openid_connect_provider.arn
+  openid_connect_provider_arn = coalesce(var.openid_connect_provider_arn, join("", module.oidc_provider.*.openid_connect_provider.arn))
   repo                        = each.key
   role_name                   = module.repo_oidc_label[each.key].id
 

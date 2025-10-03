@@ -1,4 +1,11 @@
 
+variable "openid_connect_provider_arn" {
+  description = "Set the openid connect provider ARN when the provider is not managed by the module."
+  type        = string
+  default     = null
+}
+
+
 variable "github_repositories" {
   description = "Map of GitHub repositories to create OIDC roles for keyed by repo name"
   type = map(object({
