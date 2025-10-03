@@ -39,6 +39,12 @@ variable "ecr_image_tag_mutability" {
 
 // ECS
 
+variable "ecs_service_enabled" {
+  type        = bool
+  description = "Whether or not to create the ECS service"
+  default     = true
+}
+
 
 variable "ecs_security_group_ids" {
   type        = list(string)

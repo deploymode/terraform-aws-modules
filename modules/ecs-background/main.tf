@@ -139,7 +139,8 @@ module "ecs_task" {
 
   context = module.this.context
 
-  container_definition_json    = "[${module.container.json_map_encoded}]"
+  ecs_service_enabled          = var.ecs_service_enabled
+  container_definition_json     = "[${module.container.json_map_encoded}]"
   ecs_cluster_arn              = var.ecs_cluster_arn
   capacity_provider_strategies = var.ecs_capacity_provider_strategies
   launch_type                  = var.ecs_launch_type
