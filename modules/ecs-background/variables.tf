@@ -45,6 +45,11 @@ variable "ecs_service_enabled" {
   default     = true
 }
 
+variable "create_run_task_role" {
+  type        = bool
+  description = "Whether to create an IAM policy to allow running the task via RunTask"
+  default     = false
+}
 
 variable "ecs_security_group_ids" {
   type        = list(string)

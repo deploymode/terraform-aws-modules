@@ -13,6 +13,11 @@ output "ecs_task_definition_family" {
   value       = module.ecs_task.task_definition_family
 }
 
+output "ecs_task_run_policy_arn" {
+  description = "ARN of the policy to allow running ECS tasks"
+  value       = one(module.ecs_task_run_policy[*]["policy_arn"])
+}
+
 output "log_groups" {
   value       = local.log_groups
   description = "ECS log groups"

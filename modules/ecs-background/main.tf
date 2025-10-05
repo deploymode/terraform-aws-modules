@@ -140,7 +140,7 @@ module "ecs_task" {
   context = module.this.context
 
   ecs_service_enabled          = var.ecs_service_enabled
-  container_definition_json     = "[${module.container.json_map_encoded}]"
+  container_definition_json    = "[${module.container.json_map_encoded}]"
   ecs_cluster_arn              = var.ecs_cluster_arn
   capacity_provider_strategies = var.ecs_capacity_provider_strategies
   launch_type                  = var.ecs_launch_type
@@ -183,6 +183,58 @@ module "ecs_task" {
   task_memory   = var.ecs_task_memory
   task_cpu      = var.ecs_task_cpu
 }
+
+//////////
+// Optional policy to allow external running of this task definition
+// Intended to be attached to a role created outside this module
+//////////
+
+// IAM policy to allow running the task via RunTask on the specified cluster
+module "ecs_task_run_policy" {
+  source  = "cloudposse/iam-policy/aws"
+  version = "2.0.2"
+
+  enabled = module.this.enabled && var.create_run_task_role
+
+  attributes = ["task", "run", "policy"]
+
+  # Create the policy
+  iam_policy_enabled = true
+
+  iam_policy = [{
+    version   = "2012-10-17"
+    policy_id = "ecs-task-run-policy"
+    statements = [
+      {
+        sid     = "PassRole"
+        effect  = "Allow"
+        actions = ["iam:PassRole"]
+        resources = [
+          module.ecs_task.task_exec_role_arn,
+          module.ecs_task.task_role_arn
+        ]
+      },
+      {
+        sid       = "RunTask"
+        effect    = "Allow"
+        actions   = ["ecs:RunTask"]
+        resources = ["${module.ecs_task.task_definition_arn_without_revision}:*"]
+        conditions = [{
+          test     = "ArnEquals"
+          variable = "ecs:cluster"
+          values   = [var.ecs_cluster_arn]
+        }]
+      }
+    ]
+  }]
+
+  context = module.this.context
+}
+
+
+//////////
+// ECS Task Role Policies
+//////////
 
 // Allow ECS task to access SSM parameters
 resource "aws_iam_role_policy_attachment" "ecs_task" {
