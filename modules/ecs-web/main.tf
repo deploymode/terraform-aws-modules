@@ -575,16 +575,22 @@ module "ecs_codepipeline" {
   repo_owner                      = var.codepipeline_repo_owner
   repo_name                       = var.codepipeline_repo_name
   branch                          = var.codepipeline_branch
-  build_image                     = var.codepipeline_build_image
-  build_timeout                   = var.codepipeline_build_timeout
-  build_compute_type              = "BUILD_GENERAL1_SMALL"
   poll_source_changes             = false
+  webhook_enabled                 = var.codepipeline_webhook_enabled
+  github_oauth_token              = var.codepipeline_github_oauth_token
+  github_webhook_events           = var.codepipeline_github_webhook_events
+
+  build_image        = var.codepipeline_build_image
+  build_timeout      = var.codepipeline_build_timeout
+  build_compute_type = "BUILD_GENERAL1_SMALL"
   // True required to build docker containers
-  privileged_mode         = true
-  image_repo_name         = split("/", module.ecr.repository_url)[0]
-  image_tag               = "latest" // var.image_tag
-  webhook_enabled         = var.codepipeline_webhook_enabled
+  privileged_mode = true
+
+  image_repo_name = split("/", module.ecr.repository_url)[0]
+  image_tag       = "latest" // var.image_tag
+
   s3_bucket_force_destroy = true
+
   environment_variables = concat(
     var.codepipeline_environment_variables,
     var.codepipeline_add_queue_env_vars ?
@@ -622,12 +628,10 @@ module "ecs_codepipeline" {
       }
     ]
   )
-  ecs_cluster_name  = var.ecs_cluster_name
-  service_name      = module.ecs_task.service_name
-  cache_type        = var.codebuild_cache_type
-  local_cache_modes = var.codebuild_local_cache_modes
-  # github_anonymous        = true
-  github_oauth_token   = ""
+  ecs_cluster_name     = var.ecs_cluster_name
+  service_name         = module.ecs_task.service_name
+  cache_type           = var.codebuild_cache_type
+  local_cache_modes    = var.codebuild_local_cache_modes
   codebuild_vpc_config = var.codebuild_vpc_config
 
   context = module.this.context
