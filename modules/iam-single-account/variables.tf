@@ -16,6 +16,11 @@ variable "groups" {
       {
         permissions = list(string)
         resources   = list(string)
+        condition = optional(map(object({
+          test     = string
+          variable = string
+          values   = list(string)
+        })), {})
       }
     )), {})
   }))

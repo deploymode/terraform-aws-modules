@@ -239,6 +239,15 @@ data "aws_iam_policy_document" "additional_policy" {
       effect    = "Allow"
       actions   = statement.value.permissions
       resources = statement.value.resources
+      dynamic "condition" {
+        for_each = statement.value.condition != null ? statement.value.condition : {}
+
+        content {
+          test     = condition.value.test
+          variable = condition.value.variable
+          values   = condition.value.values
+        }
+      }
     }
   }
 }
