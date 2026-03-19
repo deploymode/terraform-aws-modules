@@ -217,7 +217,7 @@ module "ecs_task_run_policy" {
       {
         sid       = "RunTask"
         effect    = "Allow"
-        actions   = ["ecs:RunTask"]
+        actions   = ["ecs:RunTask", "ecs:StopTask"]
         resources = ["${module.ecs_task.task_definition_arn_without_revision}:*"]
         conditions = [{
           test     = "ArnEquals"
@@ -437,6 +437,12 @@ resource "aws_iam_role_policy_attachment" "codebuild" {
   count      = local.codepipeline_enabled ? 1 : 0
   role       = module.ecs_codepipeline.codebuild_role_id
   policy_arn = join("", aws_iam_policy.codebuild.*.arn)
+}
+
+resource "aws_iam_role_policy_attachment" "codebuild_additional_policies" {
+  for_each   = module.this.enabled && var.codepipeline_enabled ? toset(var.codebuild_policy_arns) : []
+  role       = module.ecs_codepipeline.codebuild_role_id
+  policy_arn = each.value
 }
 
 module "codebuild_label" {
