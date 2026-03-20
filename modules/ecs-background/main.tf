@@ -217,8 +217,19 @@ module "ecs_task_run_policy" {
       {
         sid       = "RunTask"
         effect    = "Allow"
-        actions   = ["ecs:RunTask", "ecs:StopTask"]
+        actions   = ["ecs:RunTask"]
         resources = ["${module.ecs_task.task_definition_arn_without_revision}:*"]
+        conditions = [{
+          test     = "ArnEquals"
+          variable = "ecs:cluster"
+          values   = [var.ecs_cluster_arn]
+        }]
+      },
+      {
+        sid       = "StopTask"
+        effect    = "Allow"
+        actions   = ["ecs:StopTask"]
+        resources = ["${replace(var.ecs_cluster_arn, ":cluster/", ":task/")}/*"]
         conditions = [{
           test     = "ArnEquals"
           variable = "ecs:cluster"
