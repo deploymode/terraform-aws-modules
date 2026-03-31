@@ -587,6 +587,18 @@ EOT
   default     = {}
 }
 
+variable "codepipeline_github_oauth_token" {
+  type        = string
+  description = "GitHub OAuth Token with permissions to access private repositories"
+  default     = ""
+}
+
+variable "codepipeline_github_webhook_events" {
+  type        = list(string)
+  description = "A list of events which should trigger the webhook. See a list of [available events](https://developer.github.com/v3/activity/events/types/)"
+  default     = ["push"]
+}
+
 variable "test_report_names" {
   type        = map(any)
   description = "CodeBuild test report names"
