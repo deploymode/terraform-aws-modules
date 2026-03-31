@@ -582,7 +582,7 @@ module "ecs_codepipeline" {
 
   build_image        = var.codepipeline_build_image
   build_timeout      = var.codepipeline_build_timeout
-  build_compute_type = "BUILD_GENERAL1_SMALL"
+  build_compute_type = var.codebuild_compute_type
   // True required to build docker containers
   privileged_mode = true
 

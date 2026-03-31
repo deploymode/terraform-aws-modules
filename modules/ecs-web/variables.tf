@@ -531,6 +531,12 @@ variable "codepipeline_build_image" {
   description = "Docker image for build environment, _e.g._ `aws/codebuild/docker:docker:17.09.0`"
 }
 
+variable "codebuild_build_compute_type" {
+  type        = string
+  default     = "BUILD_GENERAL1_SMALL"
+  description = "`CodeBuild` instance size. Possible values are: `BUILD_GENERAL1_SMALL` `BUILD_GENERAL1_MEDIUM` `BUILD_GENERAL1_LARGE`"
+}
+
 variable "codepipeline_build_timeout" {
   type        = number
   default     = 60
