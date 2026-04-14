@@ -47,6 +47,8 @@ module "s3_bucket" {
 
   cors_configuration = each.value.cors_rules
 
+  lifecycle_configuration_rules = each.value.lifecycle_configuration_rules
+
   context = module.this.context
 }
 

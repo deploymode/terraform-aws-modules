@@ -23,6 +23,37 @@ variable "buckets" {
       allowed_extensions = optional(list(string), [])
       # Paths are relative to the bucket root "/"
       allowed_public_paths = optional(list(string), [])
+      # S3 lifecycle configuration rules (v2) - passed through to cloudposse/s3-bucket
+      lifecycle_configuration_rules = optional(list(object({
+        enabled = optional(bool, true)
+        id      = string
+        abort_incomplete_multipart_upload_days = optional(number)
+        filter_and = optional(object({
+          object_size_greater_than = optional(number)
+          object_size_less_than    = optional(number)
+          prefix                   = optional(string)
+          tags                     = optional(map(string), {})
+        }))
+        expiration = optional(object({
+          date                         = optional(string)
+          days                         = optional(number)
+          expired_object_delete_marker = optional(bool)
+        }))
+        noncurrent_version_expiration = optional(object({
+          newer_noncurrent_versions = optional(number)
+          noncurrent_days           = optional(number)
+        }))
+        transition = optional(list(object({
+          date          = optional(string)
+          days          = optional(number)
+          storage_class = optional(string)
+        })), [])
+        noncurrent_version_transition = optional(list(object({
+          newer_noncurrent_versions = optional(number)
+          noncurrent_days           = optional(number)
+          storage_class             = optional(string)
+        })), [])
+      })), [])
     }
   ))
   default     = {}
