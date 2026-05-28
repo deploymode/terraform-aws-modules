@@ -86,7 +86,7 @@ resource "aws_budgets_budget" "daily" {
 
   name         = module.budget_label[each.key].id
   budget_type  = "COST"
-  limit_amount = each.value.limit_amount
+  limit_amount = tostring(each.value.limit_amount)
   limit_unit   = "USD"
   time_unit    = "DAILY"
 
@@ -95,20 +95,15 @@ resource "aws_budgets_budget" "daily" {
     values = [each.value.linked_account_id]
   }
 
-  notification {
-    comparison_operator        = "GREATER_THAN"
-    threshold                  = 80
-    threshold_type             = "PERCENTAGE"
-    notification_type          = "ACTUAL"
-    subscriber_email_addresses = var.notification_emails
-  }
-
-  notification {
-    comparison_operator        = "GREATER_THAN"
-    threshold                  = 100
-    threshold_type             = "PERCENTAGE"
-    notification_type          = "ACTUAL"
-    subscriber_email_addresses = var.notification_emails
+  dynamic "notification" {
+    for_each = each.value.thresholds
+    content {
+      comparison_operator        = "GREATER_THAN"
+      threshold                  = notification.value
+      threshold_type             = "PERCENTAGE"
+      notification_type          = "ACTUAL"
+      subscriber_email_addresses = var.notification_emails
+    }
   }
 
   tags = module.budget_label[each.key].tags
