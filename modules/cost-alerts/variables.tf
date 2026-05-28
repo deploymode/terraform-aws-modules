@@ -16,13 +16,15 @@ variable "anomaly_threshold_usd" {
 
 variable "budgets" {
   type = map(object({
-    limit_amount      = string
+    limit_amount      = number
     linked_account_id = string
+    thresholds        = list(number)
   }))
   description = <<-EOT
     Map of daily budgets to create. Key is a logical name used as a label attribute.
     limit_amount is the dollar limit (string, AWS API requires string).
     linked_account_id filters cost to a single linked account.
+    thresholds is a list of percentage values that trigger ACTUAL spend notifications.
   EOT
   default     = {}
 }
