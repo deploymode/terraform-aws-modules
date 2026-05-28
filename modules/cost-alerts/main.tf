@@ -1,5 +1,38 @@
 # ---- Anomaly detection ---------------------------------------------------
 
+resource "aws_sns_topic" "anomaly_alerts" {
+  count = module.this.enabled ? 1 : 0
+
+  name = "${module.this.id}-anomaly"
+  tags = module.this.tags
+}
+
+resource "aws_sns_topic_policy" "anomaly_alerts" {
+  count = module.this.enabled ? 1 : 0
+
+  arn = aws_sns_topic.anomaly_alerts[0].arn
+  policy = jsonencode({
+    Version = "2012-10-17"
+    Statement = [
+      {
+        Sid       = "AllowCostExplorerPublish"
+        Effect    = "Allow"
+        Principal = { Service = "costalerts.amazonaws.com" }
+        Action    = "SNS:Publish"
+        Resource  = aws_sns_topic.anomaly_alerts[0].arn
+      }
+    ]
+  })
+}
+
+resource "aws_sns_topic_subscription" "anomaly_email" {
+  for_each = module.this.enabled ? toset(var.notification_emails) : toset([])
+
+  topic_arn = aws_sns_topic.anomaly_alerts[0].arn
+  protocol  = "email"
+  endpoint  = each.value
+}
+
 resource "aws_ce_anomaly_monitor" "service" {
   count = module.this.enabled ? 1 : 0
 
@@ -10,7 +43,7 @@ resource "aws_ce_anomaly_monitor" "service" {
   tags = module.this.tags
 }
 
-resource "aws_ce_anomaly_subscription" "email" {
+resource "aws_ce_anomaly_subscription" "alerts" {
   count = module.this.enabled ? 1 : 0
 
   name      = module.this.id
@@ -28,12 +61,9 @@ resource "aws_ce_anomaly_subscription" "email" {
     }
   }
 
-  dynamic "subscriber" {
-    for_each = var.notification_emails
-    content {
-      type    = "EMAIL"
-      address = subscriber.value
-    }
+  subscriber {
+    type    = "SNS"
+    address = aws_sns_topic.anomaly_alerts[0].arn
   }
 
   tags = module.this.tags
