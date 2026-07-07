@@ -44,6 +44,7 @@ data "aws_iam_policy_document" "dynamodb" {
 }
 
 resource "aws_iam_policy" "dynamodb_access_policy" {
+  count       = var.create_access_policy ? 1 : 0
   name        = module.dynamodb_label.id
   path        = "/"
   description = "Allows access to DynamoDB table for app cache"
