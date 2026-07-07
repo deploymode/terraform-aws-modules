@@ -63,7 +63,7 @@ module "ssh_key_pair" {
 
 module "elastic_beanstalk_application" {
   source  = "cloudposse/elastic-beanstalk-application/aws"
-  version = "0.12.0"
+  version = "0.13.0"
 
   description = var.description
 
@@ -80,7 +80,7 @@ data "aws_vpc" "default" {
 
 module "elastic_beanstalk_environment" {
   source  = "cloudposse/elastic-beanstalk-environment/aws"
-  version = "0.52.0"
+  version = "0.53.0"
 
   for_each = var.environment_settings
 

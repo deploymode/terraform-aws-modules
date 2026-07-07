@@ -387,6 +387,12 @@ variable "ec2_policy_documents" {
   description = "Additional policy document JSON for the EC2 instances within the EB App"
 }
 
+variable "ec2_policy_arns" {
+  type        = map(string)
+  default     = {}
+  description = "Additional policy ARNs for the EC2 instances within the EB App"
+}
+
 # SQS
 
 variable "queue_name" {
@@ -397,6 +403,6 @@ variable "queue_name" {
 
 variable "queue_http_url" {
   type        = string
-  description = "SQS queue name for app"
+  description = "SQS queue HTTP URL for app"
   default     = "/"
 }
