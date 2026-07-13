@@ -160,6 +160,7 @@ module "rds_replica" {
   database_port     = var.database_port
 
   storage_type      = var.storage_type
+  allocated_storage = var.allocated_storage
   max_allocated_storage = var.max_allocated_storage
   storage_encrypted = var.storage_encrypted
 
