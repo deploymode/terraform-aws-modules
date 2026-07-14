@@ -352,6 +352,17 @@ variable "additional_settings" {
   default     = []
 }
 
+variable "additional_settings_worker" {
+  type = list(object({
+    namespace = string
+    name      = string
+    value     = string
+  }))
+
+  description = "Additional Elastic Beanstalk settings applied only to the Worker tier (e.g. aws:elasticbeanstalk:sqsd options)."
+  default     = []
+}
+
 variable "env_vars" {
   type        = map(string)
   default     = {}
