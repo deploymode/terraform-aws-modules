@@ -24,7 +24,7 @@ locals {
   } : {}
 
   # For ElasticBeanstalk worker tier
-  additional_settings_worker = local.queue_enabled ? [
+  additional_settings_worker = concat(local.queue_enabled ? [
     {
       namespace = "aws:elasticbeanstalk:sqsd"
       name      = "WorkerQueueURL"
@@ -36,7 +36,7 @@ locals {
       value     = var.queue_http_url
 
     }
-  ] : []
+  ] : [], var.additional_settings_worker)
 
   web_environments = toset([for name, environment in var.environment_settings : name if environment.tier == "WebServer"])
 
