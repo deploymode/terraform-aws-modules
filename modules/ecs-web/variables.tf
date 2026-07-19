@@ -83,6 +83,12 @@ variable "alb_healthcheck_unhealthy_threshold" {
   default     = 2
 }
 
+variable "alb_idle_timeout" {
+  type        = number
+  description = "The time in seconds that the connection to the ALB is allowed to be idle"
+  default     = 60
+}
+
 variable "target_group_port" {
   type        = number
   default     = 80
