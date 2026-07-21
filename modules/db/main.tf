@@ -175,7 +175,9 @@ module "rds_replica" {
   allow_major_version_upgrade = var.allow_major_version_upgrade
   apply_immediately           = true
   maintenance_window          = var.maintenance_window
-  skip_final_snapshot         = var.skip_final_snapshot
+  # AWS rejects a final snapshot when deleting a read replica; only allow one
+  # if the replica has been promoted to a standalone instance
+  skip_final_snapshot         = var.promote_replica ? var.skip_final_snapshot : true
   copy_tags_to_snapshot       = true
   backup_retention_period     = var.backup_retention_period
   backup_window               = var.backup_window
