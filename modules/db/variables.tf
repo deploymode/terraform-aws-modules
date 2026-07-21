@@ -398,3 +398,46 @@ variable "promote_replica" {
   description = "Promote the read replica to a standalone DB"
   default     = false
 }
+// Alarms
+
+variable "alarms_enabled" {
+  type        = bool
+  description = "Create CloudWatch alarms for the DB instances"
+  default     = false
+}
+
+variable "alarm_actions" {
+  type        = list(string)
+  description = "Actions (e.g. SNS topic ARNs) to notify on alarm and OK transitions"
+  default     = []
+}
+
+variable "alarm_replica_cpu_threshold" {
+  type        = number
+  description = "Replica CPUUtilization percentage above which to alarm"
+  default     = 80
+}
+
+variable "alarm_replica_read_latency_threshold" {
+  type        = number
+  description = "Replica ReadLatency (seconds) above which to alarm"
+  default     = 0.02
+}
+
+variable "alarm_database_connections_threshold" {
+  type        = number
+  description = "Replica DatabaseConnections count above which to alarm"
+  default     = 80
+}
+
+variable "alarm_cpu_credit_balance_threshold" {
+  type        = number
+  description = "CPUCreditBalance below which to alarm on burstable instances"
+  default     = 100
+}
+
+variable "alarm_writer_cpu_threshold" {
+  type        = number
+  description = "Writer CPUUtilization percentage above which to alarm"
+  default     = 80
+}

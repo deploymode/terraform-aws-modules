@@ -21,3 +21,8 @@ output "queue_region" {
   description = "SQS region"
   value       = data.aws_region.current.name
 }
+
+output "queue_visibility_timeout" {
+  description = "Visibility timeout (seconds) per queue"
+  value       = module.this.enabled ? { for queue, queue_info in var.queues : queue => queue_info.visibility_timeout_seconds if queue_info.enabled } : {}
+}
