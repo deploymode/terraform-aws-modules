@@ -5,16 +5,18 @@ locals {
   burstable = length(regexall("^db\\.t", var.instance_class)) > 0
 
   cpu_credit_alarm_instances = local.burstable ? merge(
-    { writer = module.rds_instance.instance_id },
+    { primary = module.rds_instance.instance_id },
     local.replica_alarms_enabled ? { replica = module.rds_replica.instance_id } : {}
   ) : {}
 }
 
-resource "aws_cloudwatch_metric_alarm" "writer_cpu" {
+// Primary instance
+
+resource "aws_cloudwatch_metric_alarm" "primary_cpu" {
   count = local.alarms_enabled ? 1 : 0
 
-  alarm_name          = "${module.this.id}-writer-cpu-high"
-  alarm_description   = "RDS writer CPU utilisation is high"
+  alarm_name          = "${module.this.id}-primary-cpu-high"
+  alarm_description   = "RDS primary CPU utilisation is high"
   namespace           = "AWS/RDS"
   metric_name         = "CPUUtilization"
   dimensions          = { DBInstanceIdentifier = module.rds_instance.instance_id }
@@ -23,13 +25,36 @@ resource "aws_cloudwatch_metric_alarm" "writer_cpu" {
   evaluation_periods  = 3
   datapoints_to_alarm = 3
   comparison_operator = "GreaterThanThreshold"
-  threshold           = var.alarm_writer_cpu_threshold
+  threshold           = var.alarm_primary_cpu_threshold
   treat_missing_data  = "notBreaching"
   alarm_actions       = var.alarm_actions
   ok_actions          = var.alarm_actions
 
   tags = module.this.tags
 }
+
+resource "aws_cloudwatch_metric_alarm" "primary_connections" {
+  count = local.alarms_enabled ? 1 : 0
+
+  alarm_name          = "${module.this.id}-primary-connections-high"
+  alarm_description   = "RDS primary connection count is high"
+  namespace           = "AWS/RDS"
+  metric_name         = "DatabaseConnections"
+  dimensions          = { DBInstanceIdentifier = module.rds_instance.instance_id }
+  statistic           = "Average"
+  period              = 300
+  evaluation_periods  = 3
+  datapoints_to_alarm = 3
+  comparison_operator = "GreaterThanThreshold"
+  threshold           = var.alarm_database_connections_threshold
+  treat_missing_data  = "notBreaching"
+  alarm_actions       = var.alarm_actions
+  ok_actions          = var.alarm_actions
+
+  tags = module.this.tags
+}
+
+// Replica instance
 
 resource "aws_cloudwatch_metric_alarm" "replica_cpu" {
   count = local.replica_alarms_enabled ? 1 : 0
@@ -93,6 +118,8 @@ resource "aws_cloudwatch_metric_alarm" "replica_connections" {
 
   tags = module.this.tags
 }
+
+// Burstable instances (primary and replica)
 
 resource "aws_cloudwatch_metric_alarm" "cpu_credit_balance" {
   for_each = local.alarms_enabled ? local.cpu_credit_alarm_instances : {}
