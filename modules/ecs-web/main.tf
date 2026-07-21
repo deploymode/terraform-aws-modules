@@ -126,11 +126,30 @@ module "nginx_container_label" {
   context    = module.container_label.context
 }
 
+# The latest ACTIVE task definition, used to carry the CI-deployed image tags
+# into task definitions rendered by Terraform so applies don't revert images.
+data "aws_ecs_task_definition" "deployed" {
+  count           = var.use_deployed_image ? 1 : 0
+  task_definition = module.this.id
+}
+
+data "aws_ecs_container_definition" "deployed_nginx" {
+  count           = var.use_deployed_image ? 1 : 0
+  task_definition = "${data.aws_ecs_task_definition.deployed[0].family}:${data.aws_ecs_task_definition.deployed[0].revision}"
+  container_name  = module.nginx_container_label.id
+}
+
+data "aws_ecs_container_definition" "deployed_php-fpm" {
+  count           = var.use_deployed_image ? 1 : 0
+  task_definition = "${data.aws_ecs_task_definition.deployed[0].family}:${data.aws_ecs_task_definition.deployed[0].revision}"
+  container_name  = module.php-fpm_container_label.id
+}
+
 module "container_nginx" {
   source                       = "cloudposse/ecs-container-definition/aws"
   version                      = "0.61.2"
   container_name               = module.nginx_container_label.id #join("-", [module.container_label.id, "nginx"])
-  container_image              = join(":", [module.ecr.repository_url_map[local.image_names_map.nginx], "latest"])
+  container_image              = var.use_deployed_image ? data.aws_ecs_container_definition.deployed_nginx[0].image : join(":", [module.ecr.repository_url_map[local.image_names_map.nginx], "latest"])
   container_memory             = var.container_memory_nginx
   container_memory_reservation = var.container_memory_reservation_nginx
   container_cpu                = var.container_cpu_nginx
@@ -143,7 +162,9 @@ module "container_nginx" {
 
   readonly_root_filesystem = false
 
-  environment = var.container_environment_nginx
+  # Entries with a null value are dropped rather than rendered as value: null,
+  # which ECS would reject / record literally.
+  environment = [for e in var.container_environment_nginx : e if e.value != null]
   secrets     = var.container_ssm_secrets_nginx
 
   port_mappings = [
@@ -179,7 +200,7 @@ module "container_php-fpm" {
   source                       = "cloudposse/ecs-container-definition/aws"
   version                      = "0.61.2"
   container_name               = module.php-fpm_container_label.id # join("-", [module.container_label.id, "php-fpm"])
-  container_image              = join(":", [module.ecr.repository_url_map[local.image_names_map.php], "latest"])
+  container_image              = var.use_deployed_image ? data.aws_ecs_container_definition.deployed_php-fpm[0].image : join(":", [module.ecr.repository_url_map[local.image_names_map.php], "latest"])
   container_memory             = var.container_memory_php
   container_memory_reservation = var.container_memory_reservation_php
   container_cpu                = var.container_cpu_php
@@ -198,7 +219,9 @@ module "container_php-fpm" {
 
   readonly_root_filesystem = false
 
-  environment = concat([
+  # Entries with a null value are dropped rather than rendered as value: null,
+  # which ECS would reject / record literally.
+  environment = [for e in concat([
     {
       name  = "STAGE"
       value = module.this.stage
@@ -210,7 +233,7 @@ module "container_php-fpm" {
     ],
     var.container_environment_php,
     local.queue_env_vars
-  )
+  ) : e if e.value != null]
   secrets = var.container_ssm_secrets_php
 
   port_mappings = [
