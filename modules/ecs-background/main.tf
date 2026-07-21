@@ -32,7 +32,9 @@ locals {
     codebuild = "/aws/codebuild/${module.this.id}-build"
   } : {}
 
-  queue_env_vars = length(var.queue_names) > 0 ? concat([
+  queue_in_use = length(var.queue_names) > 0
+
+  queue_env_vars = local.queue_in_use ? concat([
     {
       name  = "QUEUE_CONNECTION"
       value = "sqs"
@@ -56,8 +58,6 @@ locals {
         value = queue_name
   } if queue_short_name != local.default_queue_name]) : []
 }
-
-
 
 // ECR Registry/Repo
 module "ecr" {
@@ -242,6 +242,232 @@ module "ecs_task_run_policy" {
   context = module.this.context
 }
 
+// Auto-scaling based on SQS queue metrics
+//
+// Queues are served by fixed per-task process pools, so a single fleet-wide
+// capacity number would hide a drowning pool behind an idle one. The signal
+// is therefore per-queue: weighted backlog divided by the slots that can
+// actually drain that queue (running tasks * queue_processes[queue]), and
+// the alarm scales on the WORST queue (MAX). Every queue in queue_names
+// participates at queue_weight_default; queue_weights overrides exceptions.
+// The scale-down signal additionally counts in-flight (not-visible) messages
+// on the queues named in scale_in_inflight_queues, so the fleet does not
+// shrink while long-running jobs are still executing. That narrows, but does
+// not close, the race between a scale-in decision and task termination —
+// ECS task scale-in protection (set from inside the task) is the real fix.
+// Step-adjustment intervals are relative to the alarm thresholds, per the
+// CloudWatch step-scaling contract.
+//
+// CloudWatch allows at most 10 metrics per alarm: queues + inflight queues
+// + the task-count metric must stay within that.
+
+locals {
+  autoscaling_enabled = module.this.enabled && var.autoscaling_enabled && local.queue_in_use
+
+  autoscaling_queue_weights = { for k in keys(var.queue_names) : k => lookup(var.queue_weights, k, var.queue_weight_default) }
+  autoscaling_queue_procs   = { for k in keys(var.queue_names) : k => lookup(var.queue_processes, k, var.process_capacity_per_worker) }
+
+  # Metric-math ids must match [a-z][a-zA-Z0-9_]*; queue names may not, so
+  # derive ids from the sorted key position instead.
+  autoscaling_queue_index = { for i, k in sort(keys(var.queue_names)) : k => i }
+
+  autoscaling_inflight_index = { for k, i in local.autoscaling_queue_index : k => i if contains(var.scale_in_inflight_queues, k) }
+
+  # Per-queue load expressions: (backlog * weight) / (tasks * pool slots).
+  # The scale-down variant adds the in-flight metric where configured.
+  autoscaling_load_exprs = {
+    for k, i in local.autoscaling_queue_index :
+    i => "(v${i} * ${local.autoscaling_queue_weights[k]}) / (tasks * ${local.autoscaling_queue_procs[k]})"
+  }
+  autoscaling_load_exprs_with_inflight = {
+    for k, i in local.autoscaling_queue_index :
+    i => "((v${i}${contains(var.scale_in_inflight_queues, k) ? " + n${i}" : ""}) * ${local.autoscaling_queue_weights[k]}) / (tasks * ${local.autoscaling_queue_procs[k]})"
+  }
+
+  autoscaling_max_expr = "MAX([${join(", ", [for i in values(local.autoscaling_queue_index) : "l${i}"])}])"
+}
+
+module "ecs_cloudwatch_autoscaling" {
+  source  = "cloudposse/ecs-cloudwatch-autoscaling/aws"
+  version = "1.0.0"
+
+  enabled = local.autoscaling_enabled
+
+  service_name                = module.ecs_task.service_name
+  cluster_name                = var.ecs_cluster_name
+  min_capacity                = var.autoscaling_min_capacity
+  max_capacity                = var.autoscaling_max_capacity
+  scale_up_step_adjustments   = var.autoscaling_scale_up_step_adjustments
+  scale_up_cooldown           = var.autoscaling_scale_up_cooldown
+  scale_down_step_adjustments = var.autoscaling_scale_down_step_adjustments
+  scale_down_cooldown         = var.autoscaling_scale_down_cooldown
+
+  context = module.this.context
+}
+
+resource "aws_cloudwatch_metric_alarm" "scale_up_alarm" {
+  count = local.autoscaling_enabled ? 1 : 0
+
+  alarm_name          = "${module.this.id}-scale-up"
+  comparison_operator = "GreaterThanThreshold"
+  threshold           = var.autoscaling_scale_up_threshold
+  evaluation_periods  = 1
+  datapoints_to_alarm = 1
+  alarm_description   = "Scale up ${module.ecs_task.service_name} when any queue's backlog per process slot exceeds threshold"
+  treat_missing_data  = "notBreaching"
+
+  dynamic "metric_query" {
+    for_each = local.autoscaling_queue_index
+    content {
+      id = "v${metric_query.value}"
+      metric {
+        namespace   = "AWS/SQS"
+        metric_name = "ApproximateNumberOfMessagesVisible"
+        dimensions  = { QueueName = var.queue_names[metric_query.key] }
+        period      = 60
+        stat        = "Average"
+      }
+    }
+  }
+
+  metric_query {
+    id = "tasks"
+    metric {
+      namespace   = "ECS/ContainerInsights"
+      metric_name = "RunningTaskCount"
+      dimensions = {
+        ClusterName = var.ecs_cluster_name
+        ServiceName = module.ecs_task.service_name
+      }
+      period = 60
+      stat   = "Average"
+    }
+  }
+
+  dynamic "metric_query" {
+    for_each = local.autoscaling_load_exprs
+    content {
+      id         = "l${metric_query.key}"
+      expression = metric_query.value
+      label      = "Load per slot q${metric_query.key}"
+    }
+  }
+
+  metric_query {
+    id          = "workload_per_slot"
+    expression  = local.autoscaling_max_expr
+    label       = "Worst Queue Load Per Slot"
+    return_data = true
+  }
+
+  alarm_actions = [module.ecs_cloudwatch_autoscaling.scale_up_policy_arn]
+
+  tags = module.this.tags
+
+  lifecycle {
+    precondition {
+      condition     = alltrue([for k in keys(var.queue_weights) : contains(keys(var.queue_names), k)])
+      error_message = "Every queue_weights key must exist in queue_names."
+    }
+    precondition {
+      condition     = alltrue([for k in keys(var.queue_processes) : contains(keys(var.queue_names), k)])
+      error_message = "Every queue_processes key must exist in queue_names."
+    }
+    precondition {
+      condition     = alltrue([for k in var.scale_in_inflight_queues : contains(keys(var.queue_names), k)])
+      error_message = "Every scale_in_inflight_queues entry must exist in queue_names."
+    }
+    precondition {
+      condition     = length(var.queue_names) + 1 <= 10
+      error_message = "CloudWatch alarms allow at most 10 metrics: too many queues."
+    }
+  }
+}
+
+resource "aws_cloudwatch_metric_alarm" "scale_down_alarm" {
+  count = local.autoscaling_enabled ? 1 : 0
+
+  alarm_name          = "${module.this.id}-scale-down"
+  comparison_operator = "LessThanThreshold"
+  threshold           = var.autoscaling_scale_down_threshold
+  evaluation_periods  = 1
+  datapoints_to_alarm = 1
+  # notBreaching: an idle-but-running service reports workload 0 and still
+  # scales down; missing data (metric gaps, zero tasks) must not force scale-in.
+  alarm_description  = "Scale down ${module.ecs_task.service_name} when every queue's backlog (including in-flight work on slow queues) is below threshold"
+  treat_missing_data = "notBreaching"
+
+  dynamic "metric_query" {
+    for_each = local.autoscaling_queue_index
+    content {
+      id = "v${metric_query.value}"
+      metric {
+        namespace   = "AWS/SQS"
+        metric_name = "ApproximateNumberOfMessagesVisible"
+        dimensions  = { QueueName = var.queue_names[metric_query.key] }
+        period      = 60
+        stat        = "Average"
+      }
+    }
+  }
+
+  # In-flight messages on the slow queues: while a long job is executing its
+  # message is not-visible, which holds this signal up and defers scale-in.
+  dynamic "metric_query" {
+    for_each = local.autoscaling_inflight_index
+    content {
+      id = "n${metric_query.value}"
+      metric {
+        namespace   = "AWS/SQS"
+        metric_name = "ApproximateNumberOfMessagesNotVisible"
+        dimensions  = { QueueName = var.queue_names[metric_query.key] }
+        period      = 60
+        stat        = "Average"
+      }
+    }
+  }
+
+  metric_query {
+    id = "tasks"
+    metric {
+      namespace   = "ECS/ContainerInsights"
+      metric_name = "RunningTaskCount"
+      dimensions = {
+        ClusterName = var.ecs_cluster_name
+        ServiceName = module.ecs_task.service_name
+      }
+      period = 60
+      stat   = "Average"
+    }
+  }
+
+  dynamic "metric_query" {
+    for_each = local.autoscaling_load_exprs_with_inflight
+    content {
+      id         = "l${metric_query.key}"
+      expression = metric_query.value
+      label      = "Load per slot q${metric_query.key}"
+    }
+  }
+
+  metric_query {
+    id          = "workload_per_slot"
+    expression  = local.autoscaling_max_expr
+    label       = "Worst Queue Load Per Slot"
+    return_data = true
+  }
+
+  alarm_actions = [module.ecs_cloudwatch_autoscaling.scale_down_policy_arn]
+
+  tags = module.this.tags
+
+  lifecycle {
+    precondition {
+      condition     = length(var.queue_names) + length(var.scale_in_inflight_queues) + 1 <= 10
+      error_message = "CloudWatch alarms allow at most 10 metrics: reduce queues or scale_in_inflight_queues."
+    }
+  }
+}
 
 //////////
 // ECS Task Role Policies
@@ -377,7 +603,7 @@ module "ecs_codepipeline" {
   environment_variables = concat(
     var.codepipeline_environment_variables,
     var.codepipeline_add_queue_env_vars ?
-    [for var in local.queue_env_vars : merge(var, { type = "PLAINTEXT" })] : [],
+    [for queue_var in local.queue_env_vars : merge(queue_var, { type = "PLAINTEXT" })] : [],
     [
       {
         name  = "NAMESPACE"

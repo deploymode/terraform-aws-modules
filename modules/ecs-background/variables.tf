@@ -639,3 +639,103 @@ variable "scheduled_task_count" {
   type        = number
   default     = 1
 }
+
+
+variable "process_capacity_per_worker" {
+  type        = number
+  description = "Number of queue processes per worker"
+  default     = 5
+}
+
+variable "queue_weights" {
+  type        = map(number)
+  description = "Per-queue weight overrides for scaling decisions. Queues not listed here use queue_weight_default; keys must exist in queue_names. Set a queue to 0 to exclude it from the scaling signal."
+  default     = {}
+}
+
+variable "queue_weight_default" {
+  type        = number
+  description = "Weight applied to any queue in queue_names without an entry in queue_weights"
+  default     = 1
+}
+
+variable "queue_processes" {
+  type        = map(number)
+  description = "Worker processes per task that serve each queue (keys must exist in queue_names). Queues not listed fall back to process_capacity_per_worker."
+  default     = {}
+}
+
+variable "scale_in_inflight_queues" {
+  type        = list(string)
+  description = "Queues whose in-flight (not-visible) messages are added to the scale-down signal, deferring scale-in while their jobs run. Use for slow queues; entries must exist in queue_names."
+  default     = []
+}
+
+variable "autoscaling_enabled" {
+  type        = bool
+  description = "A boolean to enable/disable Autoscaling policy for ECS Service"
+  default     = false
+}
+
+variable "autoscaling_min_capacity" {
+  type        = number
+  description = "Minimum number of ECS tasks for Autoscaling"
+  default     = 1
+}
+
+variable "autoscaling_max_capacity" {
+  type        = number
+  description = "Maximum number of ECS tasks for Autoscaling"
+  default     = 5
+}
+
+variable "autoscaling_scale_up_cooldown" {
+  type        = number
+  description = "Period (in seconds) to wait between scale up events"
+  default     = 60
+}
+
+variable "autoscaling_scale_down_cooldown" {
+  type        = number
+  description = "Period (in seconds) to wait between scale down events"
+  default     = 300
+}
+
+# Scaling thresholds. Step-adjustment intervals are offsets from the
+# corresponding threshold, per the CloudWatch step-scaling contract.
+variable "autoscaling_scale_up_threshold" {
+  type        = number
+  description = "Scale up when workload per process slot exceeds this value. 1.0 means the visible weighted backlog equals total process capacity."
+  default     = 1.0
+}
+
+variable "autoscaling_scale_up_step_adjustments" {
+  description = "Step adjustments for scaling up, with metric intervals relative to autoscaling_scale_up_threshold"
+  type = list(object({
+    metric_interval_lower_bound = optional(number)
+    metric_interval_upper_bound = optional(number)
+    scaling_adjustment          = number
+  }))
+  default = [
+    { metric_interval_lower_bound = 0, metric_interval_upper_bound = 2, scaling_adjustment = 1 },
+    { metric_interval_lower_bound = 2, metric_interval_upper_bound = null, scaling_adjustment = 2 },
+  ]
+}
+
+variable "autoscaling_scale_down_threshold" {
+  type        = number
+  description = "Scale down when workload per process slot drops below this value"
+  default     = 0.3
+}
+
+variable "autoscaling_scale_down_step_adjustments" {
+  description = "Step adjustments for scaling down, with metric intervals relative to autoscaling_scale_down_threshold"
+  type = list(object({
+    metric_interval_lower_bound = optional(number)
+    metric_interval_upper_bound = optional(number)
+    scaling_adjustment          = number
+  }))
+  default = [
+    { metric_interval_lower_bound = null, metric_interval_upper_bound = 0, scaling_adjustment = -1 },
+  ]
+}
