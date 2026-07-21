@@ -2,29 +2,14 @@ data "aws_caller_identity" "current" {}
 
 data "aws_region" "current" {}
 
-# Terraform-managed Betterstack CloudWatch integration. Requires the
-# BETTERUPTIME_API_TOKEN environment variable at plan/apply time.
-resource "betteruptime_aws_cloudwatch_integration" "this" {
-  count = module.this.enabled && var.betterstack_enabled ? 1 : 0
-
-  name            = module.this.id
-  policy_id       = var.betterstack_policy_id
-  recovery_period = var.betterstack_recovery_period
-}
-
-# Fallback for a webhook created outside Terraform: the URL carries an ingest
-# token, so it is read from SSM (seeded out-of-band) rather than passed as a
-# plain input that would sit in git.
+# Optional webhook created outside this module (e.g. an alerting SaaS ingest
+# URL): the URL carries a token, so it is read from SSM (seeded out-of-band)
+# rather than passed as a plain input that would sit in git.
 data "aws_ssm_parameter" "webhook_url" {
-  count = module.this.enabled && !var.betterstack_enabled && var.webhook_url_ssm_param != "" ? 1 : 0
+  count = module.this.enabled && var.webhook_url_ssm_param != "" ? 1 : 0
 
   name            = var.webhook_url_ssm_param
   with_decryption = true
-}
-
-locals {
-  webhook_subscribed = module.this.enabled && (var.betterstack_enabled || var.webhook_url_ssm_param != "")
-  webhook_url        = var.betterstack_enabled ? try(betteruptime_aws_cloudwatch_integration.this[0].webhook_url, null) : try(data.aws_ssm_parameter.webhook_url[0].value, null)
 }
 
 resource "aws_sns_topic" "alarms" {
@@ -57,11 +42,11 @@ resource "aws_sns_topic_policy" "alarms" {
 }
 
 resource "aws_sns_topic_subscription" "webhook" {
-  count = local.webhook_subscribed ? 1 : 0
+  count = module.this.enabled && var.webhook_url_ssm_param != "" ? 1 : 0
 
   topic_arn              = aws_sns_topic.alarms[0].arn
   protocol               = "https"
-  endpoint               = local.webhook_url
+  endpoint               = data.aws_ssm_parameter.webhook_url[0].value
   endpoint_auto_confirms = true
 }
 
