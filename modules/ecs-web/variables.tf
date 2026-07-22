@@ -296,6 +296,12 @@ variable "ecs_task_def_track_latest" {
   default     = true
 }
 
+variable "use_deployed_image" {
+  type        = bool
+  description = "Render container images from the latest ACTIVE task definition instead of ':latest', so Terraform applies don't revert images deployed by CI/CD. Requires the task definition family to already exist; leave false for the first deployment of a new environment."
+  default     = false
+}
+
 
 
 

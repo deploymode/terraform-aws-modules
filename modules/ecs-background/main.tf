@@ -83,12 +83,25 @@ module "container_label" {
   context = module.this.context
 }
 
+# The latest ACTIVE task definition, used to carry the CI-deployed image tag
+# into task definitions rendered by Terraform so applies don't revert images.
+data "aws_ecs_task_definition" "deployed" {
+  count           = var.use_deployed_image && var.container_image == null ? 1 : 0
+  task_definition = module.this.id
+}
+
+data "aws_ecs_container_definition" "deployed" {
+  count           = var.use_deployed_image && var.container_image == null ? 1 : 0
+  task_definition = "${data.aws_ecs_task_definition.deployed[0].family}:${data.aws_ecs_task_definition.deployed[0].revision}"
+  container_name  = module.container_label.id
+}
+
 module "container" {
   source  = "cloudposse/ecs-container-definition/aws"
   version = "0.61.2"
 
   container_name               = module.container_label.id
-  container_image              = var.container_image == null ? join(":", [module.ecr.repository_url, "latest"]) : var.container_image
+  container_image              = var.container_image != null ? var.container_image : (var.use_deployed_image ? data.aws_ecs_container_definition.deployed[0].image : join(":", [module.ecr.repository_url, "latest"]))
   container_memory             = var.container_memory
   container_memory_reservation = var.container_memory_reservation
   container_cpu                = var.container_cpu
@@ -102,7 +115,9 @@ module "container" {
 
   readonly_root_filesystem = false
 
-  environment = concat(
+  # Entries with a null value are dropped rather than rendered as value: null,
+  # which ECS would reject / record literally.
+  environment = [for e in concat(
     [
       {
         name  = "STAGE"
@@ -113,9 +128,9 @@ module "container" {
         value = module.this.environment
       },
     ],
-    var.container_environment,
+    var.container_environment == null ? [] : var.container_environment,
     local.queue_env_vars
-  )
+  ) : e if e.value != null]
   secrets       = var.container_ssm_secrets
   port_mappings = var.container_port_mappings
   command       = var.container_command
@@ -559,9 +574,7 @@ resource "aws_service_discovery_service" "service_discovery" {
 
   }
 
-  health_check_custom_config {
-    failure_threshold = 1
-  }
+  health_check_custom_config {}
 }
 
 // CodePipeline using ECS Deploy
