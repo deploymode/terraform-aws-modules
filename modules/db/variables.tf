@@ -412,6 +412,16 @@ variable "alarm_actions" {
   default     = []
 }
 
+// Alarm thresholds: primary
+
+variable "alarm_primary_cpu_threshold" {
+  type        = number
+  description = "Primary CPUUtilization percentage above which to alarm"
+  default     = 80
+}
+
+// Alarm thresholds: replica
+
 variable "alarm_replica_cpu_threshold" {
   type        = number
   description = "Replica CPUUtilization percentage above which to alarm"
@@ -424,9 +434,11 @@ variable "alarm_replica_read_latency_threshold" {
   default     = 0.02
 }
 
+// Alarm thresholds: primary and replica
+
 variable "alarm_database_connections_threshold" {
   type        = number
-  description = "Replica DatabaseConnections count above which to alarm"
+  description = "DatabaseConnections count above which to alarm"
   default     = 80
 }
 
@@ -434,10 +446,4 @@ variable "alarm_cpu_credit_balance_threshold" {
   type        = number
   description = "CPUCreditBalance below which to alarm on burstable instances"
   default     = 100
-}
-
-variable "alarm_writer_cpu_threshold" {
-  type        = number
-  description = "Writer CPUUtilization percentage above which to alarm"
-  default     = 80
 }
