@@ -574,9 +574,7 @@ resource "aws_service_discovery_service" "service_discovery" {
 
   }
 
-  health_check_custom_config {
-    failure_threshold = 1
-  }
+  health_check_custom_config {}
 }
 
 // CodePipeline using ECS Deploy
