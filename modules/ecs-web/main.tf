@@ -354,6 +354,31 @@ module "alb" {
   access_logs_enabled                     = var.alb_access_logs_enabled
   alb_access_logs_s3_bucket_force_destroy = var.alb_access_logs_s3_bucket_force_destroy
   # alb_access_logs_s3_bucket_force_destroy_enabled = var.alb_access_logs_s3_bucket_force_destroy ? "true" : "false"
+  # Without a lifecycle rule the access logs bucket grows unbounded; the
+  # deprecated per-variable lifecycle path defaults to off in cloudposse/alb.
+  lifecycle_configuration_rules = var.alb_access_logs_enabled ? [
+    {
+      enabled                                = true
+      id                                     = "alb-access-logs-retention"
+      abort_incomplete_multipart_upload_days = 7
+      filter_and                             = null
+      expiration = {
+        days = var.alb_access_logs_expiration_days
+      }
+      transition = [
+        {
+          days          = var.alb_access_logs_standard_transition_days
+          storage_class = "STANDARD_IA"
+        },
+        {
+          days          = var.alb_access_logs_glacier_transition_days
+          storage_class = "GLACIER"
+        }
+      ]
+      noncurrent_version_expiration = null
+      noncurrent_version_transition = []
+    }
+  ] : []
   cross_zone_load_balancing_enabled = true
   http2_enabled                     = true
   deletion_protection_enabled       = false

@@ -197,6 +197,24 @@ variable "alb_access_logs_s3_bucket_force_destroy" {
   description = "A boolean that indicates all objects should be deleted from the ALB access logs S3 bucket so that the bucket can be destroyed without error"
 }
 
+variable "alb_access_logs_expiration_days" {
+  type        = number
+  default     = 90
+  description = "Number of days after which to expunge ALB access log objects"
+}
+
+variable "alb_access_logs_standard_transition_days" {
+  type        = number
+  default     = 30
+  description = "Number of days after which to move ALB access log objects to the infrequent access tier"
+}
+
+variable "alb_access_logs_glacier_transition_days" {
+  type        = number
+  default     = 60
+  description = "Number of days after which to move ALB access log objects to the Glacier Flexible Retrieval tier"
+}
+
 variable "alb_https_ssl_policy" {
   type        = string
   default     = "ELBSecurityPolicy-TLS13-1-2-2021-06"
