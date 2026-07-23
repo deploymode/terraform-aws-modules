@@ -75,7 +75,7 @@ module "rds_instance" {
 
   engine         = var.engine
   engine_version = var.engine_version
-  
+
 
   database_name     = var.database_name
   database_user     = local.database_username
@@ -84,12 +84,12 @@ module "rds_instance" {
 
   iam_database_authentication_enabled = var.iam_database_authentication_enabled
 
-  storage_type      = var.storage_type
-  allocated_storage = var.allocated_storage
+  storage_type          = var.storage_type
+  allocated_storage     = var.allocated_storage
   max_allocated_storage = var.max_allocated_storage
-  storage_encrypted = var.storage_encrypted
+  storage_encrypted     = var.storage_encrypted
 
-  instance_class    = var.instance_class
+  instance_class = var.instance_class
 
   snapshot_identifier = var.snapshot_identifier
   deletion_protection = var.deletion_protection
@@ -111,13 +111,13 @@ module "rds_instance" {
 
   restore_to_point_in_time = var.restore_to_point_in_time
 
-  performance_insights_enabled = var.performance_insights_enabled
-  performance_insights_kms_key_id = var.performance_insights_kms_key_id
+  performance_insights_enabled          = var.performance_insights_enabled
+  performance_insights_kms_key_id       = var.performance_insights_kms_key_id
   performance_insights_retention_period = var.performance_insights_retention_period
 
   db_parameter = var.db_parameter
-  db_options = var.db_options
-  
+  db_options   = var.db_options
+
   # db_parameter = [
   #   { name  = "myisam_sort_buffer_size"   value = "1048576" },
   #   { name  = "sort_buffer_size"          value = "2097152" }
@@ -146,27 +146,27 @@ module "rds_replica" {
   replicate_source_db = !var.promote_replica ? module.rds_instance.instance_id : null
 
   # subnet_ids          = var.subnet_ids
-  availability_zone = var.availability_zone_replica
-  vpc_id              = var.vpc_id
-  security_group_ids  = aws_security_group.allowed.*.id
+  availability_zone            = var.availability_zone_replica
+  vpc_id                       = var.vpc_id
+  security_group_ids           = aws_security_group.allowed.*.id
   associate_security_group_ids = [module.rds_instance.security_group_id]
-  ca_cert_identifier = var.ca_cert_identifier
+  ca_cert_identifier           = var.ca_cert_identifier
 
   iam_database_authentication_enabled = var.iam_database_authentication_enabled
 
   dns_zone_id = var.dns_zone_id
   host_name   = var.replica_host_name
 
-  database_port     = var.database_port
+  database_port = var.database_port
 
-  storage_type      = var.storage_type
-  allocated_storage = var.allocated_storage
+  storage_type          = var.storage_type
+  allocated_storage     = var.allocated_storage
   max_allocated_storage = var.max_allocated_storage
-  storage_encrypted = var.storage_encrypted
+  storage_encrypted     = var.storage_encrypted
 
-  instance_class    = var.instance_class
+  instance_class = var.instance_class
 
-  engine = var.engine
+  engine         = var.engine
   engine_version = var.engine_version
 
   deletion_protection = var.deletion_protection
@@ -177,10 +177,10 @@ module "rds_replica" {
   maintenance_window          = var.maintenance_window
   # AWS rejects a final snapshot when deleting a read replica; only allow one
   # if the replica has been promoted to a standalone instance
-  skip_final_snapshot         = var.promote_replica ? var.skip_final_snapshot : true
-  copy_tags_to_snapshot       = true
-  backup_retention_period     = var.backup_retention_period
-  backup_window               = var.backup_window
+  skip_final_snapshot     = var.promote_replica ? var.skip_final_snapshot : true
+  copy_tags_to_snapshot   = true
+  backup_retention_period = var.backup_retention_period
+  backup_window           = var.backup_window
 
   db_parameter_group   = var.db_parameter_group
   parameter_group_name = var.parameter_group_name
@@ -190,8 +190,8 @@ module "rds_replica" {
 
   restore_to_point_in_time = var.restore_to_point_in_time
 
-  performance_insights_enabled = var.performance_insights_enabled
-  performance_insights_kms_key_id = var.performance_insights_kms_key_id
+  performance_insights_enabled          = var.performance_insights_enabled
+  performance_insights_kms_key_id       = var.performance_insights_kms_key_id
   performance_insights_retention_period = var.performance_insights_retention_period
 
   context = module.this.context

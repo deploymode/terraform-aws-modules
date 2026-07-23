@@ -4,7 +4,7 @@ module "log_forwarder" {
   better_stack_token       = var.better_stack_token
   better_stack_ingest_host = var.better_stack_ingest_host
 
-  timeout = var.lambda_timeout
+  timeout     = var.lambda_timeout
   memory_size = var.lambda_memory_size
 
   log_group_names = var.log_group_names

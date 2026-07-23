@@ -15,7 +15,7 @@ locals {
   )
 
   # Produce a list of subdomains
-  subdomains = [ for subdomain in local.subdomain_set : format("%s.%s", subdomain[0], subdomain[1]) ]
+  subdomains = [for subdomain in local.subdomain_set : format("%s.%s", subdomain[0], subdomain[1])]
 }
 
 data "aws_route53_zone" "existing" {
@@ -31,6 +31,6 @@ module "acm_request_certificate" {
   process_domain_validation_options = var.auto_verify
   ttl                               = "300"
   subject_alternative_names         = local.subdomains
-  wait_for_certificate_issued = var.wait_for_certificate_issued
-  zone_name                   = data.aws_route53_zone.existing.name
+  wait_for_certificate_issued       = var.wait_for_certificate_issued
+  zone_name                         = data.aws_route53_zone.existing.name
 }

@@ -36,14 +36,14 @@ module "fck-nat" {
 
   for_each = var.use_fck_nat_instance_image ? module.subnets.az_public_subnets_map : {}
 
-  name                 = join("-", [module.nat-image-label.id, each.key])
-  vpc_id               = module.vpc.vpc_id
+  name   = join("-", [module.nat-image-label.id, each.key])
+  vpc_id = module.vpc.vpc_id
   # Assumes one subnet per az
-  subnet_id            = one(each.value)
+  subnet_id = one(each.value)
   # This is not the default VPC security group, but the one created by the FCK module
   use_default_security_group = true
   # Creates an ASG
-  ha_mode              = var.use_fck_nat_instance_ha_mode                 
+  ha_mode = var.use_fck_nat_instance_ha_mode
   # eip_allocation_ids   = ["eipalloc-abc1234"] # Allocation ID of an existing EIP
   use_cloudwatch_agent = false
   # When using Spot, make sure to use multiple instance types to avoid issues caused by instance type shortage
@@ -52,7 +52,7 @@ module "fck-nat" {
   instance_type = var.nat_instance_type
 
   update_route_tables = true
-  
+
   route_tables_ids = {
     # Assumes one subnet per az
     "${each.key}" = one(module.subnets.az_private_route_table_ids_map[each.key])

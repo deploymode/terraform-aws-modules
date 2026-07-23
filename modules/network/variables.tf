@@ -3,7 +3,7 @@ variable "aws_region" {
 }
 
 variable "zones" {
-  type = list
+  type = list(any)
 }
 
 variable "account_network_cidr" {
@@ -17,8 +17,8 @@ variable "enable_nat_gateway" {
 }
 
 variable "enable_nat_instance" {
-  type    = bool
-  default = false
+  type        = bool
+  default     = false
   description = "Enabled the NAT instance created by the Cloud Posse subnets module. Treated as `false` if `use_fck_nat_instance_image` is `true`."
 }
 
@@ -28,8 +28,8 @@ variable "nat_instance_type" {
 }
 
 variable "use_fck_nat_instance_image" {
-  type    = bool
-  default = false
+  type        = bool
+  default     = false
   description = <<EOT
     Use the FCK NAT instance image instead of the Cloud Posse NAT instance.
     
@@ -40,8 +40,8 @@ EOT
 }
 
 variable "use_fck_nat_instance_ha_mode" {
-  type = bool
-  default = false
+  type        = bool
+  default     = false
   description = <<EOT
     Use the FCK NAT instance image in HA mode. This will create an ASG with a minimum of 2 instances.
 EOT
