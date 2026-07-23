@@ -146,8 +146,14 @@ module "email_notification_topic" {
 # module's ALB/CDN) sets webhook_topic_enabled, leaves webhook_notification_endpoint
 # empty, reads ses_webhook_topic_arn, and owns the subscription in that stack.
 # A consumer with a statically known URL passes it here and lets the module own
-# the subscription too. endpoint_auto_confirms lets the subscription reconcile to
-# "confirmed" once the app is live; a still-pending subscription does not fail the apply.
+# the subscription too.
+#
+# endpoint_auto_confirms stays false so the apply never blocks waiting for
+# confirmation: on first rollout the app is not yet live with the topic ARN and
+# cannot confirm, so a true here would make the provider wait and then fail. The
+# subscription is created PendingConfirmation; the app confirms it out of band
+# once it is deployed with SES_SNS_TOPIC_ARN (re-request confirmation after the
+# app rolls out on the very first bootstrap).
 
 locals {
   webhook_topic_enabled        = module.this.enabled && (var.webhook_topic_enabled || var.webhook_notification_endpoint != "")
@@ -174,7 +180,7 @@ module "ses_webhook_topic" {
     webhook = {
       protocol               = "https"
       endpoint               = var.webhook_notification_endpoint
-      endpoint_auto_confirms = true
+      endpoint_auto_confirms = false
       raw_message_delivery   = false
     }
   } : {}
