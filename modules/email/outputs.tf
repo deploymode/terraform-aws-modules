@@ -19,7 +19,7 @@ output "spf_record" {
 }
 
 output "custom_from_domain" {
-  value = module.ses.custom_from_domain
+  value       = module.ses.custom_from_domain
   description = "The custom mail FROM domain"
 }
 
@@ -72,6 +72,11 @@ output "iam_key_id_ssm_param_arn" {
 output "iam_key_secret_ssm_param_arn" {
   value       = lookup(module.store_write.arn_map, var.iam_key_secret_ssm_param_path, "")
   description = "The SSM parameter store path where the SMTP user access key secret is stored."
+}
+
+output "ses_webhook_topic_arn" {
+  value       = try(module.ses_webhook_topic.sns_topic_arn, "")
+  description = "ARN of the SNS topic that forwards SES bounce/complaint/delivery notifications to the application webhook. Empty when the webhook is not enabled. Feed this to the app as SES_SNS_TOPIC_ARN."
 }
 
 // Verification data

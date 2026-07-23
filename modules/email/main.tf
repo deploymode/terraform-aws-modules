@@ -96,7 +96,7 @@ module "store_write" {
 # Bounce and Complaints notification
 
 resource "aws_ses_identity_notification_topic" "notification_topic" {
-  for_each                 = module.this.enabled ? var.notification_emails : {}
+  for_each = module.this.enabled ? var.notification_emails : {}
 
   topic_arn                = module.email_notification_topic[each.key].sns_topic_arn
   notification_type        = title(each.key)
@@ -106,7 +106,7 @@ resource "aws_ses_identity_notification_topic" "notification_topic" {
 
 module "email_notification_topic" {
   source  = "cloudposse/sns-topic/aws"
-  version = "0.20.3"
+  version = "1.2.0"
 
   for_each = var.notification_emails
 
@@ -129,6 +129,66 @@ module "email_notification_topic" {
   }
 
   context = module.this.context
+}
+
+# SES delivery-feedback webhook
+#
+# One SNS topic receives the domain identity's Bounce/Complaint/Delivery
+# notifications for forwarding to an application HTTPS webhook, which validates
+# the SNS signature and the topic ARN and confirms the subscription itself.
+# include_original_headers keeps the correlation header the app reads to map a
+# bounce back to the exact recipient and run.
+#
+# Topic creation is decoupled from the subscription so the module never forces a
+# dependency cycle. Only the subscription needs the webhook URL; the topic and
+# the SES notification wiring need just the topic ARN and the domain. A consumer
+# whose webhook URL comes from a stack that depends on this one (e.g. their web
+# module's ALB/CDN) sets webhook_topic_enabled, leaves webhook_notification_endpoint
+# empty, reads ses_webhook_topic_arn, and owns the subscription in that stack.
+# A consumer with a statically known URL passes it here and lets the module own
+# the subscription too. endpoint_auto_confirms lets the subscription reconcile to
+# "confirmed" once the app is live; a still-pending subscription does not fail the apply.
+
+locals {
+  webhook_topic_enabled        = module.this.enabled && (var.webhook_topic_enabled || var.webhook_notification_endpoint != "")
+  webhook_subscription_enabled = local.webhook_topic_enabled && var.webhook_notification_endpoint != ""
+}
+
+module "ses_webhook_topic" {
+  source  = "cloudposse/sns-topic/aws"
+  version = "1.2.0"
+
+  enabled = local.webhook_topic_enabled
+
+  name       = "ses"
+  attributes = ["webhook"]
+
+  # SES cannot publish to a topic encrypted with the default aws/sns KMS key.
+  encryption_enabled = false
+
+  allowed_aws_services_for_sns_published = [
+    "ses.amazonaws.com"
+  ]
+
+  subscribers = local.webhook_subscription_enabled ? {
+    webhook = {
+      protocol               = "https"
+      endpoint               = var.webhook_notification_endpoint
+      endpoint_auto_confirms = true
+      raw_message_delivery   = false
+    }
+  } : {}
+
+  context = module.this.context
+}
+
+resource "aws_ses_identity_notification_topic" "webhook" {
+  for_each = local.webhook_topic_enabled ? toset(var.webhook_notification_types) : []
+
+  topic_arn                = module.ses_webhook_topic.sns_topic_arn
+  notification_type        = each.value
+  identity                 = var.domain
+  include_original_headers = true
 }
 
 # DMARC

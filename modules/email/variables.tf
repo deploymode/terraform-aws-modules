@@ -111,7 +111,37 @@ variable "notification_emails" {
   default     = {}
 
   validation {
-    condition = length(setunion(keys(var.notification_emails), ["bounce", "complaint", "delivery"])) == 3
+    condition     = length(setunion(keys(var.notification_emails), ["bounce", "complaint", "delivery"])) == 3
     error_message = "Only `bounce`, `complaint`, and `delivery` are allowed keys in notification_emails."
+  }
+}
+
+# SES delivery-feedback webhook
+
+variable "webhook_topic_enabled" {
+  type        = bool
+  description = "Create the SNS topic and SES bounce/complaint/delivery notification wiring and expose ses_webhook_topic_arn. Set this (with webhook_notification_endpoint empty) when the webhook URL comes from a stack that depends on this one, so that stack can own the SNS subscription without creating a dependency cycle. Implied true when webhook_notification_endpoint is set."
+  default     = false
+}
+
+variable "webhook_notification_endpoint" {
+  type        = string
+  description = "HTTPS URL of the application endpoint that receives SES bounce/complaint/delivery notifications over SNS. When set, the module also creates the topic and an https subscription to this URL. Leave empty (with webhook_topic_enabled) to have the consumer own the subscription."
+  default     = ""
+
+  validation {
+    condition     = var.webhook_notification_endpoint == "" || can(regex("^https://", var.webhook_notification_endpoint))
+    error_message = "The webhook_notification_endpoint must be an https:// URL."
+  }
+}
+
+variable "webhook_notification_types" {
+  type        = list(string)
+  description = "SES notification types published to the webhook topic."
+  default     = ["Bounce", "Complaint", "Delivery"]
+
+  validation {
+    condition     = length(setsubtract(var.webhook_notification_types, ["Bounce", "Complaint", "Delivery"])) == 0
+    error_message = "Only `Bounce`, `Complaint`, and `Delivery` are allowed in webhook_notification_types."
   }
 }
