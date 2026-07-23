@@ -25,7 +25,7 @@ output "nat_instance_ids" {
 
 output "fck_nat_instance_arns" {
   description = "ARNs of the NAT Instances created by the FCK NAT module"
-  value       = [ for name, fck_nat in module.fck-nat : fck_nat.instance_arn ]
+  value       = [for name, fck_nat in module.fck-nat : fck_nat.instance_arn]
 }
 
 output "public_subnet_cidrs" {

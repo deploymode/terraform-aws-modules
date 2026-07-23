@@ -22,8 +22,8 @@ variable "delegated_role_name" {
 variable "zone_config" {
   description = "Zone config - a list of objects with subdomain, zone_name and dnssec_enabled keys"
   type = list(object({
-    subdomain = string
-    zone_name = string
-    dnssec_enabled    = optional(bool, false)
+    subdomain      = string
+    zone_name      = string
+    dnssec_enabled = optional(bool, false)
   }))
 }

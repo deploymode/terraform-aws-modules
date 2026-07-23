@@ -81,13 +81,13 @@ variable "http_to_https_redirect" {
 }
 
 variable "allowed_ipv4_cidr_blocks" {
-  type        = list
+  type        = list(any)
   default     = ["0.0.0.0/0"]
   description = "IPv4 ranges allowed to access the load balancer"
 }
 
 variable "allowed_ipv6_cidr_blocks" {
-  type        = list
+  type        = list(any)
   default     = ["::/0"]
   description = "IPv6 ranges allowed to access the load balancer"
 }
