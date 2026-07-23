@@ -14,10 +14,10 @@ locals {
 }
 
 resource "aws_organizations_account" "account" {
-  for_each  = var.accounts
-  name      = each.key
-  email     = format(var.account_email_format, each.key)
-  role_name = var.account_role_name
+  for_each                   = var.accounts
+  name                       = each.key
+  email                      = format(var.account_email_format, each.key)
+  role_name                  = var.account_role_name
   iam_user_access_to_billing = each.value.iam_user_access_to_billing ? "ALLOW" : "DENY"
 
   lifecycle {

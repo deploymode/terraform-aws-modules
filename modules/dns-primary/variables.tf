@@ -1,5 +1,5 @@
 variable "domains" {
-  type        = map(object({
+  type = map(object({
     dnssec_enabled = optional(bool, false)
   }))
   description = "Domains to set up zones for. Map of domain name to settings."

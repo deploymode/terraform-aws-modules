@@ -1,7 +1,7 @@
 # Additional ECS event logging
 
 locals {
-    ecs_event_logs_enabled = module.this.enabled && length(var.ecs_event_logs) > 0
+  ecs_event_logs_enabled = module.this.enabled && length(var.ecs_event_logs) > 0
 }
 
 module "ecs_event_logs_label" {
@@ -17,7 +17,7 @@ module "ecs_event_logs" {
   source  = "cloudposse/cloudwatch-logs/aws"
   version = "0.6.9"
 
-  for_each = var.ecs_event_logs 
+  for_each = var.ecs_event_logs
 
   enabled = module.this.enabled && each.value.enabled
 
@@ -39,7 +39,7 @@ module "ecs_event_logs" {
 # EventBridge rule
 
 module "ecs_event_logs_cloudwatch_event" {
-  source = "cloudposse/cloudwatch-events/aws"
+  source  = "cloudposse/cloudwatch-events/aws"
   version = "0.9.0"
 
   for_each = var.ecs_event_logs
@@ -52,7 +52,7 @@ module "ecs_event_logs_cloudwatch_event" {
   cloudwatch_event_rule_pattern = {
     source      = ["aws.ecs"]
     detail-type = [each.value.detail_type]
-    detail = each.value.detail
+    detail      = each.value.detail
   }
   cloudwatch_event_target_arn = module.ecs_event_logs[each.key].log_group_arn
 

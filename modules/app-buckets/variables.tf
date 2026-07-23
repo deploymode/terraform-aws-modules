@@ -25,8 +25,8 @@ variable "buckets" {
       allowed_public_paths = optional(list(string), [])
       # S3 lifecycle configuration rules (v2) - passed through to cloudposse/s3-bucket
       lifecycle_configuration_rules = optional(list(object({
-        enabled = optional(bool, true)
-        id      = string
+        enabled                                = optional(bool, true)
+        id                                     = string
         abort_incomplete_multipart_upload_days = optional(number)
         filter_and = optional(object({
           object_size_greater_than = optional(number)
