@@ -10,6 +10,7 @@ permissions:
 
 jobs:
   release:
+    if: ${{ !contains(github.event.head_commit.message, '[no-release]') }}
     permissions:
       contents: write
     runs-on: ubuntu-latest
