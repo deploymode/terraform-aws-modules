@@ -656,7 +656,7 @@ module "codepipeline_notifications" {
   stage      = module.this.stage
   attributes = concat([module.this.name, module.this.environment], module.this.attributes)
 
-  lambda_runtime = "python3.12"
+  lambda_runtime = "python3.13"
 
   slack_url     = each.value.webhook_url
   slack_channel = each.value.channel
