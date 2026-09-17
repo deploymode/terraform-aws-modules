@@ -152,6 +152,12 @@ variable "ecs_ignore_changes_task_definition" {
   default     = false
 }
 
+variable "ecs_ignore_changes_desired_count" {
+  type        = bool
+  description = "Whether to ignore changes to desired_count in the ECS service. Ignored when an autoscaling policy is active, which always ignores desired_count."
+  default     = false
+}
+
 variable "ecs_task_def_track_latest" {
   type        = bool
   description = "Track the latest revision of the task definition rather than only the revisions managed by Terraform."

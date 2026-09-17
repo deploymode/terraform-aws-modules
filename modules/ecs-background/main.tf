@@ -183,6 +183,7 @@ module "ecs_task" {
   enable_icmp_rule               = false
   tags                           = var.tags
   ignore_changes_task_definition = var.ecs_ignore_changes_task_definition
+  ignore_changes_desired_count   = var.ecs_ignore_changes_desired_count || local.autoscaling_enabled
 
   network_mode   = var.ecs_network_mode
   container_port = var.container_port
