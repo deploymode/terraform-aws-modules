@@ -485,6 +485,60 @@ resource "aws_cloudwatch_metric_alarm" "scale_down_alarm" {
   }
 }
 
+# Protected tasks keep running after scale-in or a deploy lowers the desired
+# count. A gap that outlasts the longest protected job means protection is
+# stuck or never released.
+resource "aws_cloudwatch_metric_alarm" "running_above_desired" {
+  count = module.this.enabled && var.task_protection_enabled ? 1 : 0
+
+  alarm_name          = "${module.this.id}-running-above-desired"
+  alarm_description   = "${module.ecs_task.service_name} has run more tasks than desired for ${var.running_above_desired_alarm_minutes} minutes; check task protection"
+  comparison_operator = "GreaterThanThreshold"
+  threshold           = 0
+  evaluation_periods  = var.running_above_desired_alarm_minutes
+  datapoints_to_alarm = var.running_above_desired_alarm_minutes
+  treat_missing_data  = "notBreaching"
+  alarm_actions       = var.alarm_actions
+  ok_actions          = var.alarm_actions
+
+  metric_query {
+    id = "running"
+    metric {
+      namespace   = "ECS/ContainerInsights"
+      metric_name = "RunningTaskCount"
+      dimensions = {
+        ClusterName = var.ecs_cluster_name
+        ServiceName = module.ecs_task.service_name
+      }
+      period = 60
+      stat   = "Minimum"
+    }
+  }
+
+  metric_query {
+    id = "desired"
+    metric {
+      namespace   = "ECS/ContainerInsights"
+      metric_name = "DesiredTaskCount"
+      dimensions = {
+        ClusterName = var.ecs_cluster_name
+        ServiceName = module.ecs_task.service_name
+      }
+      period = 60
+      stat   = "Maximum"
+    }
+  }
+
+  metric_query {
+    id          = "excess"
+    expression  = "running - desired"
+    label       = "Tasks running above desired"
+    return_data = true
+  }
+
+  tags = module.this.tags
+}
+
 //////////
 // ECS Task Role Policies
 //////////
@@ -532,6 +586,19 @@ data "aws_iam_policy_document" "ecs_task" {
     ]
 
     effect = "Allow"
+  }
+
+  # Lets the worker protect its own task while a long job runs.
+  dynamic "statement" {
+    for_each = var.task_protection_enabled ? [1] : []
+    content {
+      actions = [
+        "ecs:GetTaskProtection",
+        "ecs:UpdateTaskProtection"
+      ]
+      resources = ["arn:aws:ecs:${var.aws_region}:${var.aws_account_id}:task/${var.ecs_cluster_name}/*"]
+      effect    = "Allow"
+    }
   }
 }
 

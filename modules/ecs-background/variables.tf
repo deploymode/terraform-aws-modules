@@ -751,3 +751,26 @@ variable "autoscaling_scale_down_step_adjustments" {
     { metric_interval_lower_bound = null, metric_interval_upper_bound = 0, scaling_adjustment = -1 },
   ]
 }
+
+variable "task_protection_enabled" {
+  type        = bool
+  description = "Allow the task to set ECS scale-in protection on itself, and alarm when running tasks stay above the desired count"
+  default     = false
+}
+
+variable "running_above_desired_alarm_minutes" {
+  type        = number
+  description = "Minutes running tasks may exceed the desired count before alarming. Set above the longest protected job and the task protection expiry."
+  default     = 30
+
+  validation {
+    condition     = var.running_above_desired_alarm_minutes >= 1 && var.running_above_desired_alarm_minutes <= 1440
+    error_message = "CloudWatch evaluates at most one day of 60-second periods: use 1 to 1440 minutes."
+  }
+}
+
+variable "alarm_actions" {
+  type        = list(string)
+  description = "Actions (e.g. SNS topic ARNs) to notify on alarm and OK transitions"
+  default     = []
+}
