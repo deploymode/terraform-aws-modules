@@ -150,7 +150,7 @@ module "container" {
 
 module "ecs_task" {
   source  = "cloudposse/ecs-alb-service-task/aws"
-  version = "0.78.0"
+  version = "1.0.0"
 
   context = module.this.context
 
