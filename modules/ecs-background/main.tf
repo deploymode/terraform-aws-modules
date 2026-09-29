@@ -150,7 +150,7 @@ module "container" {
 
 module "ecs_task" {
   source  = "cloudposse/ecs-alb-service-task/aws"
-  version = "0.78.0"
+  version = "1.0.0"
 
   context = module.this.context
 
@@ -183,6 +183,7 @@ module "ecs_task" {
   enable_icmp_rule               = false
   tags                           = var.tags
   ignore_changes_task_definition = var.ecs_ignore_changes_task_definition
+  ignore_changes_desired_count   = var.ecs_ignore_changes_desired_count || local.autoscaling_enabled
 
   network_mode   = var.ecs_network_mode
   container_port = var.container_port
