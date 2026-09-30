@@ -290,14 +290,16 @@ locals {
   autoscaling_inflight_index = { for k, i in local.autoscaling_queue_index : k => i if contains(var.scale_in_inflight_queues, k) }
 
   # Per-queue load expressions: (backlog * weight) / (tasks * pool slots).
-  # The scale-down variant adds the in-flight metric where configured.
   autoscaling_load_exprs = {
     for k, i in local.autoscaling_queue_index :
     i => "(v${i} * ${local.autoscaling_queue_weights[k]}) / (tasks * ${local.autoscaling_queue_procs[k]})"
   }
-  autoscaling_load_exprs_with_inflight = {
+  # Scale-down load measured against the fleet one task smaller. Each in-flight
+  # message occupies one slot, so it is not weighted. At one task there is
+  # nothing to scale in, and tasks - 1 would divide by zero.
+  autoscaling_scale_down_exprs = {
     for k, i in local.autoscaling_queue_index :
-    i => "((v${i}${contains(var.scale_in_inflight_queues, k) ? " + n${i}" : ""}) * ${local.autoscaling_queue_weights[k]}) / (tasks * ${local.autoscaling_queue_procs[k]})"
+    i => "IF(tasks > 1, (${contains(var.scale_in_inflight_queues, k) ? "n${i} + " : ""}v${i} * ${local.autoscaling_queue_weights[k]}) / ((tasks - 1) * ${local.autoscaling_queue_procs[k]}), 0)"
   }
 
   autoscaling_max_expr = "MAX([${join(", ", [for i in values(local.autoscaling_queue_index) : "l${i}"])}])"
@@ -327,8 +329,8 @@ resource "aws_cloudwatch_metric_alarm" "scale_up_alarm" {
   alarm_name          = "${module.this.id}-scale-up"
   comparison_operator = "GreaterThanThreshold"
   threshold           = var.autoscaling_scale_up_threshold
-  evaluation_periods  = 1
-  datapoints_to_alarm = 1
+  evaluation_periods  = var.autoscaling_scale_up_evaluation_periods
+  datapoints_to_alarm = var.autoscaling_scale_up_datapoints_to_alarm
   alarm_description   = "Scale up ${module.ecs_task.service_name} when any queue's backlog per process slot exceeds threshold"
   treat_missing_data  = "notBreaching"
 
@@ -406,11 +408,11 @@ resource "aws_cloudwatch_metric_alarm" "scale_down_alarm" {
   alarm_name          = "${module.this.id}-scale-down"
   comparison_operator = "LessThanThreshold"
   threshold           = var.autoscaling_scale_down_threshold
-  evaluation_periods  = 1
-  datapoints_to_alarm = 1
+  evaluation_periods  = var.autoscaling_scale_down_evaluation_periods
+  datapoints_to_alarm = var.autoscaling_scale_down_datapoints_to_alarm
   # notBreaching: an idle-but-running service reports workload 0 and still
   # scales down; missing data (metric gaps, zero tasks) must not force scale-in.
-  alarm_description  = "Scale down ${module.ecs_task.service_name} when every queue's backlog (including in-flight work on slow queues) is below threshold"
+  alarm_description  = "Scale down ${module.ecs_task.service_name} when one fewer task could hold every queue's in-flight work and weighted backlog below threshold"
   treat_missing_data = "notBreaching"
 
   dynamic "metric_query" {
@@ -427,8 +429,6 @@ resource "aws_cloudwatch_metric_alarm" "scale_down_alarm" {
     }
   }
 
-  # In-flight messages on the slow queues: while a long job is executing its
-  # message is not-visible, which holds this signal up and defers scale-in.
   dynamic "metric_query" {
     for_each = local.autoscaling_inflight_index
     content {
@@ -458,7 +458,7 @@ resource "aws_cloudwatch_metric_alarm" "scale_down_alarm" {
   }
 
   dynamic "metric_query" {
-    for_each = local.autoscaling_load_exprs_with_inflight
+    for_each = local.autoscaling_scale_down_exprs
     content {
       id         = "l${metric_query.key}"
       expression = metric_query.value
@@ -483,6 +483,60 @@ resource "aws_cloudwatch_metric_alarm" "scale_down_alarm" {
       error_message = "CloudWatch alarms allow at most 10 metrics: reduce queues or scale_in_inflight_queues."
     }
   }
+}
+
+# Protected tasks keep running after scale-in or a deploy lowers the desired
+# count. A gap that outlasts the longest protected job means protection is
+# stuck or never released.
+resource "aws_cloudwatch_metric_alarm" "running_above_desired" {
+  count = module.this.enabled && var.task_protection_enabled ? 1 : 0
+
+  alarm_name          = "${module.this.id}-running-above-desired"
+  alarm_description   = "${module.ecs_task.service_name} has run more tasks than desired for ${var.running_above_desired_alarm_minutes} minutes; check task protection"
+  comparison_operator = "GreaterThanThreshold"
+  threshold           = 0
+  evaluation_periods  = var.running_above_desired_alarm_minutes
+  datapoints_to_alarm = var.running_above_desired_alarm_minutes
+  treat_missing_data  = "notBreaching"
+  alarm_actions       = var.alarm_actions
+  ok_actions          = var.alarm_actions
+
+  metric_query {
+    id = "running"
+    metric {
+      namespace   = "ECS/ContainerInsights"
+      metric_name = "RunningTaskCount"
+      dimensions = {
+        ClusterName = var.ecs_cluster_name
+        ServiceName = module.ecs_task.service_name
+      }
+      period = 60
+      stat   = "Minimum"
+    }
+  }
+
+  metric_query {
+    id = "desired"
+    metric {
+      namespace   = "ECS/ContainerInsights"
+      metric_name = "DesiredTaskCount"
+      dimensions = {
+        ClusterName = var.ecs_cluster_name
+        ServiceName = module.ecs_task.service_name
+      }
+      period = 60
+      stat   = "Maximum"
+    }
+  }
+
+  metric_query {
+    id          = "excess"
+    expression  = "running - desired"
+    label       = "Tasks running above desired"
+    return_data = true
+  }
+
+  tags = module.this.tags
 }
 
 //////////
@@ -532,6 +586,19 @@ data "aws_iam_policy_document" "ecs_task" {
     ]
 
     effect = "Allow"
+  }
+
+  # Lets the worker protect its own task while a long job runs.
+  dynamic "statement" {
+    for_each = var.task_protection_enabled ? [1] : []
+    content {
+      actions = [
+        "ecs:GetTaskProtection",
+        "ecs:UpdateTaskProtection"
+      ]
+      resources = ["arn:aws:ecs:${var.aws_region}:${var.aws_account_id}:task/${var.ecs_cluster_name}/*"]
+      effect    = "Allow"
+    }
   }
 }
 

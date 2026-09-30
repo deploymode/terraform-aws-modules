@@ -661,7 +661,7 @@ variable "process_capacity_per_worker" {
 
 variable "queue_weights" {
   type        = map(number)
-  description = "Per-queue weight overrides for scaling decisions. Queues not listed here use queue_weight_default; keys must exist in queue_names. Set a queue to 0 to exclude it from the scaling signal."
+  description = "Per-queue weight overrides for scaling decisions: average job runtime divided by task boot time, so a load of 1.0 means the backlog takes longer to clear than a new task takes to start. Queues not listed here use queue_weight_default; keys must exist in queue_names. Set a queue to 0 to exclude it from the scaling signal."
   default     = {}
 }
 
@@ -679,7 +679,7 @@ variable "queue_processes" {
 
 variable "scale_in_inflight_queues" {
   type        = list(string)
-  description = "Queues whose in-flight (not-visible) messages are added to the scale-down signal, deferring scale-in while their jobs run. Use for slow queues; entries must exist in queue_names."
+  description = "Queues whose in-flight (not-visible) messages count as occupied slots in the scale-down signal. Use for queues whose jobs run long enough to matter; entries must exist in queue_names."
   default     = []
 }
 
@@ -734,10 +734,34 @@ variable "autoscaling_scale_up_step_adjustments" {
   ]
 }
 
+variable "autoscaling_scale_up_evaluation_periods" {
+  type        = number
+  description = "Number of 60-second periods the scale-up alarm evaluates"
+  default     = 1
+}
+
+variable "autoscaling_scale_up_datapoints_to_alarm" {
+  type        = number
+  description = "Breaching datapoints within autoscaling_scale_up_evaluation_periods needed to scale up"
+  default     = 1
+}
+
 variable "autoscaling_scale_down_threshold" {
   type        = number
-  description = "Scale down when workload per process slot drops below this value"
-  default     = 0.3
+  description = "Scale down when, on a fleet one task smaller, in-flight work plus weighted backlog per process slot is below this value. Keep it under autoscaling_scale_up_threshold so a scale-in cannot immediately trigger a scale-up."
+  default     = 0.8
+}
+
+variable "autoscaling_scale_down_evaluation_periods" {
+  type        = number
+  description = "Number of 60-second periods the scale-down alarm evaluates"
+  default     = 1
+}
+
+variable "autoscaling_scale_down_datapoints_to_alarm" {
+  type        = number
+  description = "Breaching datapoints within autoscaling_scale_down_evaluation_periods needed to scale down"
+  default     = 1
 }
 
 variable "autoscaling_scale_down_step_adjustments" {
@@ -750,4 +774,27 @@ variable "autoscaling_scale_down_step_adjustments" {
   default = [
     { metric_interval_lower_bound = null, metric_interval_upper_bound = 0, scaling_adjustment = -1 },
   ]
+}
+
+variable "task_protection_enabled" {
+  type        = bool
+  description = "Allow the task to set ECS scale-in protection on itself, and alarm when running tasks stay above the desired count"
+  default     = false
+}
+
+variable "running_above_desired_alarm_minutes" {
+  type        = number
+  description = "Minutes running tasks may exceed the desired count before alarming. Set above the longest protected job and the task protection expiry."
+  default     = 30
+
+  validation {
+    condition     = var.running_above_desired_alarm_minutes >= 1 && var.running_above_desired_alarm_minutes <= 1440
+    error_message = "CloudWatch evaluates at most one day of 60-second periods: use 1 to 1440 minutes."
+  }
+}
+
+variable "alarm_actions" {
+  type        = list(string)
+  description = "Actions (e.g. SNS topic ARNs) to notify on alarm and OK transitions"
+  default     = []
 }
