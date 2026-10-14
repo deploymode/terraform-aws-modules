@@ -14,6 +14,24 @@ variable "security_groups" {
   default     = []
 }
 
+variable "security_group_rules" {
+  type = list(any)
+  default = [
+    {
+      type        = "egress"
+      from_port   = 0
+      to_port     = 0
+      protocol    = -1
+      cidr_blocks = ["0.0.0.0/0"]
+      description = "Allow all outbound traffic"
+    }
+  ]
+  description = <<-EOT
+    Rules for the bastion's own security group, in `aws_security_group_rule` form.
+    The default has no inbound rules; connect through SSM Session Manager.
+  EOT
+}
+
 variable "zone_id" {
   type        = string
   default     = ""
@@ -28,8 +46,8 @@ variable "instance_type" {
 
 variable "ami_filter" {
   type        = map(list(string))
-  default     = { "name" : ["al2023-ami-minimal-*arm64"] }
-  description = "AMI filter to use for provisioning EC2 Bastion Host"
+  default     = { "name" : ["al2023-ami-2023.*-arm64"] }
+  description = "AMI filter to use for provisioning EC2 Bastion Host. The AMI must include the SSM agent."
 }
 
 variable "user_data" {
