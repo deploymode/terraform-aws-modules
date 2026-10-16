@@ -17,6 +17,7 @@ module "ec2_bastion" {
   instance_type               = var.instance_type
   ami_filter                  = var.ami_filter
   security_groups             = var.security_groups
+  security_group_rules        = var.security_group_rules
   subnets                     = var.public_subnet_ids
   key_name                    = module.aws_key_pair.key_name
   user_data                   = var.user_data
