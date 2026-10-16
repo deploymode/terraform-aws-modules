@@ -1,11 +1,25 @@
 locals {
-  database_username = var.database_user == null ? module.db_username_label.id : var.database_user
-  database_password = var.database_password == "" ? join("", random_password.password.*.result) : var.database_password
+  database_username        = var.database_user == null ? module.db_username_label.id : var.database_user
+  read_password_from_ssm   = var.db_password_ssm_read_path != ""
+  generate_password        = var.database_password == "" && !local.read_password_from_ssm
+  database_password        = local.read_password_from_ssm ? join("", module.store_read.values) : (local.generate_password ? join("", random_password.password.*.result) : var.database_password)
+  write_db_password_to_ssm = var.db_password_ssm_param_path != "" && !local.read_password_from_ssm
+}
+
+module "store_read" {
+  source  = "cloudposse/ssm-parameter-store/aws"
+  version = "0.10.0"
+
+  enabled = module.this.enabled && local.read_password_from_ssm
+
+  parameter_read = [var.db_password_ssm_read_path]
+
+  context = module.this.context
 }
 
 # taint this resource to create a new password
 resource "random_password" "password" {
-  count            = var.database_password == "" ? 1 : 0
+  count            = local.generate_password ? 1 : 0
   keepers          = var.database_password_settings.keepers
   length           = var.database_password_settings.length
   numeric          = var.database_password_settings.numeric
@@ -211,18 +225,22 @@ module "store_write" {
     tier            = "Standard"
   }
 
-  parameter_write = [
-    {
-      name        = var.db_username_ssm_param_path
-      value       = local.database_username
-      description = "${module.this.stage} database master user"
-    },
-    {
-      name        = var.db_password_ssm_param_path
-      value       = local.database_password
-      description = "${module.this.stage} database master user password"
-    }
-  ]
+  parameter_write = concat(
+    [
+      {
+        name        = var.db_username_ssm_param_path
+        value       = local.database_username
+        description = "${module.this.stage} database master user"
+      }
+    ],
+    local.write_db_password_to_ssm ? [
+      {
+        name        = var.db_password_ssm_param_path
+        value       = local.database_password
+        description = "${module.this.stage} database master user password"
+      }
+    ] : []
+  )
 
   context = module.this.context
 }

@@ -65,6 +65,12 @@ variable "db_password_ssm_param_path" {
   description = "SSM param store path for db user password"
 }
 
+variable "db_password_ssm_read_path" {
+  type        = string
+  default     = ""
+  description = "SSM param store path to read the db user password from. When set, the module neither generates a password nor writes one to `db_password_ssm_param_path`."
+}
+
 variable "database_password_settings" {
   type = object({
     length           = optional(number, 16)
