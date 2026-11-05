@@ -91,3 +91,20 @@ variable "lambda_reserved_concurrency" {
   type        = number
   default     = -1
 }
+
+variable "lambda_maximum_retry_attempts" {
+  description = "Retries Lambda makes after a failed asynchronous invocation. A retry resends the whole batch and duplicates lines already delivered. Set 0 to drop a failed batch instead"
+  type        = number
+  default     = 2
+
+  validation {
+    condition     = var.lambda_maximum_retry_attempts >= 0 && var.lambda_maximum_retry_attempts <= 2
+    error_message = "lambda_maximum_retry_attempts must be between 0 and 2."
+  }
+}
+
+variable "lambda_log_retention_in_days" {
+  description = "Retention in days of the function's own CloudWatch log group"
+  type        = number
+  default     = 14
+}

@@ -17,6 +17,9 @@ module "log_forwarder" {
   timeout                        = var.lambda_timeout
   memory_size                    = var.lambda_memory_size
   reserved_concurrent_executions = var.lambda_reserved_concurrency
+  maximum_retry_attempts         = var.lambda_maximum_retry_attempts
+
+  cloudwatch_logs_retention_in_days = var.lambda_log_retention_in_days
 
   log_group_names = var.log_group_names
   filter_pattern  = var.filter_pattern
