@@ -181,6 +181,30 @@ module "elastic_beanstalk_environment" {
   context = module.this.context
 }
 
+# CloudFormation resolves the ALIAS_TARGET_DNS_NAME dynamic reference with the EB service role
+# during managed platform updates.
+data "aws_iam_policy_document" "read_web_endpoint" {
+  count = module.this.enabled && var.set_dns_env_vars ? 1 : 0
+
+  statement {
+    actions = [
+      "ssm:GetParameters"
+    ]
+
+    resources = [
+      "arn:aws:ssm:${var.region}:${data.aws_caller_identity.current.account_id}:parameter${local.EB_WEB_ENDPOINT}"
+    ]
+  }
+}
+
+resource "aws_iam_role_policy" "service_read_web_endpoint" {
+  for_each = module.this.enabled && var.set_dns_env_vars ? var.environment_settings : {}
+
+  name   = "read-web-endpoint"
+  role   = element(split("/", module.elastic_beanstalk_environment[each.key].ec2_service_role_arn), 1)
+  policy = one(data.aws_iam_policy_document.read_web_endpoint[*].json)
+}
+
 # Add web endpoint to SSM 
 module "store_write" {
   source  = "cloudposse/ssm-parameter-store/aws"
