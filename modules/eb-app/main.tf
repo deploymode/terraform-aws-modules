@@ -103,7 +103,7 @@ data "aws_vpc" "default" {
 
 module "elastic_beanstalk_environment" {
   source  = "cloudposse/elastic-beanstalk-environment/aws"
-  version = "0.56.1"
+  version = "1.0.0"
 
   for_each = var.environment_settings
 
