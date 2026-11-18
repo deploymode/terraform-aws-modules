@@ -138,9 +138,15 @@ variable "instance_type" {
   description = "Instance types. This can be a CSV list of AWS EC2 instance types. If Spot is disabled, only the first item in the list will be used."
 }
 
+variable "ssh_enabled" {
+  type        = bool
+  description = "Open port 22 on the instances. If false, no key pair is created and port 22 is closed, so instances are reachable only through SSM Session Manager"
+  default     = false
+}
+
 variable "create_key_pair" {
   type        = bool
-  description = "Create EC2 keypair and ssh keys locally"
+  description = "Create EC2 keypair and ssh keys locally. Ignored if `ssh_enabled` is false"
   default     = false
 }
 

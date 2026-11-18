@@ -41,6 +41,9 @@ locals {
   web_environments = toset([for name, environment in var.environment_settings : name if environment.tier == "WebServer"])
 
   redirect_http_to_https = module.this.enabled && var.redirect_http_to_https && length(local.web_environments) > 0
+
+  key_pair_enabled = module.this.enabled && var.ssh_enabled && var.create_key_pair
+  no_ssh_enabled   = module.this.enabled && !var.ssh_enabled
 }
 
 data "aws_caller_identity" "current" {}
@@ -51,7 +54,7 @@ module "ssh_key_pair" {
   source  = "cloudposse/key-pair/aws"
   version = "0.18.3"
 
-  enabled = module.this.enabled && var.create_key_pair
+  enabled = local.key_pair_enabled
 
   ssh_public_key_path   = var.ssh_key_path
   generate_ssh_key      = "true"
@@ -59,6 +62,26 @@ module "ssh_key_pair" {
   public_key_extension  = ".pub"
 
   context = module.this.context
+}
+
+module "no_ssh_label" {
+  source  = "cloudposse/label/null"
+  version = "0.25.0"
+
+  attributes = ["no", "ssh"]
+  enabled    = local.no_ssh_enabled
+  context    = module.this.context
+}
+
+# Elastic Beanstalk always opens port 22 to the SSHSourceRestriction source. With SSH off, the
+# source is this group, which has no rules and no members, so port 22 is open to nobody.
+resource "aws_security_group" "no_ssh" {
+  count = local.no_ssh_enabled ? 1 : 0
+
+  name        = module.no_ssh_label.id
+  description = "No members. Source for the EB SSH rule, so port 22 is closed"
+  vpc_id      = var.vpc_id
+  tags        = module.no_ssh_label.tags
 }
 
 module "elastic_beanstalk_application" {
@@ -80,7 +103,7 @@ data "aws_vpc" "default" {
 
 module "elastic_beanstalk_environment" {
   source  = "cloudposse/elastic-beanstalk-environment/aws"
-  version = "0.53.0"
+  version = "0.56.1"
 
   for_each = var.environment_settings
 
@@ -89,7 +112,7 @@ module "elastic_beanstalk_environment" {
   description                = var.description
   region                     = var.region
   availability_zone_selector = var.availability_zone_selector
-  dns_zone_id                = var.dns_zone_id
+  dns_zone_id                = [var.dns_zone_id]
   dns_subdomain              = var.dns_subdomain
 
   elastic_beanstalk_application_name = module.elastic_beanstalk_application.elastic_beanstalk_application_name
@@ -126,7 +149,8 @@ module "elastic_beanstalk_environment" {
   spot_fleet_on_demand_above_base_percentage = each.value.enable_spot_instances ? each.value.spot_fleet_on_demand_above_base_percentage : -1
   spot_max_price                             = each.value.enable_spot_instances ? each.value.spot_max_price : -1
 
-  keypair = var.create_key_pair ? module.ssh_key_pair.key_name : ""
+  keypair                = local.key_pair_enabled ? module.ssh_key_pair.key_name : ""
+  ssh_source_restriction = var.ssh_enabled ? "0.0.0.0/0" : join("", aws_security_group.no_ssh[*].id)
 
   autoscale_min             = var.autoscale_min
   autoscale_max             = var.autoscale_max
@@ -205,7 +229,7 @@ resource "aws_iam_role_policy" "service_read_web_endpoint" {
   policy = one(data.aws_iam_policy_document.read_web_endpoint[*].json)
 }
 
-# Add web endpoint to SSM 
+# Add web endpoint to SSM
 module "store_write" {
   source  = "cloudposse/ssm-parameter-store/aws"
   version = "0.10.0"
