@@ -8,7 +8,7 @@ locals {
 
 module "store_read" {
   source  = "cloudposse/ssm-parameter-store/aws"
-  version = "0.10.0"
+  version = "0.13.0"
 
   enabled = module.this.enabled && local.read_password_from_ssm
 
@@ -213,7 +213,7 @@ module "rds_replica" {
 
 module "store_write" {
   source  = "cloudposse/ssm-parameter-store/aws"
-  version = "0.10.0"
+  version = "0.13.0"
 
   enabled = module.this.enabled && var.db_username_ssm_param_path != ""
 
